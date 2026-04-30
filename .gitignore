@@ -1,0 +1,24 @@
+# Monorepo root — patterns apply repo-wide unless a nested .gitignore overrides.
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Docker Compose local overrides (ports, volumes, secrets)
+docker-compose.override.yml
+docker-compose.*.local.yml
+
+# OS and editor noise at repo root / arbitrary paths
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.stackdump
+
+# Ad hoc logs or dumps at repository root
+/*.log
+/dumps/
+
+# Local scratch directories (optional convenience)
+/scratch/
+/tmp/

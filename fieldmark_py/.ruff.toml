@@ -1,0 +1,10 @@
+line-length = 88
+target-version = "py314"
+
+[lint]
+select = ["E", "F", "I", "B", "UP", "DJ"]
+ignore = ["E501"]
+
+[format]
+quote-style = "double"
+indent-style = "space"
