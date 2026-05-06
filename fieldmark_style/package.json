@@ -1,0 +1,16 @@
+{
+  "name": "fieldmark_style",
+  "version": "1.0.0",
+  "description": "Shared Tailwind CSS build for the FieldMark monorepo",
+  "scripts": {
+    "build": "tailwindcss -i ./src/fieldmark.css -o ./dist/fieldmark.css",
+    "build:prod": "tailwindcss -i ./src/fieldmark.css -o ./dist/fieldmark.css --minify",
+    "watch": "tailwindcss -i ./src/fieldmark.css -o ./dist/fieldmark.css --watch"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.2.4"
+  }
+}

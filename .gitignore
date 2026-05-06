@@ -22,3 +22,6 @@ Desktop.ini
 # Local scratch directories (optional convenience)
 /scratch/
 /tmp/
+
+# fieldmark_style build artifacts
+fieldmark_style/node_modules/

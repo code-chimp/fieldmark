@@ -37,6 +37,13 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "projects",
+    "inspections",
+    "violations",
+    "audit",
+    "compliance",
+    "reference",
+    "grid",
 ]
 
 MIDDLEWARE = [
@@ -54,7 +61,7 @@ ROOT_URLCONF = "fieldmark.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -119,3 +126,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = "static/"
+
+# Vendor assets live inside the project package's static/ directory.
+# STATICFILES_DIRS makes them discoverable by the dev server and collectstatic
+# without adding the project package to INSTALLED_APPS.
+STATICFILES_DIRS = [BASE_DIR / "static"]

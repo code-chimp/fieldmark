@@ -1,0 +1,38 @@
+# Compiled binary (matches directory/module name)
+fieldmark-go
+
+# Build output directory
+bin/
+
+# Vendored dependencies (if using go mod vendor)
+vendor/
+
+# Test binaries and coverage artifacts
+*.test
+*.out
+coverage.html
+
+# Platform-specific binaries
+*.exe
+*.exe~
+
+# Logs
+*.log
+
+# OS noise
+.DS_Store
+Thumbs.db
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+
+# Editor / IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Temporary files
+/tmp/

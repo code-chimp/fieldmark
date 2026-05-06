@@ -1,0 +1,8 @@
+/* Full Tailwind v4 import: theme + preflight reset + utilities.
+   Bootstrap has been removed; this is the sole CSS foundation for both apps. */
+@import "tailwindcss";
+
+/* Scan both project template directories for Tailwind class references.
+   Paths are relative to this file (fieldmark_style/src/). */
+@source "../../FieldMark/FieldMark.Web/Pages/**/*.cshtml";
+@source "../../fieldmark_py/templates/**/*.html";
