@@ -1,3 +1,5 @@
+# Ruff: lint only (`uv run ruff check .`). Format with Black (`uv run black .`).
+# Do not use `ruff format` — Black is the project formatter (QA checklist).
 line-length = 88
 target-version = "py314"
 
@@ -5,6 +7,5 @@ target-version = "py314"
 select = ["E", "F", "I", "B", "UP", "DJ"]
 ignore = ["E501"]
 
-[format]
-quote-style = "double"
-indent-style = "space"
+[lint.mccabe]
+max-complexity = 10

@@ -1,15 +1,24 @@
 {
   "name": "e2e",
   "version": "1.0.0",
-  "description": "",
+  "description": "Shared Playwright E2E harness for FieldMark backends",
   "main": "index.js",
-  "scripts": {},
+  "scripts": {
+    "test:e2e": "playwright test",
+    "test:e2e:dotnet": "playwright test --project=dotnet",
+    "test:e2e:django": "playwright test --project=django",
+    "test:e2e:fiber": "playwright test --project=fiber",
+    "test:e2e:all": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:codegen": "playwright codegen"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "devDependencies": {
     "@playwright/test": "^1.59.1",
-    "@types/node": "^25.6.0"
+    "@types/node": "^25.6.0",
+    "dotenv": "^16.6.1"
   }
 }

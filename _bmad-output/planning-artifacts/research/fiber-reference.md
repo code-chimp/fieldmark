@@ -290,6 +290,28 @@ If a pattern requires explanation, it is likely too complex for this project.
 
 ---
 
+## Unit testing
+
+Use the Go standard library **`testing`** package only—no third-party test framework is required. Unit tests validate **domain and application behavior**, not Fiber routing, middleware chains, or HTML rendering. Shared workflows and browser-visible parity are validated with **Playwright E2E tests**, not duplicated here.
+
+**Layout:** place **`*_test.go`** next to the code under test, for example:
+
+```
+internal/domain/violation_test.go          # next to domain types
+internal/app/compliance_service_test.go    # next to services
+internal/data/postgres/stores/project_store_test.go   # when exercising SQL-backed stores
+```
+
+**Do test:** domain structs and methods; application services and rule enforcement; store behavior when persistence is in scope.
+
+**Do not unit-test as primary subjects:** Fiber route registration; middleware; template rendering.
+
+**Persistence in tests:** the Fiber stack does **not** mock the database—tests that hit Postgres use a **real PostgreSQL** instance (see root `CLAUDE.md`). Pure domain logic tests may run without a database.
+
+**Commands:** `go test ./...` from `fieldmark-go/` (see stack `Makefile` / `CLAUDE.md` for QA runners combined with fmt/vet/staticcheck).
+
+---
+
 ## Core Principle
 
 **Fiber projects the domain; it must never invent it.**

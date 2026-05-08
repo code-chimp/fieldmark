@@ -2,19 +2,24 @@ module github.com/code-chimp/fieldmark-go
 
 go 1.26.2
 
-require github.com/gofiber/fiber/v3 v3.2.0
+require (
+	github.com/gofiber/fiber/v3 v3.2.0
+	github.com/gofiber/template/html/v2 v2.1.3
+	github.com/jackc/pgx/v5 v5.9.2
+	golang.org/x/tools v0.44.0
+	honnef.co/go/tools v0.7.0
+)
 
 require (
+	github.com/BurntSushi/toml v1.4.1-0.20240526193622-a339e1f7089c // indirect
 	github.com/andybalholm/brotli v1.2.1 // indirect
 	github.com/gofiber/schema v1.7.1 // indirect
 	github.com/gofiber/template v1.8.3 // indirect
-	github.com/gofiber/template/html/v2 v2.1.3 // indirect
 	github.com/gofiber/utils v1.1.0 // indirect
 	github.com/gofiber/utils/v2 v2.0.4 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
-	github.com/jackc/pgx/v5 v5.9.2 // indirect
 	github.com/klauspost/compress v1.18.5 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.21 // indirect
@@ -23,7 +28,16 @@ require (
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.70.0 // indirect
 	golang.org/x/crypto v0.50.0 // indirect
+	golang.org/x/exp/typeparams v0.0.0-20231108232855-2478ac86f678 // indirect
+	golang.org/x/mod v0.35.0 // indirect
 	golang.org/x/net v0.53.0 // indirect
+	golang.org/x/sync v0.20.0 // indirect
 	golang.org/x/sys v0.43.0 // indirect
+	golang.org/x/telemetry v0.0.0-20260409153401-be6f6cb8b1fa // indirect
 	golang.org/x/text v0.36.0 // indirect
+)
+
+tool (
+	golang.org/x/tools/cmd/goimports
+	honnef.co/go/tools/cmd/staticcheck
 )

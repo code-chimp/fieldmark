@@ -210,6 +210,25 @@ Frameworks **map to** these tables but do not create or evolve them:
 
 ---
 
+### Cross-reference — data layer and identity (ADRs 012–014)
+
+These three ADRs are the **normative spine** for Postgres layout and ownership across stacks:
+
+| ADR | Topic |
+|-----|--------|
+| **012** | Framework-local authentication schemas and opaque user references on `domain.*` |
+| **013** | Schemas created only by infrastructure init scripts — frameworks never create schemas |
+| **014** | Shared `domain.*` DDL owned by infrastructure SQL, not by EF Core / Django / Fiber migrations |
+
+**Planning primers** (orientation for agents; ADR text above remains authoritative):
+
+- [`authentication-authorization-primer.md`](authentication-authorization-primer.md) — roles, boundaries, non-goals
+- [`domain-schema-ownership-primer.md`](domain-schema-ownership-primer.md) — domain DDL change workflow and checklist
+
+**Implementation:** SQL under `docker/postgres/init/` (mounted via Postgres `docker-entrypoint-initdb.d`). Application stacks map to existing tables only.
+
+---
+
 ## Part 2: Hard Constraints & Guardrails
 
 ### Purpose
@@ -307,6 +326,15 @@ See `fiber-reference.md` for the full layout, layer responsibilities, and depend
 - JavaScript is limited to UI islands (AG Grid)
 - No frontend state stores (Redux, Signals, Stores, etc.)
 - Navigation and workflow transitions are server-driven
+
+---
+
+### Unit testing & E2E boundaries
+
+- **Unit tests** (per stack, idiomatic tools—see `dotnet-reference.md`, `django-reference.md`, `fiber-reference.md`) prove **domain rules, application orchestration, and authorization logic**. They must not substitute for **Playwright E2E** coverage of full user workflows, HTMX-driven UI state, or **cross-stack behavioral parity**.
+- **Playwright E2E** validates end-to-end workflows and shared UX contracts; **unit tests must not duplicate E2E scenarios**.
+- Framework adapters—Razor Pages, Django views/templates/routing, Fiber handlers/middleware/templating—are **not** the primary subject of unit tests; behavior lives in the domain and application layers.
+- Prefer tests that are **fast and deterministic**; avoid gratuitous mocking of HTTP. For **database-backed tests**, this repository enforces **real PostgreSQL** (no SQLite); contributors run tests against local Postgres (e.g. Docker) as documented in root `CLAUDE.md` and stack guides.
 
 ---
 

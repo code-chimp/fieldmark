@@ -4,16 +4,45 @@ This file provides guidance to Claude Code (claude.ai/code) when working in the 
 
 ## Commands
 
-Run from the `fieldmark-go/` directory:
+Run from the `fieldmark-go/` directory.
+
+### Application
 
 ```bash
-go run ./cmd/web/           # run the application
-go build -o fieldmark-go ./cmd/web/   # build the binary
-go test ./...               # run all tests
-go test ./... -v            # verbose test output
-go test ./... -cover        # test with coverage
-go vet ./...                # static analysis
+go run ./cmd/web/
+go build -o fieldmark-go ./cmd/web/
 ```
+
+### QA (see `docs/FieldMark_Per_Language_QA_Checklist.md` — Go)
+
+Tool versions are pinned in `go.mod` / `go.sum` via the root `tool (...)` block. Run CLI tools without global installs:
+
+```bash
+go tool golang.org/x/tools/cmd/goimports -w .
+go tool honnef.co/go/tools/cmd/staticcheck ./...
+```
+
+**Makefile** (POSIX `make`: Git Bash, WSL, Linux, macOS):
+
+```bash
+make fmt           # gofmt + goimports (write)
+make fmt-check     # fail if formatting needed (CI)
+make vet           # go vet ./...
+make staticcheck   # staticcheck ./...
+make test          # go test ./...
+make check         # fmt-check + vet + staticcheck + test
+make lint          # golangci-lint run ./... (needs binary on PATH)
+make check-all     # make check + lint
+```
+
+Without `make`, run the same steps manually using `gofmt`, `go vet ./...`, `go tool …`, and `go test ./...`.
+
+**golangci-lint** is optional aggregate linting (`.golangci.yml`). Install the [v2 binary](https://golangci-lint.run/welcome/install/) separately; it is not a Go module dependency.
+
+### IDE
+
+GoLand and VS Code Go integration typically run **gofmt**, **go vet**, and **staticcheck** on save or in the analysis pass—align editor settings with the checklist rather than adding alternate linters.
+
 
 ## Project Structure
 

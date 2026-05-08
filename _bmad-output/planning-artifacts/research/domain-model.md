@@ -595,6 +595,8 @@ The server always:
 
 This is the canonical schema for the shared business domain. All shared tables live in the `domain` schema, which is **infrastructure-owned** per ADR-014: the schema and its tables are created by hand-authored SQL under `docker/postgres/init/`, not by EF Core, Django, or Go tooling. Frameworks map to these tables (via fluent config in EF Core, `Meta.managed = False` in Django, explicit SQL in Fiber) but never create or alter them.
 
+Orientation primers (ADR detail remains in `architecture-decisions.md`): [`authentication-authorization-primer.md`](authentication-authorization-primer.md), [`domain-schema-ownership-primer.md`](domain-schema-ownership-primer.md); ADRs **012–014** are summarized together under **Cross-reference — data layer and identity** in `architecture-decisions.md`.
+
 The `domain` schema itself is created by `docker/postgres/init/001_schemas.sql` alongside the framework-local auth schemas (`django_auth`, `dotnet_auth`, `fiber_auth`, `infra`). The DDL below is what a follow-on infrastructure migration (e.g. `docker/postgres/init/010_domain_tables.sql`) would create. Schema drift between any stack and this canonical definition is a build-blocking defect.
 
 User identity lives in framework-local auth schemas, not in `domain`. Per ADR-012, all domain rows reference users only through opaque UUID columns (e.g. `inspector_id`, `submitted_by_id`, `actor_id`); there are **no foreign keys from `domain.*` to any auth schema**.

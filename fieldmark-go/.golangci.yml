@@ -1,0 +1,15 @@
+# Minimal linter set — docs/FieldMark_Per_Language_QA_Checklist.md (Go section).
+# Requires golangci-lint v2; install: https://golangci-lint.run/welcome/install/
+version: "2"
+
+linters:
+  default: none
+  enable:
+    - gofmt
+    - goimports
+    - govet
+    - staticcheck
+
+linters-settings:
+  goimports:
+    local-prefixes: github.com/code-chimp/fieldmark-go

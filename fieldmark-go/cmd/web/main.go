@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 	"os"
 
@@ -23,7 +24,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("database connection failed: %v", err)
 	}
-	defer conn.Close(nil) //nolint:errcheck
+	defer func() { _ = conn.Close(context.Background()) }()
 	log.Println("database connection validated")
 
 	// --- Template engine --------------------------------------------------

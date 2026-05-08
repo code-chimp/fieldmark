@@ -162,6 +162,22 @@ If a solution relies on Django "magic" instead of explicit rules, it is invalid.
 
 ---
 
+## Unit testing
+
+Unit tests validate **domain rules and application-oriented helpers**, not templates, routing, or HTMX wiring. Full workflows and UI-visible behavior belong in **Playwright E2E tests** (see `architecture-decisions.md` testing boundaries).
+
+**Framework:** **pytest** with **pytest-django** (explicit, pytest-style tests; avoid inheritance-heavy `TestCase`-only suites as the default).
+
+**Layout (illustrative):** per-app `tests/` packages with `test_*.py`; optional project-root **`conftest.py`** for shared fixtures; **`pytest.ini`** (or equivalent) setting `DJANGO_SETTINGS_MODULE` and discovery rules.
+
+**Do test:** model methods that enforce invariants and transitions; domain helper modules; compliance calculations; permission logic mapped to roles.
+
+**Do not unit-test as primary subjects:** Django templates; Admin chrome; URL routing configuration; HTMX endpoint wiring.
+
+**Persistence in tests:** this repository requires **real PostgreSQL** for tests that touch the database (**no SQLite**). Prefer fast tests that exercise pure logic without the ORM when possible; when the database is required, run against the shared Postgres instance (e.g. local Docker) per root `CLAUDE.md`.
+
+---
+
 ## Core Principle
 
 **Django expresses the domain; it must never invent it.**

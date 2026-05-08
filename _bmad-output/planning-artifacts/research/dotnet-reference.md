@@ -206,6 +206,35 @@ If an agent solution requires explaining *why* it is structured a certain way, i
 
 ---
 
+## Unit testing
+
+Unit tests validate **domain and application behavior**, not HTTP wiring or Razor rendering. Cross-browser workflows and parity are covered by **Playwright E2E tests**, not duplicated in unit tests.
+
+**Framework:** **xUnit** is preferred; **FluentAssertions** is optional for readability.
+
+**Layout (illustrative):** keep tests adjacent to what they exercise, for example:
+
+```
+FieldMark/
+├── FieldMark.Domain/
+│   └── Tests/
+│       ├── ProjectTests.cs
+│       └── ViolationTests.cs
+├── FieldMark.Application/
+│   └── Tests/
+│       ├── ComplianceServiceTests.cs
+│       └── AuthorizationTests.cs
+└── FieldMark.Tests.sln   (or equivalent solution grouping)
+```
+
+**Do test:** entity invariants and state transitions; application/service workflows; authorization rules expressed in code.
+
+**Do not unit-test as primary subjects:** Razor Pages; ViewComponents; EF Core configuration plumbing.
+
+Prefer **behavior-focused tests**; avoid over-mocking persistence when exercising rules that truly depend on the database—respect repository-wide constraints (PostgreSQL-only tests; see root `CLAUDE.md`).
+
+---
+
 ## Core Architectural Principle
 
 **The domain owns behavior.**
