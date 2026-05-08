@@ -10,11 +10,11 @@
 
 ## 1. Executive Summary
 
-FieldMark is a reference implementation of an enterprise-grade Construction Compliance & Inspection Management System, built specifically to demonstrate that server-driven web architecture — Razor Pages + HTMX on .NET, and Django + HTMX on Python — can deliver SPA-equivalent interactivity without the cognitive and architectural overhead of a single-page application.
+FieldMark is a reference implementation of an enterprise-grade Construction Compliance & Inspection Management System, built specifically to demonstrate that server-driven web architecture — Razor Pages + HTMX on .NET, Django + HTMX on Python, and Fiber + HTMX on Go — can deliver SPA-equivalent interactivity without the cognitive and architectural overhead of a single-page application.
 
 The product itself is realistic: project managers, compliance officers, and site supervisors track inspections, record violations, and resolve corrective actions against a server-evaluated rules engine. The architectural thesis is the actual deliverable: that backend authority over workflow, validation, and state — combined with HTML over the wire and judiciously placed JavaScript islands (AG Grid) — produces an application that is faster to build, easier to reason about, and cheaper to maintain than the SPA alternatives it will be compared against.
 
-FieldMark is intentionally not a product seeking product-market fit. It is a teaching artifact for an upcoming talk on HTMX, with the secondary goal of seeding parity comparisons against Angular, React, and Flask/Django implementations of the same domain.
+FieldMark is intentionally not a product seeking product-market fit. It is a teaching artifact for an upcoming talk on HTMX, with the secondary goal of seeding parity comparisons against Angular, React, and other SPA implementations of the same domain. Building three parallel server-driven stacks against one infrastructure-owned domain schema makes the thesis stack-independent: backend authority is the constant; the framework is the variable.
 
 ---
 
@@ -41,13 +41,14 @@ FieldMark closes that gap with a domain rich enough to require state machines, r
 
 ## 3. Proposed Solution
 
-A web application implementing the CCIMS domain twice with strict architectural symmetry:
+A web application implementing the CCIMS domain three times with strict architectural symmetry:
 
-- **.NET stack:** ASP.NET Core, Razor Pages, EF Core with rich domain entities, HTMX for interactivity, AG Grid as a JS island.
-- **Python stack:** Django, Django ORM with rich models, Django templates with HTMX, AG Grid as a JS island.
-- **Shared:** PostgreSQL schema, identical workflows, identical state machines, identical rule semantics.
+- **.NET stack:** ASP.NET Core, Razor Pages, EF Core with rich domain entities mapped to the `domain.*` schema, HTMX for interactivity, AG Grid as a JS island.
+- **Python stack:** Django, Django ORM with rich models against `domain.*` (`Meta.managed = False`), Django templates with HTMX, AG Grid as a JS island.
+- **Go stack:** Go + Fiber, explicit SQL against `domain.*` via narrow store interfaces, `html/template` rendering for pages and HTMX fragments, AG Grid as a JS island.
+- **Shared:** an infrastructure-owned PostgreSQL `domain` schema, identical workflows, identical state machines, identical rule semantics, identical HTMX target IDs and AG Grid contracts. Each stack owns only its framework-local auth schema (`dotnet_auth`, `django_auth`, `fiber_auth`).
 
-The two stacks are built in parallel against the same epic and story sequence, producing a real-time parity comparison rather than a port done after the fact. Both stacks reject CQRS, MediatR, generic repositories, layered service architectures, and client-side state stores per ADR-011.
+The three stacks are built in parallel against the same epic and story sequence, producing a real-time parity comparison rather than a port done after the fact. All three stacks reject CQRS, MediatR, generic repositories, layered service architectures, and client-side state stores per ADR-011, and treat the `domain` schema as architecture-owned per ADR-014.
 
 The architectural thesis is operationalized at every layer: the server owns the rules engine, the server owns workflow transitions, the server owns validation, the server owns the audit trail. The client requests HTML.
 
@@ -96,7 +97,7 @@ The personas exist to make workflows realistic. They are not the audience the de
 | Business rules duplicated between client and server | 0 |
 | Lines of state-management code (Redux/NgRx/Pinia equivalents) | 0 |
 | HTTP requests directly traceable to user interactions | 100% |
-| Architectural delta between .NET and Django implementations | Limited to language idioms and framework-specific syntax; no structural divergence |
+| Architectural delta across the .NET, Django, and Fiber implementations | Limited to language idioms and framework-specific syntax; no structural divergence |
 | Onboarding time to add a new feature, measured against a contributor unfamiliar with the project | Comparable for both stacks |
 
 These are explicitly architectural success metrics, not user satisfaction metrics. The application's "users" are simulated.
@@ -115,8 +116,8 @@ These are explicitly architectural success metrics, not user satisfaction metric
 - Compliance dashboard with HTMX partial refresh and drill-down
 - AG Grid integration with server-side row model on at least two views
 - Audit log per project, immutable, append-only
-- Role-based access control covering all four primary personas
-- PostgreSQL schema with EF Core / Django migrations preserving cross-stack parity
+- Role-based access control covering all four primary personas, implemented framework-locally in each stack
+- Infrastructure-owned PostgreSQL `domain` schema (created by Docker init scripts, not by any framework's migrations) with EF Core, Django ORM, and Go SQL all mapping to it identically
 
 ### Should-have (if time permits)
 
@@ -146,11 +147,12 @@ These are explicitly architectural success metrics, not user satisfaction metric
 Detailed technical decisions live in `architecture-decisions.md`. At the brief level, the constraints that matter are:
 
 - Backend authority is non-negotiable. Any solution that places business rules on the client is rejected.
-- ORM-first, rich domain model. No CQRS, no repositories, no MediatR, no Clean/Onion layering.
+- ORM-first or explicit-SQL persistence with a rich domain model. No CQRS, no repositories, no MediatR, no Clean/Onion layering.
 - HTMX is the only mechanism for client-server interactivity beyond AG Grid's data fetching.
 - No frontend state stores under any circumstances.
-- PostgreSQL is the canonical datastore. Migrations must remain compatible across both stacks.
-- Architectural symmetry between .NET and Django implementations is mandatory.
+- PostgreSQL is the canonical datastore. The `domain` schema is **infrastructure-owned** (ADR-014): created by Docker Postgres init scripts, evolved through hand-authored SQL, and never migrated by EF Core, Django, or Go tooling.
+- Authentication is **framework-local** (ADR-012): each stack owns its own auth schema (`dotnet_auth`, `django_auth`, `fiber_auth`) and `domain.*` rows reference users only by opaque identifier.
+- Architectural symmetry across the .NET, Django, and Fiber implementations is mandatory.
 
 ---
 
@@ -159,7 +161,7 @@ Detailed technical decisions live in `architecture-decisions.md`. At the brief l
 ### Constraints
 
 - The talk fixes the timeline; scope must compress to fit, not the other way around.
-- Both stacks must reach feature parity at every story boundary, not at the end.
+- All three stacks must reach feature parity at every story boundary, not at the end.
 - The architectural rules in `architecture-decisions.md` are non-negotiable. BMAD agents must reject solutions that violate them rather than relaxing the constraints.
 - A single contributor (the author) is doing the implementation; agent-assisted development is expected.
 
@@ -167,7 +169,7 @@ Detailed technical decisions live in `architecture-decisions.md`. At the brief l
 
 - The audience is sophisticated enough to follow architectural arguments without simplification.
 - HTMX 1.x or 2.x is stable enough to be the primary interactivity layer in production-shaped code.
-- AG Grid's server-side row model is mature on both .NET and Django backends.
+- AG Grid's server-side row model is workable on .NET, Django, and Fiber backends.
 - PostgreSQL feature usage will stay within the cross-stack-portable subset.
 
 ---
@@ -180,7 +182,7 @@ Detailed technical decisions live in `architecture-decisions.md`. At the brief l
 |---|---|
 | Demo overload — too many features, unclear narrative | Pre-script a single anchor workflow (resolve a violation) as the spine of the talk |
 | SPA-mimicry — accidentally building HTMX in a way that hides authority instead of exposing it | Keep interactions HTTP-visible; use `hx-get`/`hx-post` directly rather than over-abstracting |
-| Stack divergence — one stack pulls ahead and the other becomes a port | Story-level parity gates: a story is not done until both stacks pass it |
+| Stack divergence — one stack pulls ahead and the others become ports | Story-level parity gates: a story is not done until all three stacks pass it |
 | Rule engine over-engineering — the rules become the project | Cap rule complexity at "required inspections passed before a project can close" plus "violation must be Resolved before close"; nothing combinatorial |
 | Domain over-modeling — entities multiply | Hold to the entity list in `domain-model.md`; new entities require explicit justification |
 | AG Grid as a wedge — JS island grows into a JS app | Keep AG Grid configuration declarative and server-fed; no client-side row computation |
@@ -190,8 +192,8 @@ Detailed technical decisions live in `architecture-decisions.md`. At the brief l
 - Will the talk include a live coding segment, or is everything pre-built? (Affects how heavily the dev workflow is rehearsed.)
 - Do we need a hosted demo environment, or is local-only sufficient?
 - Should the audit log be append-only at the database level (insert-only constraints) or only enforced at the application level?
-- Are we committing to the same PostgreSQL version on both stacks, and which version?
-- Authentication: do we mock identity for the demo or wire up actual OIDC against a local IdP?
+- Are we committing to the same PostgreSQL version across all three stacks, and which version?
+- Authentication: ADR-012 settles framework-local auth. Open question is when each stack adopts it — Django on day one (built-in), .NET and Fiber deferred until a feature requires it.
 
 ---
 
@@ -210,11 +212,10 @@ Detailed technical decisions live in `architecture-decisions.md`. At the brief l
 | Document | Role | Status |
 |---|---|---|
 | `prd.md` | Original PRD; authoritative for product scope | Existing |
-| `architecture-decisions.md` | ADR-011 + hard constraints for downstream agents | Existing |
+| `architecture-decisions.md` | ADR-011 through ADR-014 + hard constraints for downstream agents | Existing |
 | `ux-guide.md` | Screen inventory, UX principles | Existing |
 | `project-brief.md` | This document | Existing |
 | `domain-model.md` | Entities, state machines, schema, ERD | Existing |
 | `dotnet-reference.md` | .NET project structure, patterns, agent guardrails | Existing |
 | `django-reference.md` | Django project structure, patterns, agent guardrails | Existing |
-| `archive/architecture.md` | Prior architecture doc (reference only; BMAD will regenerate) | Archived |
-| `archive/epics.md` | Prior epics doc (reference only; BMAD will regenerate) | Archived |
+| `fiber-reference.md` | Go (Fiber) project structure, patterns, agent guardrails | Existing |

@@ -46,9 +46,8 @@ fieldmark-go/
 │       │   ├── partials/    # shared markup (nav, header, footer)
 │       │   └── fragments/   # HTMX swap targets (compliance_tile, violation_row, etc.)
 │       └── static/
-│           ├── css/
 │           ├── js/
-│           └── vendor/      # vendored HTMX and AG Grid — no CDN dependency
+│           └── vendor/      # htmx/, ag-grid/35.2.1/, fieldmark.css (symlink → fieldmark_style/dist/)
 ```
 
 ## Layer Responsibilities

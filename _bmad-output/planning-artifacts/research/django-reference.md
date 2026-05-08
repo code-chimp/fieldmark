@@ -13,7 +13,7 @@ The Django implementation of FieldMark is:
 - **Server‑authoritative**
 - **Domain‑centric**
 - **Workflow‑driven by backend rules**
-- **Symmetrical in intent (not mechanics) with the .NET implementation**
+- **Symmetrical in intent (not mechanics) with the .NET and Go (Fiber) implementations**
 
 Django is used as an *adapter framework*, not as an implicit design authority.
 
@@ -82,18 +82,12 @@ Views orchestrate requests; **models own behavior**.
 
 ## Database & Migration Ownership
 
-- PostgreSQL is the shared system of record
-- Django migrations are permitted ONLY for:
-  - Django framework tables
-  - Auth tables
-  - Admin support tables
-
-Domain schema evolution is **not owned by Django**.
-
-Rules:
-- Django must not autonomously evolve domain tables once schema is established
-- Shared domain tables must not be created by both EF Core and Django
-- Dual ownership of tables is prohibited
+- PostgreSQL is the shared system of record.
+- The `domain` schema is **infrastructure-owned** (ADR-014). It is created by Postgres init scripts in `docker/postgres/init/` and evolved through hand-authored infrastructure SQL. Django migrations do **not** create or alter `domain.*` tables.
+- Django migrations are scoped exclusively to the `django_auth` schema (ADR-012). This covers Django's built-in auth tables (`auth_user`, `auth_group`, `auth_permission`, etc.), admin support tables, sessions, and content types — all configured to live in `django_auth`.
+- Django models that represent `domain.*` rows must use `Meta.managed = False` together with an explicit `Meta.db_table = "domain\".\"<table_name>"` (or the project's adopted convention for cross-schema references) so Django can read and write but never `CREATE`, `ALTER`, or `DROP`.
+- The `DATABASE_ROUTERS` / `search_path` configuration must ensure migrations target only `django_auth`; CI must fail on any generated migration that touches another schema.
+- Dual ownership of `domain.*` tables across stacks is prohibited; running `manage.py migrate` must never produce DDL against `domain`.
 
 ---
 
@@ -140,14 +134,14 @@ Changes to one app must not implicitly trigger behavior in another.
 
 ## Authentication & Authorization Policy
 
-Django’s built‑in auth:
-- Is enabled for Admin and internal tooling
-- Does not imply finalized product auth design
+Authentication is **framework-local** (ADR-012). Django uses its built-in auth and admin; all auth/admin tables live in the `django_auth` schema.
 
 Rules:
-- Auth usage must remain minimal and explicit
-- No attempt is made to share identity with .NET
-- External identity providers are out of scope
+- Django's built-in auth is enabled for Admin and internal tooling and is the Django stack's primary identity system.
+- All auth, admin, sessions, and content-type tables are configured to live in `django_auth` — not `public`, not `domain`.
+- Domain models in `domain.*` must not declare a `ForeignKey` to `auth_user` or any `django_auth.*` table. User references on domain rows are stored as opaque `UUIDField` values (e.g. `created_by_user_id`) populated from `request.user.id` at the view layer.
+- Django authorization (groups, permissions, decorators) maps to the shared conceptual role vocabulary: Administrator, Compliance Officer, Inspector, Site Supervisor, Executive Viewer.
+- No attempt is made to share identity with the .NET or Fiber stacks. External identity providers are out of scope.
 
 Auth is considered **orthogonal infrastructure**, not domain logic.
 
@@ -159,10 +153,12 @@ An implementing agent must:
 - Reject introduction of Django signals
 - Reject business logic in views
 - Prefer model methods for domain behavior
-- Reject schema evolution ownership beyond Django’s internal tables
+- Reject any model representing a `domain.*` table that omits `Meta.managed = False` (ADR-014)
+- Reject any generated migration whose SQL targets a schema other than `django_auth`
+- Reject `ForeignKey` declarations from `domain.*` models to `auth_user` or any other `django_auth.*` table (ADR-012)
 - Fail solutions that rely on implicit framework behaviors
 
-If a solution relies on Django “magic” instead of explicit rules, it is invalid.
+If a solution relies on Django "magic" instead of explicit rules, it is invalid.
 
 ---
 

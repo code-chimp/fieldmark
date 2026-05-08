@@ -17,7 +17,8 @@
       "Bash(dotnet ef *)",
       "Bash(grep -v \"^fieldmark$\\\\|^static$\\\\|^templates$\\\\|CLAUDE\\\\|README\\\\|main\\\\|manage\\\\|mypy\\\\|pyproject\\\\|uv.lock\")",
       "Bash(git -C /Users/timothygoshinski/work/lab/htmx/fieldmark tag -a foundation -m \"Foundation: plumbing-complete, architecture-locked, ready for BMAD planning kickoff\")",
-      "Bash(git -C /Users/timothygoshinski/work/lab/htmx/fieldmark tag -l -n1 foundation)"
+      "Bash(git -C /Users/timothygoshinski/work/lab/htmx/fieldmark tag -l -n1 foundation)",
+      "Bash(docker compose *)"
     ]
   }
 }

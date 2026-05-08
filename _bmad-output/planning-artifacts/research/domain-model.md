@@ -107,17 +107,18 @@ erDiagram
 - **UUID primary keys** — all entities use UUIDs; enables cross-stack parity and offline-safe identifiers
 - **Explicit state fields** — `status` fields are enumerable and backend-controlled; no implicit transitions
 - **Compliance as a snapshot** — score is materialized, not derived live; enables auditability and historical analysis
-- **Audit events** — append-only; no foreign-key enforcement to allow schema evolution
+- **Audit events** — append-only; the `actor_id` is an opaque framework-local user reference, not a foreign key (ADR-012)
+- **Schema-owned by infrastructure** — all of these tables live in the `domain` schema, created by Postgres init scripts (ADR-013, ADR-014); no framework owns or migrates them
 
 ### Deliberately Out of Scope (ERD level)
 
-User/identity schema, roles/permissions, attachments/blobs, notification delivery, and historical versioning tables are excluded here. See the detailed entity catalog below for the full operational schema including auth integration.
+User/identity schema, roles/permissions, attachments/blobs, notification delivery, and historical versioning tables are excluded here. User and role tables are framework-local (ADR-012), not part of the shared `domain` schema; see §3.11–§3.13.
 
 ---
 
 ## 1. Purpose
 
-This document defines the domain model for FieldMark / CCIMS in enough precision that BMAD agents can implement it equivalently in either ASP.NET Core (EF Core) or Django (Django ORM) without further architectural debate. It encodes:
+This document defines the domain model for FieldMark / CCIMS in enough precision that BMAD agents can implement it equivalently in ASP.NET Core (EF Core), Django (Django ORM), or Go (Fiber + explicit SQL) without further architectural debate. It encodes:
 
 - The entity catalog and what each entity is responsible for
 - Relationships and cardinality
@@ -125,7 +126,7 @@ This document defines the domain model for FieldMark / CCIMS in enough precision
 - Domain invariants that must be enforced on the server
 - The compliance-scoring algorithm
 - The audit-trail design
-- A PostgreSQL schema sketch portable across both stacks
+- The PostgreSQL `domain` schema definition that all three stacks map to (infrastructure-owned per ADR-014)
 - A glossary of construction-compliance terminology
 
 Per ADR-011, behavior lives on the entities. There are no domain services, no repositories, no command handlers, and no anemic data classes.
@@ -222,7 +223,7 @@ A scheduled or executed inspection of a project's work in a specific trade.
 | id | UUID | yes | |
 | project_id | UUID FK | yes | |
 | trade_type_id | UUID FK | yes | |
-| inspector_id | UUID FK (User) | yes | |
+| inspector_id | UUID (opaque user ref) | yes | |
 | scheduled_for | timestamp | yes | |
 | started_at | timestamp | no | |
 | completed_at | timestamp | no | |
@@ -321,12 +322,12 @@ Submission of remediation work for a violation.
 |---|---|---|---|
 | id | UUID | yes | |
 | violation_id | UUID FK | yes | |
-| submitted_by_id | UUID FK (User) | yes | site supervisor |
+| submitted_by_id | UUID (opaque user ref) | yes | site supervisor |
 | submitted_at | timestamp | yes | |
 | description | text | yes | |
 | evidence_ref | string(500) | no | placeholder for file ref; out of MVP scope |
 | status | CorrectiveActionStatus | yes | enum: Submitted, UnderReview, Approved, Rejected |
-| reviewed_by_id | UUID FK (User) | no | |
+| reviewed_by_id | UUID (opaque user ref) | no | |
 | reviewed_at | timestamp | no | |
 | review_notes | text | no | |
 
@@ -372,7 +373,7 @@ Immutable, append-only log of every domain mutation.
 |---|---|---|---|
 | id | UUID | yes | |
 | occurred_at | timestamp | yes | server-set |
-| actor_id | UUID FK (User) | yes | |
+| actor_id | UUID (opaque user ref) | yes | |
 | action | string(64) | yes | e.g. ProjectClosed, ViolationOpened, CorrectiveActionApproved |
 | entity_type | string(64) | yes | |
 | entity_id | UUID | yes | |
@@ -383,34 +384,29 @@ Immutable, append-only log of every domain mutation.
 
 Append-only. No update or delete operations. The schema enforces this via revoked privileges in production; in dev, by application convention and tests.
 
-### 3.11 User
+### 3.11 User identity (framework-local, not a shared domain entity)
 
-| Field | Type | Required | Notes |
-|---|---|---|---|
-| id | UUID | yes | |
-| email | string(254) | yes | unique |
-| display_name | string(120) | yes | |
-| active | boolean | yes | |
+User identity is **not** part of the shared `domain` schema. Per ADR-012, each stack owns its own auth schema (`django_auth`, `dotnet_auth`, `fiber_auth`) and is responsible for the identity tables it needs there. Domain rows reference users only through opaque UUID columns (`inspector_id`, `submitted_by_id`, `reviewed_by_id`, `actor_id`, `project_inspector.user_id`); there are no foreign keys from `domain.*` to any auth schema.
 
-Authentication strategy is deferred to the architecture document. For MVP, users may be seeded.
+For MVP, each stack seeds its own user records in its own auth schema; the same UUID values are used across stacks during seeding so that audit trails remain comparable.
 
-### 3.12 Role
+### 3.12 Role vocabulary (conceptual, framework-local implementation)
 
-| Field | Type | Required | Notes |
-|---|---|---|---|
-| id | UUID | yes | |
-| code | string(32) | yes | unique: PROJECT_MANAGER, COMPLIANCE_OFFICER, SITE_SUPERVISOR, EXECUTIVE, ADMIN |
-| name | string(120) | yes | |
+Roles are defined conceptually at the product level and implemented natively by each framework's authorization machinery. The shared vocabulary is:
 
-### 3.13 UserRole (join)
+| Code | Conceptual responsibility |
+|---|---|
+| `ADMIN` | System configuration, compliance-rule changes, user management |
+| `COMPLIANCE_OFFICER` | Review and resolve violations; view audit history |
+| `INSPECTOR` | Perform inspections, record findings |
+| `SITE_SUPERVISOR` | View project compliance status, respond to violations, submit corrective actions |
+| `EXECUTIVE` | Read-only access to dashboards and reports |
 
-A user may hold multiple roles. RBAC checks are role-based, server-enforced.
+There is no shared `role` table. Django implements these as auth groups in `django_auth`; .NET implements them as ASP.NET Core authorization policies/roles in `dotnet_auth`; Fiber will implement them as middleware checks against `fiber_auth` records when auth is added.
 
-| Field | Type | Required | Notes |
-|---|---|---|---|
-| user_id | UUID FK | yes | |
-| role_id | UUID FK | yes | |
-| granted_at | timestamp | yes | |
+### 3.13 User-role assignment (framework-local)
+
+User-role assignment is whatever each framework's authorization system naturally provides — Django groups, ASP.NET Identity role claims, Fiber middleware lookups. There is no shared `user_role` table in `domain`.
 
 ---
 
@@ -421,12 +417,12 @@ Project 1 ─── * JobSite
 Project 1 ─── * Inspection
 Project 1 ─── * Violation
 Project 1 ─── * AuditEntry
-Project * ─── * TradeType   (project trade scope)
-Project * ─── * User        (assigned inspectors)
+Project * ─── * TradeType        (project_trade_scope)
+Project * ─── * (opaque user_id) (project_inspector — assigned inspectors)
 
 Inspection 1 ─── * Finding
 Inspection * ─── 1 TradeType
-Inspection * ─── 1 User     (inspector)
+Inspection ─── opaque user_id    (inspector_id; reference to framework-local auth)
 
 Finding 1 ─── 0..1 Violation (spawned)
 
@@ -434,11 +430,13 @@ Violation * ─── 1 ViolationCategory
 Violation 1 ─── * CorrectiveAction
 Violation 1 ─── 1 Finding   (origin)
 
-CorrectiveAction * ─── 1 User (submitter)
-CorrectiveAction * ─── 0..1 User (reviewer)
+CorrectiveAction ─── opaque user_id  (submitted_by_id)
+CorrectiveAction ─── opaque user_id  (reviewed_by_id, nullable)
 
-User * ─── * Role           (via UserRole)
+AuditEntry ─── opaque user_id        (actor_id)
 ```
+
+User identifiers shown as "opaque user_id" are framework-local references (ADR-012) — UUIDs sourced from `django_auth`, `dotnet_auth`, or `fiber_auth` and stored in `domain.*` without a foreign key. Role assignment is framework-local and is not represented in this diagram.
 
 ---
 
@@ -595,11 +593,17 @@ The server always:
 
 ## 8. PostgreSQL Schema Sketch
 
-This is the canonical schema. EF Core migrations and Django migrations must produce this schema; whichever stack runs `migrate` first establishes it. Schema drift between stacks is a build-blocking defect.
+This is the canonical schema for the shared business domain. All shared tables live in the `domain` schema, which is **infrastructure-owned** per ADR-014: the schema and its tables are created by hand-authored SQL under `docker/postgres/init/`, not by EF Core, Django, or Go tooling. Frameworks map to these tables (via fluent config in EF Core, `Meta.managed = False` in Django, explicit SQL in Fiber) but never create or alter them.
+
+The `domain` schema itself is created by `docker/postgres/init/001_schemas.sql` alongside the framework-local auth schemas (`django_auth`, `dotnet_auth`, `fiber_auth`, `infra`). The DDL below is what a follow-on infrastructure migration (e.g. `docker/postgres/init/010_domain_tables.sql`) would create. Schema drift between any stack and this canonical definition is a build-blocking defect.
+
+User identity lives in framework-local auth schemas, not in `domain`. Per ADR-012, all domain rows reference users only through opaque UUID columns (e.g. `inspector_id`, `submitted_by_id`, `actor_id`); there are **no foreign keys from `domain.*` to any auth schema**.
 
 ```sql
+-- All shared business tables live in the `domain` schema, created by infrastructure init scripts.
+
 -- Reference data
-CREATE TABLE trade_type (
+CREATE TABLE domain.trade_type (
     id UUID PRIMARY KEY,
     code VARCHAR(32) UNIQUE NOT NULL,
     name VARCHAR(120) NOT NULL,
@@ -607,17 +611,17 @@ CREATE TABLE trade_type (
     active BOOLEAN NOT NULL DEFAULT TRUE
 );
 
-CREATE TABLE violation_category (
+CREATE TABLE domain.violation_category (
     id UUID PRIMARY KEY,
     code VARCHAR(32) UNIQUE NOT NULL,
     name VARCHAR(200) NOT NULL,
-    trade_type_id UUID REFERENCES trade_type(id),
+    trade_type_id UUID REFERENCES domain.trade_type(id),
     default_severity VARCHAR(16) NOT NULL,
     description TEXT,
     active BOOLEAN NOT NULL DEFAULT TRUE
 );
 
-CREATE TABLE compliance_rule (
+CREATE TABLE domain.compliance_rule (
     id UUID PRIMARY KEY,
     code VARCHAR(64) UNIQUE NOT NULL,
     name VARCHAR(200) NOT NULL,
@@ -627,29 +631,16 @@ CREATE TABLE compliance_rule (
     active BOOLEAN NOT NULL DEFAULT TRUE
 );
 
--- Identity
-CREATE TABLE app_user (
-    id UUID PRIMARY KEY,
-    email VARCHAR(254) UNIQUE NOT NULL,
-    display_name VARCHAR(120) NOT NULL,
-    active BOOLEAN NOT NULL DEFAULT TRUE
-);
-
-CREATE TABLE role (
-    id UUID PRIMARY KEY,
-    code VARCHAR(32) UNIQUE NOT NULL,
-    name VARCHAR(120) NOT NULL
-);
-
-CREATE TABLE user_role (
-    user_id UUID NOT NULL REFERENCES app_user(id),
-    role_id UUID NOT NULL REFERENCES role(id),
-    granted_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-    PRIMARY KEY (user_id, role_id)
-);
+-- Identity is framework-local (see ADR-012). User identity tables live in
+-- `django_auth.*`, `dotnet_auth.*`, or `fiber_auth.*`, owned by their respective
+-- frameworks. The `domain` schema references users only via opaque UUID columns
+-- (e.g. inspector_id, submitted_by_id, actor_id) with no foreign keys to any
+-- auth schema. Conceptual roles (Administrator, Compliance Officer, Inspector,
+-- Site Supervisor, Executive Viewer) are mapped to native authorization
+-- constructs in each stack rather than stored as a shared `role` table.
 
 -- Project aggregate
-CREATE TABLE project (
+CREATE TABLE domain.project (
     id UUID PRIMARY KEY,
     code VARCHAR(32) UNIQUE NOT NULL,
     name VARCHAR(200) NOT NULL,
@@ -665,31 +656,33 @@ CREATE TABLE project (
     CHECK (status IN ('Active','OnHold','Closed'))
 );
 
-CREATE TABLE job_site (
+CREATE TABLE domain.job_site (
     id UUID PRIMARY KEY,
-    project_id UUID NOT NULL REFERENCES project(id) ON DELETE CASCADE,
+    project_id UUID NOT NULL REFERENCES domain.project(id) ON DELETE CASCADE,
     label VARCHAR(120) NOT NULL,
     address VARCHAR(300)
 );
 
-CREATE TABLE project_trade_scope (
-    project_id UUID NOT NULL REFERENCES project(id) ON DELETE CASCADE,
-    trade_type_id UUID NOT NULL REFERENCES trade_type(id),
+CREATE TABLE domain.project_trade_scope (
+    project_id UUID NOT NULL REFERENCES domain.project(id) ON DELETE CASCADE,
+    trade_type_id UUID NOT NULL REFERENCES domain.trade_type(id),
     PRIMARY KEY (project_id, trade_type_id)
 );
 
-CREATE TABLE project_inspector (
-    project_id UUID NOT NULL REFERENCES project(id) ON DELETE CASCADE,
-    user_id UUID NOT NULL REFERENCES app_user(id),
+-- project ↔ user assignment. user_id is an opaque framework-local identifier;
+-- no FK to any auth schema (ADR-012).
+CREATE TABLE domain.project_inspector (
+    project_id UUID NOT NULL REFERENCES domain.project(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL,
     PRIMARY KEY (project_id, user_id)
 );
 
 -- Inspection aggregate
-CREATE TABLE inspection (
+CREATE TABLE domain.inspection (
     id UUID PRIMARY KEY,
-    project_id UUID NOT NULL REFERENCES project(id),
-    trade_type_id UUID NOT NULL REFERENCES trade_type(id),
-    inspector_id UUID NOT NULL REFERENCES app_user(id),
+    project_id UUID NOT NULL REFERENCES domain.project(id),
+    trade_type_id UUID NOT NULL REFERENCES domain.trade_type(id),
+    inspector_id UUID NOT NULL,                       -- opaque user reference; no FK
     scheduled_for TIMESTAMPTZ NOT NULL,
     started_at TIMESTAMPTZ,
     completed_at TIMESTAMPTZ,
@@ -704,10 +697,10 @@ CREATE TABLE inspection (
     CHECK ((status = 'Completed') = (completed_at IS NOT NULL))
 );
 
-CREATE TABLE finding (
+CREATE TABLE domain.finding (
     id UUID PRIMARY KEY,
-    inspection_id UUID NOT NULL REFERENCES inspection(id),
-    violation_category_id UUID NOT NULL REFERENCES violation_category(id),
+    inspection_id UUID NOT NULL REFERENCES domain.inspection(id),
+    violation_category_id UUID NOT NULL REFERENCES domain.violation_category(id),
     severity VARCHAR(16) NOT NULL,
     description TEXT NOT NULL,
     spawned_violation_id UUID,
@@ -715,11 +708,11 @@ CREATE TABLE finding (
 );
 
 -- Violation aggregate
-CREATE TABLE violation (
+CREATE TABLE domain.violation (
     id UUID PRIMARY KEY,
-    project_id UUID NOT NULL REFERENCES project(id),
-    origin_finding_id UUID NOT NULL REFERENCES finding(id),
-    violation_category_id UUID NOT NULL REFERENCES violation_category(id),
+    project_id UUID NOT NULL REFERENCES domain.project(id),
+    origin_finding_id UUID NOT NULL REFERENCES domain.finding(id),
+    violation_category_id UUID NOT NULL REFERENCES domain.violation_category(id),
     severity VARCHAR(16) NOT NULL,
     status VARCHAR(16) NOT NULL,
     opened_at TIMESTAMPTZ NOT NULL,
@@ -737,19 +730,19 @@ CREATE TABLE violation (
 );
 
 -- back-fill the FK from finding once violation exists
-ALTER TABLE finding
+ALTER TABLE domain.finding
   ADD CONSTRAINT finding_spawned_violation_fk
-  FOREIGN KEY (spawned_violation_id) REFERENCES violation(id);
+  FOREIGN KEY (spawned_violation_id) REFERENCES domain.violation(id);
 
-CREATE TABLE corrective_action (
+CREATE TABLE domain.corrective_action (
     id UUID PRIMARY KEY,
-    violation_id UUID NOT NULL REFERENCES violation(id),
-    submitted_by_id UUID NOT NULL REFERENCES app_user(id),
+    violation_id UUID NOT NULL REFERENCES domain.violation(id),
+    submitted_by_id UUID NOT NULL,                    -- opaque user reference; no FK
     submitted_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     description TEXT NOT NULL,
     evidence_ref VARCHAR(500),
     status VARCHAR(16) NOT NULL,
-    reviewed_by_id UUID REFERENCES app_user(id),
+    reviewed_by_id UUID,                              -- opaque user reference; no FK
     reviewed_at TIMESTAMPTZ,
     review_notes TEXT,
     CHECK (status IN ('Submitted','UnderReview','Approved','Rejected')),
@@ -757,56 +750,60 @@ CREATE TABLE corrective_action (
 );
 
 -- Audit
-CREATE TABLE audit_entry (
+CREATE TABLE domain.audit_entry (
     id UUID PRIMARY KEY,
     occurred_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-    actor_id UUID NOT NULL REFERENCES app_user(id),
+    actor_id UUID NOT NULL,                           -- opaque user reference; no FK
     action VARCHAR(64) NOT NULL,
     entity_type VARCHAR(64) NOT NULL,
     entity_id UUID NOT NULL,
-    project_id UUID REFERENCES project(id),
+    project_id UUID REFERENCES domain.project(id),
     before_state JSONB,
     after_state JSONB,
     metadata JSONB
 );
 
-CREATE INDEX idx_audit_entity ON audit_entry (entity_type, entity_id);
-CREATE INDEX idx_audit_project ON audit_entry (project_id, occurred_at DESC);
+CREATE INDEX idx_audit_entity ON domain.audit_entry (entity_type, entity_id);
+CREATE INDEX idx_audit_project ON domain.audit_entry (project_id, occurred_at DESC);
 
 -- Useful indexes
-CREATE INDEX idx_inspection_project_status ON inspection (project_id, status);
-CREATE INDEX idx_violation_project_status ON violation (project_id, status);
-CREATE INDEX idx_violation_due ON violation (due_at) WHERE status IN ('Open','InProgress');
+CREATE INDEX idx_inspection_project_status ON domain.inspection (project_id, status);
+CREATE INDEX idx_violation_project_status ON domain.violation (project_id, status);
+CREATE INDEX idx_violation_due ON domain.violation (due_at) WHERE status IN ('Open','InProgress');
 ```
 
 **Cross-stack notes**
 
-- Both EF Core and Django ORM map enum-like fields to VARCHAR with CHECK constraints rather than PostgreSQL native ENUM types. Native enums make schema evolution painful and migrate inconsistently across stacks.
+- The `domain` schema is created by `docker/postgres/init/001_schemas.sql` alongside `django_auth`, `dotnet_auth`, `fiber_auth`, and `infra` (ADR-013). The DDL above is authored as additional infrastructure migration files in the same directory and is the only mechanism by which `domain.*` tables come into existence.
+- EF Core, Django ORM, and Fiber data access **map** to these tables; they do not create them. EF Core uses `ToTable("project", "domain")` plus `UseSnakeCaseNamingConvention()`. Django uses `Meta.managed = False` and an explicit cross-schema `db_table` reference. Fiber writes explicit SQL against `domain.<table>`.
+- All three stacks map enum-like fields to VARCHAR with CHECK constraints rather than PostgreSQL native ENUM types. Native enums make schema evolution painful and migrate inconsistently across stacks.
 - UUIDs are generated in application code (not via `gen_random_uuid()`) so behavior is identical across stacks.
 - All timestamps are TIMESTAMPTZ. UTC at the database; local rendering at the UI.
-- Partial indexes (e.g., `idx_violation_due ... WHERE status IN ('Open','InProgress')`) are supported by both EF Core (`HasFilter(...)`) and Django (`Index(condition=...)`). Cross-stack symmetry on partial indexes is required; verify both migrations produce the same `pg_indexes` output.
+- Partial indexes (e.g., `idx_violation_due ... WHERE status IN ('Open','InProgress')`) are part of the infrastructure migration. EF Core (`HasFilter(...)`) and Django (`Index(condition=...)`) are configured to *expect* this index without re-creating it; Fiber simply queries against it. A `pg_indexes` snapshot is the cross-stack truth.
 - The `corrective_action` `CHECK (submitted_by_id <> reviewed_by_id OR reviewed_by_id IS NULL)` is defense-in-depth. Primary enforcement happens in `CorrectiveAction.take_for_review` (§3.8 invariant). The CHECK protects against direct SQL or migration mistakes.
-- Schema-only join entities (`project_trade_scope`, `project_inspector`, `user_role`) are not modeled as separate ORM entities in §3 — they are surfaces of `Project ↔ TradeType`, `Project ↔ User`, and `User ↔ Role` many-to-many relationships. Both stacks model them as M2M relationships (EF Core's many-to-many or join entity, Django's `ManyToManyField`).
+- Join tables `domain.project_trade_scope` and `domain.project_inspector` exist physically in the schema. ORMs in .NET and Django can model the project-trade relationship as many-to-many; `domain.project_inspector` is a join over an opaque `user_id` (not a FK) and is best modeled in each stack as an explicit assignment entity, not an ORM-managed M2M to a user table.
 
 ---
 
 ## 9. Naming Conventions
 
-Django is more opinionated about naming than .NET and its conventions align with PostgreSQL community norms. **Django's `snake_case` is therefore the canonical form** for all database-level and wire-format names. .NET maps its idiomatic `PascalCase` to that canonical form explicitly via ORM configuration. A schema diff between the two stacks must produce zero naming differences.
+Django is more opinionated about naming than .NET and its conventions align with PostgreSQL community norms. **Django's `snake_case` is therefore the canonical form** for all database-level and wire-format names. .NET maps its idiomatic `PascalCase` to that canonical form explicitly via ORM configuration; Fiber writes SQL directly against the canonical form. A schema diff across all three stacks must produce zero naming differences.
 
-### Database table names
+### Database schema and table names
 
-Tables use **unqualified `snake_case`** — e.g. `project`, `inspection`, `violation`, `corrective_action`.
+Shared business tables live in the **`domain`** schema (ADR-014); their names are **`snake_case`** — e.g. `domain.project`, `domain.inspection`, `domain.violation`, `domain.corrective_action`. Framework-local auth tables live in `django_auth.*`, `dotnet_auth.*`, or `fiber_auth.*` and follow the same `snake_case` convention.
 
-- **Django:** override the default `<app>_<model>` prefix by setting `db_table` in the model's `Meta` class:
+- **Django:** override the default `<app>_<model>` prefix by setting `db_table` and configure the schema by quoting it (or via the project's adopted `search_path` / cross-schema convention). Domain models also set `managed = False`:
   ```python
   class Meta:
-      db_table = "project"
+      managed = False
+      db_table = 'domain"."project'
   ```
-- **.NET:** set the table name explicitly in fluent configuration:
+- **.NET:** set the schema and table name explicitly in fluent configuration. The schema argument is mandatory — a `ToTable("project")` without the schema would default to `public` and is incorrect:
   ```csharp
-  modelBuilder.Entity<Project>().ToTable("project");
+  modelBuilder.Entity<Project>().ToTable("project", "domain");
   ```
+- **Go (Fiber):** all SQL references the table in fully qualified form (`domain.project`). There is no naming-convention layer to configure.
 
 ### Database column names
 
@@ -818,15 +815,17 @@ All columns use **`snake_case`** — e.g. `compliance_score`, `started_at`, `pro
   protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
       => optionsBuilder.UseSnakeCaseNamingConvention();
   ```
+- **Go (Fiber):** SQL is hand-written against the existing `snake_case` columns; no convention layer is needed.
 
-### Entity / model class names
+### Entity / model / struct names
 
-**`PascalCase`** in both stacks — e.g. `Project`, `CorrectiveAction`. This is natural for both C# and Python.
+**`PascalCase`** across all stacks — e.g. `Project`, `CorrectiveAction`. This is natural for C#, Python, and exported Go identifiers.
 
 ### Field / property names in code
 
 - **Django:** `snake_case` — natural.
 - **.NET:** `PascalCase` in C# — e.g. `ComplianceScore`, `StartedAt`. The ORM configuration (above) bridges to the `snake_case` column name automatically.
+- **Go (Fiber):** exported struct fields are `PascalCase` (`ComplianceScore`, `StartedAt`); SQL queries reference the underlying `snake_case` columns directly. Map struct tags or scan helpers bridge the two.
 
 ### Enum storage and wire format
 
@@ -845,12 +844,13 @@ All enum values are stored in the database and returned on the wire as **`SCREAM
   // and configure globally: .HasConversion(e => e.ToString(), s => Enum.Parse<ViolationStatus>(s))
   ```
   Enum member names in C# must exactly match the `SCREAMING_SNAKE_CASE` string or a converter must be explicit.
+- **Go (Fiber):** define enums as named string types with constants whose values are the `SCREAMING_SNAKE_CASE` strings; scan and bind directly as strings.
 
 ### Domain method names
 
-The **canonical list of state-transition methods** (see §3 entity catalog) uses `snake_case` as the ground truth, since that is Django's natural casing. The .NET equivalent is the `PascalCase` counterpart — a 1:1 mapping with no divergence in semantics.
+The **canonical list of state-transition methods** (see §3 entity catalog) uses `snake_case` as the ground truth, since that is Django's natural casing. The .NET and Go equivalents are the `PascalCase` counterparts — 1:1 mappings with no divergence in semantics.
 
-| Canonical (`snake_case`) | .NET (`PascalCase`) |
+| Canonical (`snake_case`) | .NET / Go (`PascalCase`) |
 |---|---|
 | `start` | `Start` |
 | `complete` | `Complete` |
@@ -874,6 +874,7 @@ All JSON response fields use **`snake_case`** — e.g. `{ "compliance_score": 87
   builder.Services.Configure<JsonOptions>(o =>
       o.SerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower);
   ```
+- **Go (Fiber):** use `snake_case` `json:"..."` struct tags on response DTOs.
 
 ---
 

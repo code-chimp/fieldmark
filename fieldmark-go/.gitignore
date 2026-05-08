@@ -1,11 +1,14 @@
-# Compiled binary (matches directory/module name)
+# Compiled binaries
 fieldmark-go
+/web
+cmd/web/web
 
 # Build output directory
 bin/
 
-# Vendored dependencies (if using go mod vendor)
-vendor/
+# Vendored Go module dependencies (go mod vendor)
+# Root-anchored so it does not exclude internal/web/static/vendor/
+/vendor/
 
 # Test binaries and coverage artifacts
 *.test

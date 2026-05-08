@@ -6,3 +6,4 @@
    Paths are relative to this file (fieldmark_style/src/). */
 @source "../../FieldMark/FieldMark.Web/Pages/**/*.cshtml";
 @source "../../fieldmark_py/templates/**/*.html";
+@source "../../fieldmark-go/internal/web/templates/**/*.html";

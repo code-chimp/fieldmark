@@ -15,7 +15,7 @@ The .NET implementation must:
 - Centralize business rules in the domain
 - Treat persistence and UI as adapters
 - Avoid client‑side or framework‑driven orchestration
-- Remain symmetrical (conceptually) with the Django implementation
+- Remain symmetrical (conceptually) with the Django and Go (Fiber) implementations
 
 Complexity is opt‑in and must be justified explicitly.
 
@@ -65,19 +65,20 @@ Dependency rule:
 ### FieldMark.Data
 
 Role:
-- Persistence adapter
+- Persistence adapter mapping to the infrastructure-owned `domain.*` schema and to the framework-local `dotnet_auth.*` schema
 
 Contains:
 - DbContext
 - DbSet declarations
-- EF Core configuration
-- Mappings
+- EF Core configuration (fluent mappings, value converters, naming conventions)
+- Mappings of domain entities to existing `domain.*` tables
 - Database-specific concerns
 
 Must NOT contain:
 - Business rules
 - Workflow logic
 - UI logic
+- Migrations that create or alter tables in the `domain` schema (see ADR-014)
 
 Dependencies:
 - References FieldMark.Domain
@@ -86,6 +87,7 @@ Allowed NuGet packages:
 - Microsoft.EntityFrameworkCore
 - Microsoft.EntityFrameworkCore.Design
 - Npgsql.EntityFrameworkCore.PostgreSQL
+- EFCore.NamingConventions (for `UseSnakeCaseNamingConvention()`)
 
 ---
 
@@ -138,12 +140,15 @@ If a dependency violates this direction, it is architecturally invalid.
 
 ## Database & Persistence Policy
 
-- PostgreSQL is the sole persistence engine
-- Database is the **system of record**
-- EF Core migrations own domain schema evolution
-- Django migrations own only Django-specific tables
-
-No dual ownership of domain tables is allowed.
+- PostgreSQL is the sole persistence engine.
+- The database is the **system of record**.
+- The `domain` schema is **infrastructure-owned** (ADR-014). It is created by the Postgres init scripts in `docker/postgres/init/` and evolved by hand-authored infrastructure SQL. EF Core does **not** own, create, or migrate `domain.*` tables.
+- EF Core migrations are scoped exclusively to the `dotnet_auth` schema (ADR-012). Any migration that touches `domain.*` is a defect.
+- EF Core entities map to the existing `domain.*` tables via explicit fluent configuration:
+  - `optionsBuilder.UseSnakeCaseNamingConvention()` is required globally.
+  - Each entity uses `ToTable("project", "domain")` (or equivalent) so the schema and snake_case table name match the infrastructure-defined schema exactly.
+  - Enum properties use `HasConversion<string>()` to match the `SCREAMING_SNAKE_CASE` storage form (see `domain-model.md` §9).
+- No dual ownership of domain tables is allowed across stacks; `EnsureCreated()` and ad-hoc DDL against `domain.*` are forbidden.
 
 ---
 
@@ -160,18 +165,14 @@ Example location of registration:
 
 ## Authentication & Authorization Policy
 
-Current status: **Deferred by design**
+Authentication is **framework-local** (ADR-012). The .NET stack will use ASP.NET Core Identity when it adopts authentication; Identity tables live in the `dotnet_auth` schema, which is the only schema EF Core migrations are permitted to touch.
 
 Rules:
-- Authentication must not be scaffolded during project creation
-- ASP.NET Core Identity must not be introduced until:
-  - Domain schema is stable
-  - Migration ownership is explicit
-  - Architectural rules are locked
-
-Django auth/admin is treated as platform tooling only.
-
-Identity systems must not be shared across stacks for this project.
+- Authentication must not be scaffolded during project creation; it is added deliberately as a later milestone.
+- When ASP.NET Core Identity is introduced, all Identity tables map to `dotnet_auth.*` (e.g. `optionsBuilder.UseSnakeCaseNamingConvention()` plus explicit `ToTable("aspnet_users", "dotnet_auth")` and equivalents). Identity schemas must never spill into `domain` or any other framework's auth schema.
+- Domain tables in `domain.*` must not foreign-key any `dotnet_auth.*` table. User references on domain rows are stored as opaque UUIDs (e.g. `created_by_user_id`).
+- Authorization policies and roles align with the shared conceptual role vocabulary (Administrator, Compliance Officer, Inspector, Site Supervisor, Executive Viewer); the implementation is native ASP.NET Core authorization.
+- Identity systems must not be shared across stacks. Django auth lives in `django_auth`, Fiber auth in `fiber_auth`.
 
 ---
 
@@ -195,6 +196,9 @@ An implementing agent must:
 - Reject additions of EF Core to Domain
 - Reject Domain references to Data or Web
 - Reject introduction of repositories or mediators
+- Reject any EF Core migration that creates, alters, or drops a table in the `domain` schema (ADR-014)
+- Reject any model configuration that omits explicit `ToTable("...", "domain")` or that relies on `EnsureCreated()` for `domain.*`
+- Reject FK relationships from `domain.*` entities to `dotnet_auth.*` Identity entities (ADR-012)
 - Prefer modifying structure over adding abstractions
 - Fail designs that require explanation of architectural patterns
 

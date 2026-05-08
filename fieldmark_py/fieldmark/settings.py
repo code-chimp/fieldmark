@@ -87,6 +87,12 @@ DATABASES = {
         "PASSWORD": "fieldmark",
         "HOST": "localhost",
         "PORT": "5432",
+        "OPTIONS": {
+            # Route all unqualified table names (Django's own framework tables)
+            # into the django_auth schema. Domain models use schema-qualified
+            # db_table values and are unaffected by this setting.
+            "options": "-c search_path=django_auth,public"
+        },
     }
 }
 

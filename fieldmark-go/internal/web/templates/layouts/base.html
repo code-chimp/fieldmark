@@ -1,0 +1,29 @@
+{{define "base"}}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{block "title" .}}FieldMark{{end}} — FieldMark</title>
+    <link rel="stylesheet" href="/static/vendor/fieldmark.css">
+    {{block "extra_css" .}}{{end}}
+</head>
+<body>
+
+{{template "header" .}}
+
+<main class="container mx-auto px-4 py-6">
+    {{block "content" .}}{{end}}
+</main>
+
+{{template "footer" .}}
+
+{{/* AG Grid must load before HTMX so grid initialisation in HTMX-swapped
+     fragments can reference the agGrid global immediately. */}}
+<script src="/static/vendor/ag-grid/35.2.1/ag-grid-community.min.js"></script>
+<script src="/static/vendor/htmx/htmx.min.js"></script>
+{{block "scripts" .}}{{end}}
+
+</body>
+</html>
+{{end}}

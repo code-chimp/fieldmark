@@ -11,6 +11,13 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      # SQL files in ./docker/postgres/init are executed in lexical order on
+      # FIRST container startup only (when postgres_data is empty). They create
+      # the FieldMark schemas (domain, django_auth, dotnet_auth, fiber_auth,
+      # infra) per ADR-013. If you change the init scripts after the volume
+      # exists, run `docker compose down -v && docker compose up -d` to
+      # recreate it — Postgres will not re-run the scripts otherwise.
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d
 
 volumes:
   postgres_data:
