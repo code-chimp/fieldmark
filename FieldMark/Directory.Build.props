@@ -1,0 +1,31 @@
+<Project>
+  <PropertyGroup>
+    <!--
+      Solution-wide defaults. Override in individual .csproj only when there is
+      a documented reason — e.g. generated code projects that can't be made clean.
+    -->
+
+    <!-- Nullable reference types: warnings become errors via TreatWarningsAsErrors -->
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+
+    <!--
+      All compiler warnings are errors. This keeps the build honest — a warning
+      that is tolerated quietly will eventually become noise that is ignored.
+    -->
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+
+    <!--
+      Enable the Roslyn recommended platform analyzer rules.
+      "Recommended" is a superset of the default rules and a subset of "All".
+      It catches real bugs (CA rules) without flooding the build with pedantic style notes.
+    -->
+    <AnalysisMode>Recommended</AnalysisMode>
+
+    <!--
+      Makes .editorconfig IDE-style rules (IDE0xxx) run at build time as diagnostics.
+      Without this, style rules only fire inside the IDE, not in dotnet build / CI.
+    -->
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+  </PropertyGroup>
+</Project>

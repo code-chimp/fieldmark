@@ -83,7 +83,7 @@ Cannot be relaxed without an ADR amendment:
 
 - **Backend authority.** Domain rules, transitions, validation, authorization — server only.
 - **Infrastructure-owned domain schema.** The `domain` schema is created by SQL init scripts in `docker/postgres/init/`, not by any framework's migration tooling. Framework migrations touch only their own auth schema.
-- **No service layer** between handler and entity.
+- **No fat service layers.** In .NET and Django, handlers/views call entity methods directly — no intermediate service class owns domain logic. Go uses a thin `app` coordination layer by design (explicit dependency wiring); it must not contain business rules.
 - **No repository or Unit-of-Work abstractions.** Use `DbContext` / ORM / explicit SQL directly.
 - **No CQRS, MediatR, or in-process buses.**
 - **No client-side state stores.** No Redux, Zustand, Pinia, NgRx, Signals, or equivalents.

@@ -18,7 +18,12 @@
       "Bash(grep -v \"^fieldmark$\\\\|^static$\\\\|^templates$\\\\|CLAUDE\\\\|README\\\\|main\\\\|manage\\\\|mypy\\\\|pyproject\\\\|uv.lock\")",
       "Bash(git -C /Users/timothygoshinski/work/lab/htmx/fieldmark tag -a foundation -m \"Foundation: plumbing-complete, architecture-locked, ready for BMAD planning kickoff\")",
       "Bash(git -C /Users/timothygoshinski/work/lab/htmx/fieldmark tag -l -n1 foundation)",
-      "Bash(docker compose *)"
+      "Bash(docker compose *)",
+      "mcp__286cfed9-d068-4a5c-94c8-640fb1818274__resolve-library-id",
+      "mcp__286cfed9-d068-4a5c-94c8-640fb1818274__query-docs",
+      "Bash(dotnet new *)",
+      "Bash(dotnet tool *)",
+      "Bash(dotnet csharpier *)"
     ]
   }
 }

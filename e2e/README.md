@@ -1,6 +1,6 @@
 # FieldMark E2E (Playwright)
 
-Shared browser tests for **.NET**, **Django**, and **Fiber** stacks. Same specs under `tests/shared/` run once per backend Playwright **project** with different `baseURL`. See [docs/FieldMark_Project_Level_Playwright_E2E_Harness.md](../docs/FieldMark_Project_Level_Playwright_E2E_Harness.md) and [_bmad-output/planning-artifacts/research/playwright-e2e-philosophy.md](../_bmad-output/planning-artifacts/research/playwright-e2e-philosophy.md).
+Shared browser tests for **.NET**, **Django**, and **Fiber** stacks. Same specs under `tests/shared/` run once per backend Playwright **project** with different `baseURL`. See [_bmad-output/planning-artifacts/research/playwright-e2e-philosophy.md](../_bmad-output/planning-artifacts/research/playwright-e2e-philosophy.md) for the guiding philosophy.
 
 ## Prerequisites
 

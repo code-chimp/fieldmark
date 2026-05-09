@@ -166,15 +166,7 @@ The server starts on [http://localhost:3000](http://localhost:3000).
 
 ## Current State
 
-The application is a skeleton. The Fiber server starts and serves a single route. No domain logic, templates, or database connectivity has been wired yet — those follow once planning artifacts are finalized.
-
-Standup is complete when:
-- [ ] Folder layout matches the structure above
-- [ ] Postgres connection is validated on startup
-- [ ] Base layout template renders
-- [ ] One full-page route works
-- [ ] One HTMX fragment route works
-- [ ] Static assets (vendored HTMX, AG Grid, Tailwind output) are served
+Standup is complete. The Fiber server starts, validates the Postgres connection, serves static assets, and renders a full-page dashboard route and one HTMX fragment route (`/fragments/compliance-tile`). Folder layout matches the structure above. Domain implementation begins with the first feature story.
 
 ---
 
@@ -210,4 +202,4 @@ All in [`_bmad-output/planning-artifacts/research/`](../_bmad-output/planning-ar
 | `dotnet-reference.md` | .NET stack guardrails (useful for cross-stack parity reference) |
 | `django-reference.md` | Django stack guardrails (useful for cross-stack parity reference) |
 
-Stack-specific architecture and standup guidance: [`docs/FieldMark_Fiber_Architecture_and_Standup_Guide.md`](../docs/FieldMark_Fiber_Architecture_and_Standup_Guide.md)
+Stack-specific architecture reference: [`_bmad-output/planning-artifacts/research/fiber-reference.md`](../_bmad-output/planning-artifacts/research/fiber-reference.md)

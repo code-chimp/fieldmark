@@ -308,6 +308,8 @@ internal/data/postgres/stores/project_store_test.go   # when exercising SQL-back
 
 **Persistence in tests:** the Fiber stack does **not** mock the database—tests that hit Postgres use a **real PostgreSQL** instance (see root `CLAUDE.md`). Pure domain logic tests may run without a database.
 
+**Transaction integrity is a required test target:** verify that `AuditEntry` inserts land in the same `pgx` transaction as the triggering store write, and that returning an error from a domain method causes a full rollback with no partial state. Use `pgx` transaction helpers directly in test setup; do not mock at the store boundary.
+
 **Commands:** `go test ./...` from `fieldmark-go/` (see stack `Makefile` / `CLAUDE.md` for QA runners combined with fmt/vet/staticcheck).
 
 ---

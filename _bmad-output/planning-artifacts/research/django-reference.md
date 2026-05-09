@@ -174,7 +174,9 @@ Unit tests validate **domain rules and application-oriented helpers**, not templ
 
 **Do not unit-test as primary subjects:** Django templates; Admin chrome; URL routing configuration; HTMX endpoint wiring.
 
-**Persistence in tests:** this repository requires **real PostgreSQL** for tests that touch the database (**no SQLite**). Prefer fast tests that exercise pure logic without the ORM when possible; when the database is required, run against the shared Postgres instance (e.g. local Docker) per root `CLAUDE.md`.
+**Persistence in tests:** this repository requires **real PostgreSQL** for tests that touch the database (**no SQLite**). Prefer fast tests that exercise pure logic without the ORM when possible; when the database is required, use `@pytest.mark.django_db` against the shared Postgres instance (local Docker) per root `CLAUDE.md`.
+
+**Transaction integrity is a required test target:** verify that `AuditEntry` writes land in the same `transaction.atomic()` block as the triggering model-method write, and that a domain exception causes a full rollback with no partial state persisted. These tests use `@pytest.mark.django_db(transaction=True)` to exercise real commit/rollback semantics.
 
 ---
 

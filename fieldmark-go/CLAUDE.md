@@ -13,7 +13,7 @@ go run ./cmd/web/
 go build -o fieldmark-go ./cmd/web/
 ```
 
-### QA (see `docs/FieldMark_Per_Language_QA_Checklist.md` — Go)
+### QA (see `docs/FieldMark_Unit_Testing_Strategy.md` for the project-wide testing strategy)
 
 Tool versions are pinned in `go.mod` / `go.sum` via the root `tool (...)` block. Run CLI tools without global installs:
 
@@ -152,4 +152,4 @@ Password: fieldmark
 
 - `_bmad-output/planning-artifacts/research/fiber-reference.md` — full Go/Fiber guardrails (authoritative)
 - `_bmad-output/planning-artifacts/research/architecture-decisions.md` — ADRs and hard constraints
-- `docs/FieldMark_Fiber_Architecture_and_Standup_Guide.md` — standup guide and architecture narrative
+- `docs/FieldMark_Unit_Testing_Strategy.md` — project-wide testing strategy and standards

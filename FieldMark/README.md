@@ -4,7 +4,7 @@ The .NET implementation of FieldMark, built with ASP.NET Core Razor Pages, EF Co
 
 ## Architecture
 
-This solution follows a server-authoritative, domain-centric architecture. The domain owns all business rules, state transitions, and invariants. Persistence and UI are adapters. Detailed rationale is in `docs/FieldMark_DotNet_Architecture_Reference.md` and `docs/architecture.md` at the repo root.
+This solution follows a server-authoritative, domain-centric architecture. The domain owns all business rules, state transitions, and invariants. Persistence and UI are adapters. Detailed rationale is in `_bmad-output/planning-artifacts/research/dotnet-reference.md` and `_bmad-output/planning-artifacts/research/architecture-decisions.md`.
 
 ### Solution Structure
 
@@ -18,16 +18,22 @@ FieldMark.sln
 │   └── Configuration/        IEntityTypeConfiguration<T> per entity
 │                           References: FieldMark.Domain
 │
-└── FieldMark.Web/          ASP.NET Core Razor Pages — composition root
-    ├── Pages/                Razor Pages grouped by domain area
-    │   └── Shared/           Layouts, partials
-    │   (Project/, Admin/, etc. added as domain is implemented)
-    ├── wwwroot/
-    │   ├── css/
-    │   ├── js/               AG Grid wiring, UX helpers
-    │   └── lib/              HTMX, Bootstrap, jQuery
-    └── Program.cs            DI registration, middleware, startup
-                            References: FieldMark.Domain, FieldMark.Data
+├── FieldMark.Web/          ASP.NET Core Razor Pages — composition root
+│   ├── Pages/                Razor Pages grouped by domain area
+│   │   └── Shared/           Layouts, partials
+│   ├── wwwroot/
+│   │   ├── css/
+│   │   ├── js/               AG Grid wiring, UX helpers
+│   │   └── lib/              HTMX, AG Grid (vendored)
+│   └── Program.cs            DI registration, middleware, startup
+│                           References: FieldMark.Domain, FieldMark.Data
+│
+├── FieldMark.Tests.Domain/       xUnit domain unit tests (no I/O)
+│                               References: FieldMark.Domain
+│
+└── FieldMark.Tests.Integration/  xUnit integration tests
+                                References: FieldMark.Domain, FieldMark.Data
+                                Uses Testcontainers.PostgreSql for real DB
 ```
 
 ### Dependency Direction (Hard Rule)
@@ -52,8 +58,8 @@ If a dependency violates this direction, it is architecturally invalid.
 | ORM | EF Core | 10.0.7 |
 | Database driver | Npgsql | 10.0.1 |
 | Database | PostgreSQL | 17 |
-| Interactivity | HTMX | 2.x |
-| Data grids | AG Grid Community | 32.x |
+| Interactivity | HTMX | 4.x |
+| Data grids | AG Grid Community | 35.x |
 
 ## Prerequisites
 
@@ -139,12 +145,13 @@ For AG Grid views, minimal API endpoints return paginated JSON using the server-
 
 ## Parity
 
-This implementation must remain structurally equivalent to the Django stack at all times. Routes, HTMX target IDs, AG Grid endpoint contracts, audit entry shapes, and domain method names must match (modulo language casing conventions). A story is not done until both stacks pass it.
+This implementation must remain structurally equivalent to the Django and Go stacks at all times. Routes, HTMX target IDs, AG Grid endpoint contracts, audit entry shapes, and domain method names must match across all three stacks (modulo language casing conventions). A story is not done until all three stacks pass it.
 
 ## Related Documentation
 
 - [Root README](../README.md) — project overview, thesis, domain summary
-- [Django README](../fieldmark_py/README.md) — the parallel Python implementation
-- [Architecture](../docs/architecture.md) — full architecture with data flow patterns
-- [Domain Model](../docs/domain-model.md) — entities, state machines, schema
-- [.NET Architecture Reference](../docs/FieldMark_DotNet_Architecture_Reference.md) — .NET-specific guardrails
+- [Django README](../fieldmark_py/README.md) — the parallel Python/Django implementation
+- [Go README](../fieldmark-go/README.md) — the parallel Go/Fiber implementation
+- [Domain Model](../_bmad-output/planning-artifacts/research/domain-model.md) — entities, state machines, schema
+- [.NET Architecture Reference](../_bmad-output/planning-artifacts/research/dotnet-reference.md) — .NET-specific guardrails
+- [Architecture Decisions](../_bmad-output/planning-artifacts/research/architecture-decisions.md) — ADRs and hard constraints

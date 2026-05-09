@@ -1,0 +1,24 @@
+# fieldmark-go/.editorconfig — Go / Fiber overrides
+# Inherits universal defaults from the root .editorconfig.
+# Go source MUST use hard tabs — gofmt enforces this unconditionally.
+
+# Go source files
+[*.go]
+indent_style = tab
+# tab_width controls how editors display the tab character; 4 matches gofmt output
+indent_size = 4
+
+# Go module and sum files
+[go.{mod,sum}]
+indent_style = tab
+indent_size = 4
+
+# HTML templates (Fiber / Go html/template)
+# 2-space indent consistent with Django templates and web conventions
+[*.html]
+indent_size = 2
+
+# Makefile — tabs required (already covered by root, explicit here for clarity)
+[{Makefile,makefile}]
+indent_style = tab
+indent_size = 4

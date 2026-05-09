@@ -1,0 +1,11 @@
+# e2e/.editorconfig — Playwright / TypeScript overrides
+# Inherits universal defaults from the root .editorconfig.
+# 2-space indent is standard across the JS/TS ecosystem.
+
+# TypeScript and JavaScript source files
+[*.{ts,tsx,js,mjs,cjs}]
+indent_size = 2
+
+# Playwright config and tsconfig
+[*.{json,jsonc}]
+indent_size = 2

@@ -1,6 +1,3 @@
 ﻿namespace FieldMark.Domain.ValueObjects;
 
-public class ValueObjClass
-{
-    
-}
+public class ValueObjClass { }

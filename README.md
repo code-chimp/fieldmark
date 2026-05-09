@@ -31,12 +31,16 @@ fieldmark/
 ├── FieldMark/              .NET solution (Razor Pages + HTMX)
 │   ├── FieldMark.Domain/     Domain entities and behavior
 │   ├── FieldMark.Data/       EF Core persistence
-│   └── FieldMark.Web/        Razor Pages composition root
+│   ├── FieldMark.Web/        Razor Pages composition root
+│   ├── FieldMark.Tests.Domain/       xUnit domain unit tests
+│   └── FieldMark.Tests.Integration/  xUnit integration tests (Testcontainers)
 ├── fieldmark_py/           Django project (Templates + HTMX)
 │   └── fieldmark/            Django project package
 ├── fieldmark-go/           Go project (Fiber + HTMX)
 │   ├── cmd/web/              Entry point
 │   └── internal/             Domain, app, data, and web layers
+├── fieldmark_style/        Shared CSS source (Tailwind v4)
+├── e2e/                    Shared Playwright browser tests (all three backends)
 ├── docker/
 │   └── postgres/
 │       └── init/             Schema init SQL — runs on first Postgres startup
@@ -54,7 +58,7 @@ Each stack has its own README with setup instructions:
 
 | Component | .NET | Django | Go |
 |---|---|---|---|
-| Runtime | .NET 10 | Python 3.14+ | Go 1.24+ |
+| Runtime | .NET 10 | Python 3.14+ | Go 1.26+ |
 | Web framework | ASP.NET Core Razor Pages | Django 6.x | Fiber v3 |
 | ORM / data access | EF Core 10 | Django ORM | Explicit SQL via stores |
 | Database | PostgreSQL 17 | PostgreSQL 17 | PostgreSQL 17 |
@@ -107,7 +111,7 @@ This starts PostgreSQL 17 on port 5432, runs the schema init scripts, and makes 
 
 ## Status
 
-FieldMark is in active pre-planning. Project structure, domain model, and architectural decisions are established. Feature implementation begins after planning artifacts are finalized.
+Pre-kickoff planning is complete. Project structure, domain model, architectural decisions, and stack scaffolding are established. Feature implementation is in progress across all three stacks.
 
 ## License
 

@@ -1,0 +1,24 @@
+# fieldmark_py/.editorconfig — Django / Python overrides
+# Inherits universal defaults from the root .editorconfig.
+# Aligned with PEP 8, black (line length 88), and ruff defaults.
+
+# Python source files
+[*.py]
+indent_size = 4
+max_line_length = 88
+
+# Django HTML templates — follow HTML/web convention of 2-space indent
+[*.html]
+indent_size = 2
+
+# Django fixtures and API fixtures
+[*.{json,jsonc}]
+indent_size = 2
+
+# pytest and mypy config live in .ini files
+[*.ini]
+indent_size = 4
+
+# pyproject.toml — inherits root 2-space default (TOML convention)
+[pyproject.toml]
+indent_size = 2

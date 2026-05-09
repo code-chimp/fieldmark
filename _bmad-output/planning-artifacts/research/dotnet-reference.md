@@ -210,28 +210,42 @@ If an agent solution requires explaining *why* it is structured a certain way, i
 
 Unit tests validate **domain and application behavior**, not HTTP wiring or Razor rendering. Cross-browser workflows and parity are covered by **Playwright E2E tests**, not duplicated in unit tests.
 
-**Framework:** **xUnit** is preferred; **FluentAssertions** is optional for readability.
+**Framework:** **xUnit** + **FluentAssertions** (OSS license; acceptable for a teaching artifact).
 
-**Layout (illustrative):** keep tests adjacent to what they exercise, for example:
+### Test project layout
+
+Two standalone test projects live in the `FieldMark/` solution directory:
 
 ```
 FieldMark/
-├── FieldMark.Domain/
-│   └── Tests/
-│       ├── ProjectTests.cs
-│       └── ViolationTests.cs
-├── FieldMark.Application/
-│   └── Tests/
-│       ├── ComplianceServiceTests.cs
-│       └── AuthorizationTests.cs
-└── FieldMark.Tests.sln   (or equivalent solution grouping)
+├── FieldMark.Tests.Domain/          — fast, no infrastructure
+│   ├── FieldMark.Tests.Domain.csproj
+│   └── ...                          — entity invariant and state-transition tests
+└── FieldMark.Tests.Integration/     — real Postgres via Testcontainers
+    ├── FieldMark.Tests.Integration.csproj
+    └── ...                          — transaction integrity tests
 ```
 
-**Do test:** entity invariants and state transitions; application/service workflows; authorization rules expressed in code.
+**`FieldMark.Tests.Domain`**
+- References: `FieldMark.Domain` only
+- Packages: xUnit, FluentAssertions, coverlet.collector, Microsoft.NET.Test.Sdk
+- Scope: entity invariants, state-transition methods, `can_*` predicates, typed domain exceptions
+- No database, no EF Core, no infrastructure of any kind
 
-**Do not unit-test as primary subjects:** Razor Pages; ViewComponents; EF Core configuration plumbing.
+**`FieldMark.Tests.Integration`**
+- References: `FieldMark.Domain` + `FieldMark.Data`
+- Packages: xUnit, FluentAssertions, Testcontainers.PostgreSql, coverlet.collector, Microsoft.NET.Test.Sdk
+- Scope: **transaction integrity only** — verify that `AuditEntry` writes land in the same transaction as the triggering entity write, and that rollback on rule violation leaves no partial state
+- `Microsoft.AspNetCore.Mvc.Testing` is **explicitly excluded** — the HTTP pipeline is Playwright's responsibility, not integration tests'
+- Tests use a real PostgreSQL container via Testcontainers; SQLite is prohibited
 
-Prefer **behavior-focused tests**; avoid over-mocking persistence when exercising rules that truly depend on the database—respect repository-wide constraints (PostgreSQL-only tests; see root `CLAUDE.md`).
+### Do test
+Entity invariants and state transitions; `AuditEntry` co-write integrity; compliance score recalculation correctness at the data layer.
+
+### Do not unit-test as primary subjects
+Razor Pages; ViewComponents; EF Core `IEntityTypeConfiguration<T>` plumbing; routing; middleware.
+
+Prefer **behavior-focused tests**; avoid over-mocking persistence when exercising rules that truly depend on the database—respect repository-wide constraints (PostgreSQL-only; see root `CLAUDE.md`).
 
 ---
 

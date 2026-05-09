@@ -14,21 +14,32 @@ dotnet test
 dotnet test --filter "FullyQualifiedName~<TestName>"
 dotnet ef database update -p FieldMark.Data -s FieldMark.Web
 dotnet ef migrations add <Name> -p FieldMark.Data -s FieldMark.Web
+
+# Formatting (CSharpier — installed as local tool in .config/dotnet-tools.json)
+dotnet tool restore                  # restore tools after a fresh clone
+dotnet csharpier format .            # format all C# files in place
+dotnet csharpier check .             # CI: fail if any file would be reformatted
 ```
 
 ## Project Structure
 
-Three projects with a strict one-way dependency graph:
+Five projects. Production dependency graph is strictly one-way; test projects reference only what they test:
 
 ```
-FieldMark.Domain   — entities with behavior; zero outbound references
+FieldMark.Domain              — entities with behavior; zero outbound references
       ↑
-FieldMark.Data     — EF Core persistence adapter; references Domain only
+FieldMark.Data                — EF Core persistence adapter; references Domain only
       ↑
-FieldMark.Web      — Razor Pages composition root; references Domain and Data
+FieldMark.Web                 — Razor Pages composition root; references Domain and Data
+
+FieldMark.Tests.Domain        — xUnit unit tests; references Domain only; no I/O
+FieldMark.Tests.Integration   — xUnit integration tests; references Domain + Data;
+                                uses Testcontainers.PostgreSql for a real DB
 ```
 
 `Domain → anything` is always invalid. If a dependency points outward from Domain, the design is wrong.
+
+Test projects must never reference `FieldMark.Web`. Integration tests spin up a real PostgreSQL container via Testcontainers — SQLite is prohibited.
 
 ## What Belongs Where
 
