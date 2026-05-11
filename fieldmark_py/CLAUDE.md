@@ -54,16 +54,17 @@ Apps map to bounded contexts, not technical layers. Each app owns its models, vi
 - Class-based or function-based views are acceptable; stay consistent within an app.
 - Structured logging via `structlog`.
 
-## Hard Rules
+## Hard Rules (Django-specific)
+
+Root `CLAUDE.md` covers cross-stack rules (no service layers, no client-side state, real PostgreSQL in tests, infrastructure-owned `domain` schema). The Django-specific rules are:
 
 - **No Django signals** — not for business logic, not for side effects, not ever without an ADR.
 - **No business logic in views, forms, managers, or middleware.** It belongs on model methods.
-- **No service layers** that duplicate or wrap model behavior.
 - **No cross-app side effects.** An action in `violations/` must not trigger behavior in `inspections/` implicitly.
-- **Django migrations are scoped to `django_auth` only** — Django's built-in auth, admin, and session tables. The shared `domain` schema is created by SQL init scripts in `docker/postgres/init/` and is not Django's to create or evolve. Domain models must set `managed = False` in their `Meta` class so Django never attempts to create or alter those tables.
-- **No SQLite in tests.** Use real PostgreSQL via `pytest-django`.
+- **Django migrations are scoped to `django_auth` only.** Domain models must set `Meta.managed = False` and `db_table = 'domain"."<table>'` so Django never attempts to create or alter `domain.*` tables.
 
 ## Reference
 
-- `_bmad-output/planning-artifacts/research/django-reference.md` — full Django guardrails (authoritative)
-- `_bmad-output/planning-artifacts/research/architecture-decisions.md` — ADRs and hard constraints
+- `_bmad-output/planning-artifacts/architecture.md` — architectural source of truth (canonical request flow with Django code stub, decisions, patterns)
+- `_bmad-output/planning-artifacts/prd/` — capability source of truth
+- Root `CLAUDE.md` — cross-stack rules and canonical inventories (audit actions, HTMX target IDs, method names)

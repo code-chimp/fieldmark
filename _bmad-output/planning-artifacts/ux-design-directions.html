@@ -1,0 +1,847 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>FieldMark — UX Design Direction Mockup</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+<link rel="preconnect" href="https://rsms.me/" />
+<link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>
+  // First-paint theme resolution — must run before body renders.
+  // In production this is a 5-line inline script in the layout template.
+  (function () {
+    var stored = localStorage.getItem('fm_theme') || 'system';
+    var resolved = stored === 'system'
+      ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+      : stored;
+    document.documentElement.setAttribute('data-theme', resolved);
+    document.documentElement.setAttribute('data-theme-pref', stored);
+  })();
+</script>
+<style>
+  /* ---------- Light theme tokens (default) ---------- */
+  :root, html[data-theme="light"] {
+    --color-success: #059669; /* emerald-600 */
+    --color-warning: #d97706; /* amber-600 */
+    --color-danger:  #e11d48; /* rose-600  */
+    --color-info:    #0284c7; /* sky-600   */
+    --color-neutral: #475569; /* slate-600 */
+
+    --bg-app:       #f8fafc;  /* slate-50 */
+    --bg-surface:   #ffffff;
+    --bg-muted:     #f8fafc;
+    --bg-row-hover: #f8fafc;
+    --bg-row-sel:   #f1f5f9;
+    --bg-th:        #f8fafc;
+    --bg-primary:   #0f172a;  /* slate-900 */
+    --fg-primary:   #ffffff;
+    --bg-primary-hover: #1e293b;
+
+    --fg-default:   #0f172a;  /* slate-900 */
+    --fg-muted:     #475569;  /* slate-600 */
+    --fg-faint:     #64748b;  /* slate-500 */
+
+    --border-default: #e2e8f0; /* slate-200 */
+    --border-strong:  #cbd5e1; /* slate-300 */
+
+    --focus-ring:    #0f172a;
+    --tooltip-bg:    #0f172a;
+    --tooltip-fg:    #ffffff;
+
+    --legend-bg:     #fffbeb;
+    --legend-border: #fcd34d;
+    --legend-fg:     #713f12;
+    --ann-bg:        #fef9c3;
+    --ann-border:    #ca8a04;
+    --ann-fg:        #713f12;
+
+    --alert-danger-bg:     color-mix(in srgb, var(--color-danger) 6%, white);
+    --alert-danger-border: color-mix(in srgb, var(--color-danger) 30%, white);
+    --alert-danger-fg:     #881337;
+  }
+  /* ---------- Dark theme tokens ---------- */
+  html[data-theme="dark"] {
+    --color-success: #34d399; /* emerald-400 */
+    --color-warning: #fbbf24; /* amber-400 */
+    --color-danger:  #fb7185; /* rose-400  */
+    --color-info:    #38bdf8; /* sky-400   */
+    --color-neutral: #94a3b8; /* slate-400 */
+
+    --bg-app:       #020617;  /* slate-950 */
+    --bg-surface:   #0f172a;  /* slate-900 */
+    --bg-muted:     #1e293b;  /* slate-800 */
+    --bg-row-hover: #1e293b;
+    --bg-row-sel:   #1e293b;
+    --bg-th:        #1e293b;
+    --bg-primary:   #f1f5f9;  /* slate-100 */
+    --fg-primary:   #0f172a;  /* slate-900 */
+    --bg-primary-hover: #e2e8f0;
+
+    --fg-default:   #f1f5f9;  /* slate-100 */
+    --fg-muted:     #cbd5e1;  /* slate-300 */
+    --fg-faint:     #94a3b8;  /* slate-400 */
+
+    --border-default: #1e293b; /* slate-800 */
+    --border-strong:  #334155; /* slate-700 */
+
+    --focus-ring:    #f1f5f9;
+    --tooltip-bg:    #f1f5f9;
+    --tooltip-fg:    #0f172a;
+
+    --legend-bg:     #1c1917;
+    --legend-border: #78716c;
+    --legend-fg:     #fcd34d;
+    --ann-bg:        #1c1917;
+    --ann-border:    #ca8a04;
+    --ann-fg:        #fcd34d;
+
+    --alert-danger-bg:     color-mix(in srgb, var(--color-danger) 12%, #1c1917);
+    --alert-danger-border: color-mix(in srgb, var(--color-danger) 40%, transparent);
+    --alert-danger-fg:     #fecdd3;
+  }
+  html, body { background: var(--bg-app); color: var(--fg-default); transition: background 80ms ease, color 80ms ease; }
+  html { font-family: 'Inter', ui-sans-serif, system-ui, sans-serif; }
+  body { font-feature-settings: "cv02","cv03","cv04","cv11"; }
+  .tnum { font-feature-settings: "tnum"; font-variant-numeric: tabular-nums; }
+  /* Subtle tinted badges */
+  .badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 2px 8px; border-radius: 4px;
+    font-size: 12px; line-height: 16px; font-weight: 500;
+    border: 1px solid transparent;
+  }
+  .badge-success { background: color-mix(in srgb, var(--color-success) 10%, transparent); color: var(--color-success); border-color: color-mix(in srgb, var(--color-success) 30%, transparent); }
+  .badge-warning { background: color-mix(in srgb, var(--color-warning) 10%, transparent); color: var(--color-warning); border-color: color-mix(in srgb, var(--color-warning) 30%, transparent); }
+  .badge-danger  { background: color-mix(in srgb, var(--color-danger)  10%, transparent); color: var(--color-danger);  border-color: color-mix(in srgb, var(--color-danger)  30%, transparent); }
+  .badge-info    { background: color-mix(in srgb, var(--color-info)    10%, transparent); color: var(--color-info);    border-color: color-mix(in srgb, var(--color-info)    30%, transparent); }
+  .badge-neutral { background: color-mix(in srgb, var(--color-neutral) 10%, transparent); color: var(--color-neutral); border-color: color-mix(in srgb, var(--color-neutral) 30%, transparent); }
+  /* Severity bump — Critical/High get heavier border */
+  .badge-bump { border-width: 1.5px; font-weight: 600; }
+  .badge-filled-danger { background: var(--color-danger); color: #fff; border-color: var(--color-danger); font-weight: 600; }
+  /* Buttons */
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    height: 36px; padding: 0 14px; border-radius: 6px;
+    font-size: 14px; font-weight: 500; line-height: 1; border: 1px solid transparent;
+    transition: background 100ms ease, border-color 100ms ease;
+  }
+  .btn:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+  .btn-primary { background: var(--bg-primary); color: var(--fg-primary); }
+  .btn-primary:hover:not([disabled]) { background: var(--bg-primary-hover); }
+  .btn-secondary { background: var(--bg-surface); color: var(--fg-default); border-color: var(--border-default); }
+  .btn-secondary:hover:not([disabled]) { background: var(--bg-muted); }
+  .btn-success { background: var(--color-success); color: #fff; }
+  .btn-success:hover:not([disabled]) { filter: brightness(0.95); }
+  .btn-danger-outline { background: var(--bg-surface); color: var(--color-danger); border-color: color-mix(in srgb, var(--color-danger) 40%, transparent); }
+  .btn-danger-outline:hover:not([disabled]) { background: color-mix(in srgb, var(--color-danger) 8%, transparent); }
+  .btn-sm { height: 32px; padding: 0 12px; font-size: 13px; }
+  .btn[disabled] { cursor: not-allowed; opacity: 0.55; }
+  /* Surfaces */
+  .surface { background: var(--bg-surface); border: 1px solid var(--border-default); border-radius: 8px; }
+  .surface-muted { background: var(--bg-muted); border: 1px solid var(--border-default); border-radius: 8px; }
+  .row-hover:hover { background: var(--bg-row-hover); cursor: pointer; }
+  .row-selected { background: var(--bg-row-sel); }
+  /* Tab strip */
+  .tab { padding: 10px 14px; font-size: 14px; font-weight: 500; color: var(--fg-muted); border-bottom: 2px solid transparent; cursor: pointer; }
+  .tab:hover { color: var(--fg-default); }
+  .tab-active { color: var(--fg-default); border-bottom-color: var(--fg-default); }
+  /* Tooltip */
+  .tip-wrap { position: relative; display: inline-flex; }
+  .tip-wrap .tip {
+    position: absolute; top: calc(100% + 6px); left: 50%; transform: translateX(-50%);
+    background: var(--tooltip-bg); color: var(--tooltip-fg); font-size: 12px; padding: 6px 8px; border-radius: 4px;
+    white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 100ms ease;
+    z-index: 20;
+  }
+  .tip-wrap:hover .tip, .tip-wrap:focus-within .tip { opacity: 1; }
+  /* Scenario picker */
+  .scenario { display: none; }
+  .scenario.active { display: block; }
+  .scenario-tab { padding: 8px 12px; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; color: var(--fg-muted); background: transparent; border: 0; }
+  .scenario-tab:hover { background: var(--bg-row-hover); color: var(--fg-default); }
+  .scenario-tab.active { background: var(--bg-primary); color: var(--fg-primary); }
+  /* Dense table */
+  table.dense { width: 100%; border-collapse: collapse; font-size: 14px; color: var(--fg-default); }
+  table.dense th, table.dense td { padding: 8px 12px; border-bottom: 1px solid var(--border-default); text-align: left; }
+  table.dense th { font-weight: 500; color: var(--fg-muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; background: var(--bg-th); }
+  table.dense tr:last-child td { border-bottom: 0; }
+  /* Inline 409 alert */
+  .alert-danger {
+    background: var(--alert-danger-bg);
+    border: 1px solid var(--alert-danger-border);
+    color: var(--alert-danger-fg);
+    border-radius: 6px;
+    padding: 12px 14px;
+    font-size: 14px;
+    display: flex; gap: 10px; align-items: flex-start;
+  }
+  .pulse-once { animation: pulseOnce 800ms ease-out 1; }
+  @keyframes pulseOnce {
+    0%   { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-success) 50%, transparent); }
+    100% { box-shadow: 0 0 0 8px transparent; }
+  }
+  .ann {
+    background: var(--ann-bg); border: 1px dashed var(--ann-border); color: var(--ann-fg);
+    font-size: 12px; padding: 4px 8px; border-radius: 4px; display: inline-flex; align-items: center; gap: 6px;
+  }
+  .legend { background: var(--legend-bg); border: 1px solid var(--legend-border); color: var(--legend-fg); padding: 12px 14px; border-radius: 6px; font-size: 13px; }
+  /* Theme toggle button */
+  .theme-toggle {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 36px; height: 36px; border-radius: 6px;
+    background: transparent; color: var(--fg-muted); border: 1px solid var(--border-default);
+    cursor: pointer; transition: background 80ms ease, color 80ms ease;
+  }
+  .theme-toggle:hover { background: var(--bg-muted); color: var(--fg-default); }
+  .theme-toggle:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+  /* Override Tailwind utility colors that hard-code light-mode values, so dark-mode flips them too */
+  html[data-theme="dark"] .text-slate-500 { color: var(--fg-faint); }
+  html[data-theme="dark"] .text-slate-600 { color: var(--fg-muted); }
+  html[data-theme="dark"] .text-slate-700 { color: var(--fg-default); }
+  html[data-theme="dark"] .text-slate-900 { color: var(--fg-default); }
+  html[data-theme="dark"] .bg-slate-50 { background: var(--bg-app); }
+  html[data-theme="dark"] .bg-slate-100 { background: var(--bg-muted); }
+  html[data-theme="dark"] .bg-slate-200 { background: var(--border-strong); }
+  html[data-theme="dark"] .border-slate-200 { border-color: var(--border-default); }
+  html[data-theme="dark"] .divide-slate-200 > * + * { border-color: var(--border-default); }
+  html[data-theme="dark"] .bg-white { background: var(--bg-surface); }
+  /* Status text recolor in dark — emerald/amber/rose darks become lights */
+  html[data-theme="dark"] .text-emerald-600 { color: var(--color-success); }
+  html[data-theme="dark"] .text-amber-600 { color: var(--color-warning); }
+  html[data-theme="dark"] .text-rose-600 { color: var(--color-danger); }
+</style>
+</head>
+<body class="bg-slate-50 text-slate-900">
+
+<!-- ============================================================ -->
+<!-- Top control bar — scenario picker (mockup chrome, not the app) -->
+<!-- ============================================================ -->
+<div class="bg-white border-b border-slate-200 px-6 py-3 flex items-center gap-4">
+  <div class="flex items-center gap-2 mr-4">
+    <span class="text-xs uppercase tracking-wider font-semibold text-slate-500">Mockup scenarios</span>
+  </div>
+  <button class="scenario-tab active" data-scenario="dashboard">1 — Compliance Dashboard</button>
+  <button class="scenario-tab" data-scenario="violations-pre">2 — Violation under review</button>
+  <button class="scenario-tab" data-scenario="violations-post">3 — Post-Approve (three regions update)</button>
+  <button class="scenario-tab" data-scenario="closure-denied">4 — Closure denied (409 in place)</button>
+  <div class="ml-auto text-xs text-slate-500">Mockup viewport assumed ≥ 1280px</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- Application chrome — header strip, persistent across scenarios -->
+<!-- ============================================================ -->
+<header class="bg-white border-b border-slate-200">
+  <div class="max-w-screen-2xl mx-auto px-6 py-3 flex items-center gap-6">
+    <div class="flex items-center gap-2">
+      <div class="w-7 h-7 rounded bg-slate-900 text-white flex items-center justify-center font-bold text-sm">F</div>
+      <span class="font-semibold text-base">FieldMark</span>
+    </div>
+    <nav class="flex items-center gap-1 text-sm">
+      <a class="px-3 py-1.5 rounded text-slate-900 font-medium bg-slate-100" href="#">Dashboard</a>
+      <a class="px-3 py-1.5 rounded text-slate-600 hover:text-slate-900" href="#">Projects</a>
+      <a class="px-3 py-1.5 rounded text-slate-600 hover:text-slate-900" href="#">Inspections</a>
+      <a class="px-3 py-1.5 rounded text-slate-600 hover:text-slate-900" href="#">Violations</a>
+    </nav>
+    <!-- OOB compliance score tile lives here, persistent across the app -->
+    <div id="compliance-tile-portfolio" class="ml-auto flex items-center gap-3 surface-muted px-3 py-1.5">
+      <span class="text-xs uppercase tracking-wider text-slate-500">Portfolio</span>
+      <span class="tnum text-base font-semibold text-amber-600">78%</span>
+      <span class="badge badge-warning">Watch</span>
+    </div>
+    <div class="flex items-center gap-2">
+      <button id="theme-toggle" class="theme-toggle" aria-label="Cycle theme" title="Theme: System">
+        <i id="theme-icon" data-lucide="monitor"></i>
+      </button>
+      <div class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-xs font-semibold text-slate-600">MC</div>
+      <span class="text-sm text-slate-700">Marisol Cervantes</span>
+      <span class="badge badge-neutral">Compliance Officer</span>
+    </div>
+  </div>
+</header>
+
+<!-- ============================================================ -->
+<!-- Scenario 1 — Compliance Dashboard                              -->
+<!-- ============================================================ -->
+<main class="scenario active" data-scenario="dashboard">
+  <div class="max-w-screen-2xl mx-auto px-6 py-6">
+    <div class="flex items-center justify-between mb-4">
+      <h1 class="text-2xl font-semibold">Compliance Dashboard</h1>
+      <div class="flex items-center gap-2">
+        <select class="text-sm border border-slate-300 rounded h-9 px-2"><option>All my projects</option></select>
+        <select class="text-sm border border-slate-300 rounded h-9 px-2"><option>Status: Active</option></select>
+      </div>
+    </div>
+
+    <!-- Tile row — modest, 4 tiles, ~110px tall, each answers ONE question -->
+    <div class="grid grid-cols-4 gap-4 mb-6">
+      <div class="surface p-4">
+        <div class="text-xs uppercase tracking-wider text-slate-500 mb-1">Portfolio compliance</div>
+        <div class="flex items-baseline gap-2">
+          <span class="tnum text-3xl font-bold text-amber-600">78%</span>
+          <span class="badge badge-warning">Watch</span>
+        </div>
+        <div class="text-xs text-slate-500 mt-2 tnum">Avg of 6 active projects</div>
+      </div>
+      <div class="surface p-4">
+        <div class="text-xs uppercase tracking-wider text-slate-500 mb-1">Overdue violations</div>
+        <div class="flex items-baseline gap-3">
+          <span class="tnum text-3xl font-bold text-rose-600">3</span>
+          <span class="text-xs text-slate-500 tnum">+2 since Mon</span>
+        </div>
+        <div class="text-xs text-slate-500 mt-2 flex items-center gap-2">
+          <span class="badge badge-danger badge-bump">Critical · 1</span>
+          <span class="badge badge-danger">High · 2</span>
+        </div>
+      </div>
+      <div class="surface p-4">
+        <div class="text-xs uppercase tracking-wider text-slate-500 mb-1">Active projects</div>
+        <div class="flex items-baseline gap-2">
+          <span class="tnum text-3xl font-bold">6</span>
+        </div>
+        <div class="text-xs text-slate-500 mt-2 flex items-center gap-2 tnum">
+          <span class="badge badge-success">Active · 6</span>
+          <span class="badge badge-warning">OnHold · 0</span>
+        </div>
+      </div>
+      <div class="surface p-4">
+        <div class="text-xs uppercase tracking-wider text-slate-500 mb-1">Inspections this week</div>
+        <div class="flex items-baseline gap-3">
+          <span class="tnum text-3xl font-bold">12</span>
+          <span class="text-xs text-slate-500 tnum">4 scheduled · 8 done</span>
+        </div>
+        <div class="text-xs text-slate-500 mt-2">
+          <span class="badge badge-info">Scheduled · 4</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Project list (AG-Grid-styled) -->
+    <div class="surface overflow-hidden">
+      <div class="flex items-center justify-between px-4 py-3 border-b border-slate-200">
+        <div class="text-sm font-medium">Projects</div>
+        <div class="flex items-center gap-2">
+          <input type="text" placeholder="Filter projects…" class="text-sm border border-slate-300 rounded h-9 px-2 w-64" />
+        </div>
+      </div>
+      <table class="dense">
+        <thead>
+          <tr>
+            <th>Project</th>
+            <th>Status</th>
+            <th class="text-right">Compliance</th>
+            <th class="text-right">Open violations</th>
+            <th class="text-right">Last inspection</th>
+            <th>Project Manager</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="row-hover row-selected">
+            <td class="font-medium">Riverside Substation Upgrade</td>
+            <td><span class="badge badge-success">Active</span></td>
+            <td class="text-right tnum"><span class="text-rose-600 font-semibold">62%</span></td>
+            <td class="text-right tnum">4</td>
+            <td class="text-right tnum text-slate-600">2 days ago</td>
+            <td class="text-slate-700">Aisha Patel</td>
+          </tr>
+          <tr class="row-hover">
+            <td class="font-medium">Northgate Office Tower — Phase 2</td>
+            <td><span class="badge badge-success">Active</span></td>
+            <td class="text-right tnum"><span class="text-amber-600 font-semibold">71%</span></td>
+            <td class="text-right tnum">2</td>
+            <td class="text-right tnum text-slate-600">Yesterday</td>
+            <td class="text-slate-700">Aisha Patel</td>
+          </tr>
+          <tr class="row-hover">
+            <td class="font-medium">Harbor District Substation</td>
+            <td><span class="badge badge-success">Active</span></td>
+            <td class="text-right tnum"><span class="text-amber-600 font-semibold">82%</span></td>
+            <td class="text-right tnum">1</td>
+            <td class="text-right tnum text-slate-600">3 days ago</td>
+            <td class="text-slate-700">Aisha Patel</td>
+          </tr>
+          <tr class="row-hover">
+            <td class="font-medium">Eastside Distribution Center</td>
+            <td><span class="badge badge-success">Active</span></td>
+            <td class="text-right tnum"><span class="text-emerald-600 font-semibold">91%</span></td>
+            <td class="text-right tnum">0</td>
+            <td class="text-right tnum text-slate-600">5 days ago</td>
+            <td class="text-slate-700">Aisha Patel</td>
+          </tr>
+          <tr class="row-hover">
+            <td class="font-medium">Maple St Transit Hub Renovation</td>
+            <td><span class="badge badge-success">Active</span></td>
+            <td class="text-right tnum"><span class="text-emerald-600 font-semibold">88%</span></td>
+            <td class="text-right tnum">1</td>
+            <td class="text-right tnum text-slate-600">Today</td>
+            <td class="text-slate-700">D. Okafor</td>
+          </tr>
+          <tr class="row-hover">
+            <td class="font-medium">Civic Plaza Waterworks</td>
+            <td><span class="badge badge-success">Active</span></td>
+            <td class="text-right tnum"><span class="text-amber-600 font-semibold">76%</span></td>
+            <td class="text-right tnum">2</td>
+            <td class="text-right tnum text-slate-600">4 days ago</td>
+            <td class="text-slate-700">D. Okafor</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="legend mt-4">
+      <strong>Scenario 1 reading guide.</strong>
+      Notice the <em>density</em> (14px text, 36px row height), the <em>modest tile row</em> (each tile answers one question), the <em>compliance score in the persistent header strip</em> (this is the OOB target <code>#compliance-tile</code>), and the <em>tinted badges</em> that signal status without shouting. Marisol clicks <em>Riverside Substation Upgrade</em> → Scenario 2.
+    </div>
+  </div>
+</main>
+
+<!-- ============================================================ -->
+<!-- Scenario 2 — Project Detail · Violations tab · UnderReview     -->
+<!-- ============================================================ -->
+<main class="scenario" data-scenario="violations-pre">
+  <div class="max-w-screen-2xl mx-auto px-6 py-6">
+    <!-- Project header strip -->
+    <div class="flex items-center gap-4 mb-4">
+      <a href="#" class="text-sm text-slate-500 hover:text-slate-900 flex items-center gap-1">← Projects</a>
+    </div>
+    <div class="surface p-5 mb-5 flex items-center gap-6">
+      <div>
+        <div class="text-xs uppercase tracking-wider text-slate-500">Project</div>
+        <h1 class="text-2xl font-semibold mt-1">Riverside Substation Upgrade</h1>
+        <div class="text-sm text-slate-600 mt-1">Aisha Patel · 4 trade scopes · Started Mar 14, 2026</div>
+      </div>
+      <div class="ml-auto flex items-center gap-6">
+        <div class="text-center">
+          <div class="text-xs uppercase tracking-wider text-slate-500">Status</div>
+          <div class="mt-1"><span class="badge badge-success">Active</span></div>
+        </div>
+        <div id="compliance-tile" class="text-center surface-muted px-4 py-2">
+          <div class="text-xs uppercase tracking-wider text-slate-500">Compliance</div>
+          <div class="tnum text-3xl font-bold text-rose-600 mt-1">62%</div>
+          <div class="text-xs text-slate-500 tnum mt-1">Critical</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab strip -->
+    <div class="flex items-center gap-1 border-b border-slate-200 mb-5">
+      <div class="tab">Summary</div>
+      <div class="tab">Inspections</div>
+      <div class="tab tab-active">Violations <span class="badge badge-danger badge-bump ml-1">4</span></div>
+      <div class="tab">Audit</div>
+    </div>
+
+    <!-- Two-thirds + right rail layout -->
+    <div class="grid gap-5" style="grid-template-columns: 2fr 1fr;">
+      <!-- Left: violations list -->
+      <div class="surface overflow-hidden">
+        <table class="dense">
+          <thead>
+            <tr>
+              <th>Violation</th>
+              <th>Severity</th>
+              <th>Status</th>
+              <th>Assigned</th>
+              <th class="text-right">Due</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="row-hover row-selected">
+              <td>
+                <div class="font-medium">RULE_GROUNDING_REQUIRED</div>
+                <div class="text-xs text-slate-500">Panel A-12 grounding not verified</div>
+              </td>
+              <td><span class="badge badge-danger badge-bump">Critical</span></td>
+              <td><span class="badge badge-warning">In Progress</span></td>
+              <td class="text-slate-700">Diego Reyes</td>
+              <td class="text-right tnum text-rose-600 font-semibold">Overdue · 1d</td>
+            </tr>
+            <tr class="row-hover">
+              <td>
+                <div class="font-medium">RULE_PPE_MISSING</div>
+                <div class="text-xs text-slate-500">Bus bar work without arc-flash hood</div>
+              </td>
+              <td><span class="badge badge-danger">High</span></td>
+              <td><span class="badge badge-warning">In Progress</span></td>
+              <td class="text-slate-700">Diego Reyes</td>
+              <td class="text-right tnum">Tomorrow</td>
+            </tr>
+            <tr class="row-hover">
+              <td>
+                <div class="font-medium">RULE_DOC_INSPECTION_REPORT</div>
+                <div class="text-xs text-slate-500">Inspection 8421 missing supervisor sign-off</div>
+              </td>
+              <td><span class="badge badge-warning">Medium</span></td>
+              <td><span class="badge badge-danger">Open</span></td>
+              <td class="text-slate-700">— unassigned</td>
+              <td class="text-right tnum">3 days</td>
+            </tr>
+            <tr class="row-hover">
+              <td>
+                <div class="font-medium">RULE_TORQUE_SPEC</div>
+                <div class="text-xs text-slate-500">Connector torque not in spec range</div>
+              </td>
+              <td><span class="badge badge-neutral">Low</span></td>
+              <td><span class="badge badge-warning">In Progress</span></td>
+              <td class="text-slate-700">Diego Reyes</td>
+              <td class="text-right tnum">5 days</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Right rail: violation detail -->
+      <aside id="violation-detail" tabindex="-1" class="surface p-5 self-start">
+        <div class="text-xs uppercase tracking-wider text-slate-500">Violation detail</div>
+        <h2 class="text-lg font-semibold mt-1 mb-2">RULE_GROUNDING_REQUIRED</h2>
+        <div class="flex flex-wrap items-center gap-2 mb-4">
+          <span class="badge badge-danger badge-bump">Critical</span>
+          <span class="badge badge-warning">In Progress</span>
+          <span class="text-xs text-slate-500 tnum">Opened 4d ago · Due 1d ago</span>
+        </div>
+
+        <div class="text-sm text-slate-700 mb-4">
+          Panel A-12 grounding continuity not verified during commissioning. Requires resistance test to bus bar with documented measurement.
+        </div>
+
+        <div class="text-xs uppercase tracking-wider text-slate-500 mb-2">Corrective actions</div>
+
+        <!-- Latest CA -->
+        <div class="surface-muted p-3 mb-3">
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-2">
+              <span class="badge badge-warning">Under Review</span>
+              <span class="text-xs text-slate-500 tnum">Submitted 2d ago by Diego Reyes</span>
+            </div>
+          </div>
+          <div class="text-sm text-slate-700">
+            "Re-grounded panel per spec; verified continuity to bus bar; photo attached as reference."
+          </div>
+          <div class="text-xs text-slate-500 mt-2 tnum">Taken for review yesterday by Marisol Cervantes</div>
+        </div>
+
+        <!-- Action row — Marisol's choice -->
+        <div class="flex items-center gap-2 mt-4 pt-4 border-t border-slate-200">
+          <button class="btn btn-success" id="approve-btn">
+            <i data-lucide="check"></i> Approve
+          </button>
+          <button class="btn btn-danger-outline">
+            <i data-lucide="x"></i> Reject
+          </button>
+          <span class="ann ml-auto"><i data-lucide="info" style="width:12px;height:12px"></i> server-decided affordances</span>
+        </div>
+      </aside>
+    </div>
+
+    <div class="legend mt-5">
+      <strong>Scenario 2 reading guide.</strong>
+      The Project Detail anchor screen: header strip with the OOB <code>#compliance-tile</code> at 62% (Critical), tabs as HTMX swaps, two-thirds violations list + one-third right rail (<code>#violation-detail</code>). The selected row is highlighted; the rail shows the corrective action that's <em>UnderReview</em>. Approve/Reject are visible because the server has decided that Marisol (Compliance Officer) can act on this state. Click <strong>Scenario 3</strong> to see the post-Approve "three regions, one round trip" moment.
+    </div>
+  </div>
+</main>
+
+<!-- ============================================================ -->
+<!-- Scenario 3 — Post-Approve: three regions update                -->
+<!-- ============================================================ -->
+<main class="scenario" data-scenario="violations-post">
+  <div class="max-w-screen-2xl mx-auto px-6 py-6">
+    <div class="flex items-center gap-4 mb-4">
+      <a href="#" class="text-sm text-slate-500 hover:text-slate-900 flex items-center gap-1">← Projects</a>
+    </div>
+    <div class="surface p-5 mb-5 flex items-center gap-6">
+      <div>
+        <div class="text-xs uppercase tracking-wider text-slate-500">Project</div>
+        <h1 class="text-2xl font-semibold mt-1">Riverside Substation Upgrade</h1>
+        <div class="text-sm text-slate-600 mt-1">Aisha Patel · 4 trade scopes · Started Mar 14, 2026</div>
+      </div>
+      <div class="ml-auto flex items-center gap-6">
+        <div class="text-center">
+          <div class="text-xs uppercase tracking-wider text-slate-500">Status</div>
+          <div class="mt-1"><span class="badge badge-success">Active</span></div>
+        </div>
+        <!-- OOB swap target — updated -->
+        <div id="compliance-tile" class="text-center surface-muted px-4 py-2 pulse-once" aria-live="polite">
+          <div class="text-xs uppercase tracking-wider text-slate-500">Compliance</div>
+          <div class="tnum text-3xl font-bold text-amber-600 mt-1">71%</div>
+          <div class="text-xs text-slate-500 tnum mt-1">Watch</div>
+          <div class="ann mt-2"><i data-lucide="zap" style="width:12px;height:12px"></i> OOB swap · same response</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-1 border-b border-slate-200 mb-5">
+      <div class="tab">Summary</div>
+      <div class="tab">Inspections</div>
+      <div class="tab tab-active">Violations <span class="badge badge-warning ml-1">3</span></div>
+      <div class="tab">Audit <span class="badge badge-info ml-1">+1</span></div>
+    </div>
+
+    <div class="grid gap-5" style="grid-template-columns: 2fr 1fr;">
+      <!-- Violations list — first row now Resolved -->
+      <div class="surface overflow-hidden">
+        <table class="dense">
+          <thead>
+            <tr>
+              <th>Violation</th>
+              <th>Severity</th>
+              <th>Status</th>
+              <th>Assigned</th>
+              <th class="text-right">Due</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="row-hover row-selected pulse-once">
+              <td>
+                <div class="font-medium">RULE_GROUNDING_REQUIRED</div>
+                <div class="text-xs text-slate-500">Panel A-12 grounding not verified</div>
+              </td>
+              <td><span class="badge badge-danger badge-bump">Critical</span></td>
+              <td><span class="badge badge-success">Resolved</span></td>
+              <td class="text-slate-700">Diego Reyes</td>
+              <td class="text-right tnum text-slate-500">—</td>
+            </tr>
+            <tr class="row-hover">
+              <td><div class="font-medium">RULE_PPE_MISSING</div><div class="text-xs text-slate-500">Bus bar work without arc-flash hood</div></td>
+              <td><span class="badge badge-danger">High</span></td>
+              <td><span class="badge badge-warning">In Progress</span></td>
+              <td class="text-slate-700">Diego Reyes</td>
+              <td class="text-right tnum">Tomorrow</td>
+            </tr>
+            <tr class="row-hover">
+              <td><div class="font-medium">RULE_DOC_INSPECTION_REPORT</div><div class="text-xs text-slate-500">Inspection 8421 missing supervisor sign-off</div></td>
+              <td><span class="badge badge-warning">Medium</span></td>
+              <td><span class="badge badge-danger">Open</span></td>
+              <td class="text-slate-700">— unassigned</td>
+              <td class="text-right tnum">3 days</td>
+            </tr>
+            <tr class="row-hover">
+              <td><div class="font-medium">RULE_TORQUE_SPEC</div><div class="text-xs text-slate-500">Connector torque not in spec range</div></td>
+              <td><span class="badge badge-neutral">Low</span></td>
+              <td><span class="badge badge-warning">In Progress</span></td>
+              <td class="text-slate-700">Diego Reyes</td>
+              <td class="text-right tnum">5 days</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Right rail — violation detail, swapped -->
+      <aside id="violation-detail" tabindex="-1" class="surface p-5 self-start pulse-once">
+        <div class="text-xs uppercase tracking-wider text-slate-500">Violation detail</div>
+        <h2 class="text-lg font-semibold mt-1 mb-2">RULE_GROUNDING_REQUIRED</h2>
+        <div class="flex flex-wrap items-center gap-2 mb-4">
+          <span class="badge badge-danger badge-bump">Critical</span>
+          <span class="badge badge-success">Resolved</span>
+          <span class="text-xs text-slate-500 tnum">Opened 4d ago · Resolved just now</span>
+        </div>
+        <div class="text-sm text-slate-700 mb-4">
+          Panel A-12 grounding continuity not verified during commissioning. Requires resistance test to bus bar with documented measurement.
+        </div>
+        <div class="text-xs uppercase tracking-wider text-slate-500 mb-2">Corrective actions</div>
+        <div class="surface-muted p-3 mb-3 border-emerald-200" style="border-color: color-mix(in srgb, var(--color-success) 30%, transparent);">
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-2">
+              <span class="badge badge-success">Approved</span>
+              <span class="text-xs text-slate-500 tnum">Approved just now by Marisol Cervantes</span>
+            </div>
+          </div>
+          <div class="text-sm text-slate-700">
+            "Re-grounded panel per spec; verified continuity to bus bar; photo attached as reference."
+          </div>
+          <div class="text-xs text-slate-500 mt-2 tnum">Submitted 2d ago by Diego Reyes</div>
+        </div>
+        <!-- Action row: terminal state — buttons absent (server decision) -->
+        <div class="flex items-center gap-2 mt-4 pt-4 border-t border-slate-200">
+          <span class="text-xs text-slate-500 italic">No further actions — violation resolved.</span>
+          <span class="ann ml-auto"><i data-lucide="info" style="width:12px;height:12px"></i> buttons absent (terminal state)</span>
+        </div>
+      </aside>
+    </div>
+
+    <!-- Audit log preview (also OOB-updated) -->
+    <div class="mt-5 surface p-5">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-sm font-semibold">Recent activity (audit log preview)</h3>
+        <span class="ann"><i data-lucide="zap" style="width:12px;height:12px"></i> OOB-appended row</span>
+      </div>
+      <ul class="text-sm divide-y divide-slate-200" id="audit-log" aria-live="polite">
+        <li class="py-2 flex items-center gap-3 pulse-once">
+          <span class="badge badge-success">CorrectiveActionApproved</span>
+          <span class="text-slate-700">Marisol Cervantes</span>
+          <span class="text-slate-500 tnum text-xs ml-auto">just now · 14:32</span>
+        </li>
+        <li class="py-2 flex items-center gap-3">
+          <span class="badge badge-warning">CorrectiveActionTakenForReview</span>
+          <span class="text-slate-700">Marisol Cervantes</span>
+          <span class="text-slate-500 tnum text-xs ml-auto">yesterday · 09:14</span>
+        </li>
+        <li class="py-2 flex items-center gap-3">
+          <span class="badge badge-info">CorrectiveActionSubmitted</span>
+          <span class="text-slate-700">Diego Reyes</span>
+          <span class="text-slate-500 tnum text-xs ml-auto">2 days ago · 16:48</span>
+        </li>
+        <li class="py-2 flex items-center gap-3">
+          <span class="badge badge-danger">ViolationOpened</span>
+          <span class="text-slate-700">System (auto from inspection 8419)</span>
+          <span class="text-slate-500 tnum text-xs ml-auto">4 days ago · 11:20</span>
+        </li>
+      </ul>
+    </div>
+
+    <div class="legend mt-5">
+      <strong>Scenario 3 reading guide — the defining experience.</strong>
+      Three regions updated in <em>one HTTP round trip</em>: (1) the violation row + right rail show <span class="badge badge-success">Resolved</span>; (2) the OOB <code>#compliance-tile</code> in the page header jumped 62% → 71%; (3) a new <code>CorrectiveActionApproved</code> row appears at the top of <code>#audit-log</code>. The yellow pulse highlights the swapped regions for this mockup; in the live app there is no decoration — just the new state. The Approve/Reject buttons are <em>absent</em> (not disabled) because the server made that decision on render.
+    </div>
+  </div>
+</main>
+
+<!-- ============================================================ -->
+<!-- Scenario 4 — Closure denied: 409 inline                        -->
+<!-- ============================================================ -->
+<main class="scenario" data-scenario="closure-denied">
+  <div class="max-w-screen-2xl mx-auto px-6 py-6">
+    <div class="flex items-center gap-4 mb-4">
+      <a href="#" class="text-sm text-slate-500 hover:text-slate-900 flex items-center gap-1">← Projects</a>
+    </div>
+    <div class="surface p-5 mb-5 flex items-center gap-6">
+      <div>
+        <div class="text-xs uppercase tracking-wider text-slate-500">Project</div>
+        <h1 class="text-2xl font-semibold mt-1">Riverside Substation Upgrade</h1>
+        <div class="text-sm text-slate-600 mt-1">Aisha Patel · 4 trade scopes · Started Mar 14, 2026</div>
+      </div>
+      <div class="ml-auto flex items-center gap-6">
+        <div class="text-center">
+          <div class="text-xs uppercase tracking-wider text-slate-500">Status</div>
+          <div class="mt-1"><span class="badge badge-success">Active</span></div>
+        </div>
+        <div id="compliance-tile" class="text-center surface-muted px-4 py-2">
+          <div class="text-xs uppercase tracking-wider text-slate-500">Compliance</div>
+          <div class="tnum text-3xl font-bold text-amber-600 mt-1">71%</div>
+          <div class="text-xs text-slate-500 tnum mt-1">Watch</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-1 border-b border-slate-200 mb-5">
+      <div class="tab tab-active">Summary</div>
+      <div class="tab">Inspections</div>
+      <div class="tab">Violations <span class="badge badge-warning ml-1">3</span></div>
+      <div class="tab">Audit</div>
+    </div>
+
+    <div class="grid gap-5" style="grid-template-columns: 2fr 1fr;">
+      <!-- Summary panel -->
+      <div id="project-detail" tabindex="-1" class="surface p-5">
+        <!-- Inline 409 explanation rendered in the originating partial -->
+        <div class="alert-danger mb-5" role="alert" aria-live="assertive">
+          <i data-lucide="alert-triangle" style="margin-top:2px"></i>
+          <div>
+            <div class="font-semibold mb-1">Cannot close project: required inspection missing for Plumbing.</div>
+            <div class="text-sm">Trade scope <em>Plumbing</em> has zero Completed inspections with outcome ∈ {Pass, Conditional}. Schedule and complete the missing inspection before retrying.</div>
+            <div class="text-xs text-rose-700 mt-2 tnum">HTTP 409 · returned with this partial · project state unchanged</div>
+          </div>
+        </div>
+
+        <h2 class="text-lg font-semibold mb-3">Project summary</h2>
+        <dl class="grid grid-cols-2 gap-y-3 gap-x-6 text-sm">
+          <dt class="text-slate-500">Status</dt><dd><span class="badge badge-success">Active</span></dd>
+          <dt class="text-slate-500">Compliance</dt><dd class="tnum text-amber-600 font-semibold">71% · Watch</dd>
+          <dt class="text-slate-500">Started</dt><dd class="tnum">Mar 14, 2026</dd>
+          <dt class="text-slate-500">Target close</dt><dd class="tnum">May 30, 2026</dd>
+          <dt class="text-slate-500">Project Manager</dt><dd>Aisha Patel</dd>
+          <dt class="text-slate-500">Trade scopes</dt><dd>Electrical, Mechanical, Plumbing, Civil</dd>
+          <dt class="text-slate-500">Open violations</dt><dd class="tnum">3 (1 Critical · 1 High · 1 Medium)</dd>
+          <dt class="text-slate-500">Last inspection</dt><dd class="tnum">2 days ago</dd>
+        </dl>
+
+        <!-- Lifecycle action row -->
+        <div class="mt-6 pt-5 border-t border-slate-200 flex items-center gap-2">
+          <button class="btn btn-secondary"><i data-lucide="pause"></i> Place on hold</button>
+          <div class="tip-wrap">
+            <button class="btn btn-primary" disabled aria-describedby="close-tip">
+              <i data-lucide="lock"></i> Close project
+            </button>
+            <span id="close-tip" class="tip" role="tooltip">Cannot close: required Plumbing inspection missing.</span>
+          </div>
+          <span class="ann ml-auto"><i data-lucide="info" style="width:12px;height:12px"></i> server decided · disabled with reason</span>
+        </div>
+      </div>
+
+      <!-- Right rail — empty / contextual hint -->
+      <aside class="surface p-5 self-start text-sm text-slate-500">
+        <div class="text-xs uppercase tracking-wider text-slate-500 mb-2">Selected entity</div>
+        Select an inspection or violation to see its detail here.
+      </aside>
+    </div>
+
+    <div class="legend mt-5">
+      <strong>Scenario 4 reading guide — error renders in place.</strong>
+      Aisha clicked <em>Close project</em>. The server evaluated the closure rule, returned <strong>HTTP 409</strong> with the same Summary partial re-rendered, and the page didn't navigate or pop a modal. The explanation is inline at the top; the Close button is now visibly disabled with a tooltip stating the missing prerequisite. Project state is unchanged. Compare this to Scenario 3 — same architectural primitive (server returns the partial), just delivering bad news instead of good. The calm register holds.
+    </div>
+  </div>
+</main>
+
+<script>
+  // Scenario picker
+  const tabs = document.querySelectorAll('.scenario-tab');
+  const scenarios = document.querySelectorAll('main.scenario');
+  tabs.forEach(t => t.addEventListener('click', () => {
+    const target = t.dataset.scenario;
+    tabs.forEach(x => x.classList.toggle('active', x === t));
+    scenarios.forEach(s => s.classList.toggle('active', s.dataset.scenario === target));
+    // refresh icons after DOM swap
+    if (window.lucide) lucide.createIcons();
+  }));
+  // Live "Approve" demo on Scenario 2 — clicking jumps to Scenario 3
+  document.getElementById('approve-btn').addEventListener('click', () => {
+    document.querySelector('.scenario-tab[data-scenario="violations-post"]').click();
+  });
+
+  // Theme cycle: System → Light → Dark → System
+  // In production this fires an HTMX hx-post that sets a server-readable cookie.
+  // For mockup we persist in localStorage and update <html data-theme> directly.
+  (function () {
+    const order = ['system', 'light', 'dark'];
+    const iconFor = (resolved) => resolved === 'dark' ? 'moon' : (resolved === 'light' ? 'sun' : 'monitor');
+    const labelFor = (pref) => 'Theme: ' + pref.charAt(0).toUpperCase() + pref.slice(1);
+    const mql = window.matchMedia('(prefers-color-scheme: dark)');
+    function resolve(pref) {
+      return pref === 'system' ? (mql.matches ? 'dark' : 'light') : pref;
+    }
+    function apply(pref) {
+      const resolved = resolve(pref);
+      document.documentElement.setAttribute('data-theme', resolved);
+      document.documentElement.setAttribute('data-theme-pref', pref);
+      const btn = document.getElementById('theme-toggle');
+      btn.setAttribute('title', labelFor(pref));
+      btn.setAttribute('aria-label', labelFor(pref) + ' (click to cycle)');
+      const icon = document.getElementById('theme-icon');
+      // Replace icon by setting attribute and re-running lucide
+      if (icon) {
+        icon.setAttribute('data-lucide', iconFor(resolved));
+        // Remove the rendered <svg> so lucide can re-render.
+        icon.outerHTML = '<i id="theme-icon" data-lucide="' + iconFor(resolved) + '"></i>';
+      }
+      if (window.lucide) lucide.createIcons();
+    }
+    function init() {
+      const stored = localStorage.getItem('fm_theme') || 'system';
+      apply(stored);
+    }
+    document.getElementById('theme-toggle').addEventListener('click', () => {
+      const current = localStorage.getItem('fm_theme') || 'system';
+      const next = order[(order.indexOf(current) + 1) % order.length];
+      localStorage.setItem('fm_theme', next);
+      apply(next);
+    });
+    mql.addEventListener('change', () => {
+      if ((localStorage.getItem('fm_theme') || 'system') === 'system') apply('system');
+    });
+    init();
+  })();
+
+  if (window.lucide) lucide.createIcons();
+</script>
+</body>
+</html>

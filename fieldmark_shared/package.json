@@ -1,0 +1,16 @@
+{
+  "name": "fieldmark_shared",
+  "version": "1.0.0",
+  "description": "Shared front-end assets for the FieldMark monorepo (CSS build + vendor JS)",
+  "scripts": {
+    "build": "tailwindcss -i ./src/fieldmark.css -o ./dist/fieldmark.css",
+    "build:prod": "tailwindcss -i ./src/fieldmark.css -o ./dist/fieldmark.css --minify",
+    "watch": "tailwindcss -i ./src/fieldmark.css -o ./dist/fieldmark.css --watch"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.2.4"
+  }
+}

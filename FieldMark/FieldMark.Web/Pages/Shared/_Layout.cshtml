@@ -4,8 +4,8 @@
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>@ViewData["Title"] - FieldMark</title>
-    <link rel="stylesheet" href="~/css/fieldmark.css" asp-append-version="true"/>
-    <script src="~/lib/ag-grid/35.2.1/ag-grid-community.min.js"></script>
+    <link rel="stylesheet" href="~/vendor/fieldmark.css" asp-append-version="true"/>
+    <script src="~/vendor/ag-grid/35.2.1/ag-grid-community.min.js"></script>
 </head>
 <body>
 <header>
@@ -42,7 +42,7 @@
     </div>
 </footer>
 
-<script src="~/lib/htmx/htmx.min.js"></script>
+<script src="~/vendor/htmx/htmx.min.js"></script>
 <script src="~/js/site.js" asp-append-version="true"></script>
 
 @await RenderSectionAsync("Scripts", required: false)

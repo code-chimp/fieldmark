@@ -13,7 +13,7 @@ go run ./cmd/web/
 go build -o fieldmark-go ./cmd/web/
 ```
 
-### QA (see `docs/FieldMark_Unit_Testing_Strategy.md` for the project-wide testing strategy)
+### QA
 
 Tool versions are pinned in `go.mod` / `go.sum` via the root `tool (...)` block. Run CLI tools without global installs:
 
@@ -46,64 +46,44 @@ GoLand and VS Code Go integration typically run **gofmt**, **go vet**, and **sta
 
 ## Project Structure
 
+Flat layered layout. Each layer is a single package; no nested sub-packages by concept (entities/, valueobjects/, etc.) — Go's package boundary is what enforces architectural separation.
+
 ```
 fieldmark-go/
 ├── cmd/
-│   └── web/
-│       └── main.go          # composition root — wires all dependencies, starts Fiber
-├── internal/
-│   ├── domain/
-│   │   ├── entities/        # Project, Inspection, Violation, CorrectiveAction
-│   │   ├── valueobjects/    # typed wrappers (ProjectCode, Severity, etc.)
-│   │   ├── enums/           # domain enum constants
-│   │   └── errors/          # typed domain errors (InvalidStateTransition, etc.)
-│   ├── app/
-│   │   ├── services/        # use-case orchestration; delegates to domain
-│   │   ├── ports/           # persistence interfaces the app layer depends on
-│   │   └── dto/             # data transfer objects crossing app ↔ web boundary
-│   ├── data/
-│   │   └── postgres/
-│   │       ├── db.go        # connection setup
-│   │       ├── stores/      # ProjectStore, InspectionStore, ViolationStore, etc.
-│   │       └── models/      # scan targets for SQL query results
-│   └── web/
-│       ├── handlers/        # Fiber route handlers — thin; no business logic
-│       ├── middleware/       # auth, request-id, logging
-│       ├── templates/
-│       │   ├── layouts/     # base.html
-│       │   ├── pages/       # full route surfaces
-│       │   ├── partials/    # shared markup (nav, header, footer)
-│       │   └── fragments/   # HTMX swap targets (compliance_tile, violation_row, etc.)
-│       └── static/
-│           ├── js/
-│           └── vendor/      # htmx/, ag-grid/35.2.1/, fieldmark.css (symlink → fieldmark_style/dist/)
+│   ├── web/main.go          # entry: parse env, build pgxpool, build template engine, mount routes
+│   ├── seed/main.go         # dev seed runner (when fiber_auth lands)
+│   └── tools/dumproutes.go  # `go run ./cmd/tools/dumproutes` — emits route inventory for parity tooling
+└── internal/
+    ├── domain/              # PURE — Project, Inspection, Violation, CorrectiveAction, AuditEntry, reference data,
+    │                        #         state-transition methods, can_* predicates, *RuleError types,
+    │                        #         compliance rule + scoring code. No Fiber. No pgx. Standard library only.
+    ├── data/                # explicit SQL via pgx; narrow Store interfaces (ProjectStore, ViolationStore, etc.).
+    │                        # No business rules.
+    ├── app/                 # THIN coordinator — dependency wiring ONLY (Deps struct, env config, ActorFromCtx).
+    │                        # MUST NOT contain business rules or use-case orchestration.
+    └── web/                 # Fiber handlers, html/template rendering, viewmodels, ssrm parser, auth middleware.
+                             # `fiber.Ctx` must not escape this package.
 ```
 
 ## Layer Responsibilities
 
-### `internal/domain`
-State-transition methods, `can_*` predicates, domain invariants, and typed errors. Must not import Fiber, database drivers, or anything outside the standard library.
-
-### `internal/app`
-Use-case orchestration. Coordinates domain calls and persistence via port interfaces. Must not import Fiber or render HTML.
-
-### `internal/data/postgres`
-Postgres connection, store implementations, and query logic. Implements the port interfaces defined in `internal/app/ports/`. Must not contain business rules.
-
-### `internal/web`
-Fiber route definitions, handlers, middleware, and template rendering. Must not contain business rules or query logic beyond calling `app/services`.
+- **`internal/domain`** — entities and behavior. Zero outbound imports beyond the standard library.
+- **`internal/data`** — Postgres access. Narrow per-aggregate `Store` interfaces with concrete pgx implementations. No business rules. No generic `Repository[T]`.
+- **`internal/app`** — wiring only. The `Deps` struct holds the DB pool, the Stores, and the authz checker. This is where `main.go` composes the application graph. **Not** a service layer; **no use-case orchestration**; **no business rules**. Handlers in `web` call domain methods directly with stores from `Deps`.
+- **`internal/web`** — Fiber handlers, html/template files, view models with `can_*` booleans, AG Grid SSRM payload parser, auth middleware (stub for MVP per ADR-012).
 
 ## Dependency Direction (hard rule)
 
 ```
 web → app → domain
-data/postgres → app, domain
+web → data → domain
 ```
 
 - `domain` has zero outbound imports beyond the standard library.
-- `app` depends on `domain` and its own port interfaces — never on concrete `data` types.
-- `web` never reaches into `data` directly.
-- `fiber.Ctx` must not escape the `web` layer.
+- `app` is a Deps container; it imports `domain` and `data` for type wiring only.
+- `web` reaches into `data` through `app.Deps`, not directly to data implementations.
+- `fiber.Ctx` must not escape the `web` package.
 
 ## Database
 
@@ -129,16 +109,15 @@ Password: fieldmark
 - Domain schema is stable
 - Feature work explicitly requires it
 
-## Hard Rules
+## Hard Rules (Go-specific)
 
-- No business rules in handlers or middleware.
+Root `CLAUDE.md` covers cross-stack rules (no client-side state, no fat service layers, real PostgreSQL in tests, infrastructure-owned `domain` schema). The Go-specific rules are:
+
+- No business rules in handlers, middleware, or `internal/app/`.
 - `fiber.Ctx` stays in `internal/web` — never passes to `app` or `domain`.
 - No persistence details in `domain` or `app`.
-- No generic repository abstractions (`Repository[T]`, `Store[T]`, etc.). Stores are domain-specific and narrow.
-- No auto-migration of the `domain` schema — ever.
+- No generic repository abstractions (`Repository[T]`, `Store[T]`, etc.). Stores are per-aggregate and narrow.
 - HTML responses are the default. JSON only for AG Grid data endpoints.
-- No client-side state stores or workflow orchestration.
-- Tests use real PostgreSQL. No mocking the database.
 
 ## Agent Behaviour Rules
 
@@ -150,6 +129,6 @@ Password: fieldmark
 
 ## Reference
 
-- `_bmad-output/planning-artifacts/research/fiber-reference.md` — full Go/Fiber guardrails (authoritative)
-- `_bmad-output/planning-artifacts/research/architecture-decisions.md` — ADRs and hard constraints
-- `docs/FieldMark_Unit_Testing_Strategy.md` — project-wide testing strategy and standards
+- `_bmad-output/planning-artifacts/architecture.md` — architectural source of truth (canonical request flow with Go/Fiber code stub, decisions, patterns)
+- `_bmad-output/planning-artifacts/prd/` — capability source of truth
+- Root `CLAUDE.md` — cross-stack rules and canonical inventories (audit actions, HTMX target IDs, method names)

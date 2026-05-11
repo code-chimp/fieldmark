@@ -1,0 +1,136 @@
+# generated: 2026-05-11
+# last_updated: 2026-05-11
+#   (1-1 and 1-2 story files created — Epic 1 in-progress)
+# project: FieldMark
+# project_key: NOKEY
+# tracking_system: file-system
+# story_location: _bmad-output/implementation-artifacts
+
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic not yet started
+#   - in-progress: Epic actively being worked on
+#   - done: All stories in epic completed
+#
+# Epic Status Transitions:
+#   - backlog → in-progress: Automatically when first story is created (via create-story)
+#   - in-progress → done: Manually when all stories reach 'done' status
+#
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - ready-for-dev: Story file created in stories folder
+#   - in-progress: Developer actively working on implementation
+#   - review: Ready for code review (via Dev's code-review workflow)
+#   - done: Story completed
+#
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - done: Retrospective has been completed
+#
+# WORKFLOW NOTES:
+# ===============
+# - Epic transitions to 'in-progress' automatically when first story is created
+# - Stories can be worked in parallel if team capacity allows
+# - Developer typically creates next story after previous one is 'done' to incorporate learnings
+# - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+
+generated: 2026-05-11
+last_updated: 2026-05-11
+project: FieldMark
+project_key: NOKEY
+tracking_system: file-system
+story_location: _bmad-output/implementation-artifacts
+
+development_status:
+  # ===== Epic 1: Walking Skeleton — Auth, Design System & Parity Foundation =====
+  epic-1: in-progress
+  1-1-confirm-three-native-scaffolds-root-makefile-and-docker-compose-harness: ready-for-dev
+  1-2-verify-postgres-init-scripts-produce-the-canonical-domain-schema-on-a-fresh-volume: ready-for-dev
+  1-3-establish-tools-parity-and-make-parity-with-per-stack-dump-routes: backlog
+  1-4-bootstrap-design-system-foundation-in-fieldmark-shared: backlog
+  1-5-implement-cross-stack-base-layout-with-skip-link-landmarks-and-flashregion: backlog
+  1-6-implement-themetoggle-with-cookie-persistence-per-stack: backlog
+  1-7-wire-asp-net-core-identity-to-dotnet-auth-schema-with-conceptual-roles: backlog
+  1-8-wire-django-built-in-auth-to-django-auth-schema-with-conceptual-role-groups: backlog
+  1-9-implement-go-fiber-stub-authentication-middleware: backlog
+  1-10-author-shared-uuid-dev-user-manifest-and-per-stack-idempotent-seed-runners: backlog
+  1-11-login-logout-and-unauthenticated-redirect-across-all-three-stacks: backlog
+  1-12-implement-authz-can-primitive-and-actionbutton-trichotomy-helper-per-stack: backlog
+  1-13-render-empty-role-aware-home-page-identically-across-all-three-stacks: backlog
+  epic-1-retrospective: optional
+
+  # ===== Epic 2: Project Lifecycle & Compliance Dashboard =====
+  epic-2: backlog
+  2-1-map-domain-project-and-supporting-tables-into-each-stacks-data-layer: backlog
+  2-2-map-domain-audit-entry-and-provide-a-per-stack-append-audit-entry-helper: backlog
+  2-3-map-reference-data-tables-and-expose-a-read-api-per-stack: backlog
+  2-4-implement-phase-2-markup-only-components-statusbadge-inlinealert-auditrow-dashboardtile: backlog
+  2-5-implement-compliancetile-component-and-compliance-tile-oob-target: backlog
+  2-6-implement-entityrail-component-with-responsive-collapse: backlog
+  2-7-implement-tabstrip-component-with-arrow-key-navigation: backlog
+  2-8-project-create-form-pm-admin: backlog
+  2-9-project-list-ag-grid-with-server-side-row-model: backlog
+  2-10-compliance-dashboard-with-portfolio-tiles: backlog
+  2-11-project-detail-anchor-screen-with-header-strip-tabstrip-and-entityrail: backlog
+  2-12-place-on-hold-and-resume-transitions-with-three-region-oob-orchestration: backlog
+  2-13-project-audit-log-tab: backlog
+  2-14-reference-data-read-pages-for-administrator: backlog
+  epic-2-retrospective: optional
+
+  # ===== Epic 3: Inspection Workflow & Violation Genesis =====
+  epic-3: backlog
+  3-1-map-domain-inspection-and-domain-finding-into-each-stacks-data-layer: backlog
+  3-2-map-domain-violation-into-each-stacks-data-layer-write-capable-for-auto-open: backlog
+  3-3-implement-compliance-rule-engine-and-scoring-helper: backlog
+  3-4-schedule-inspection-compliance-officer-administrator: backlog
+  3-5-inspection-list-ag-grid-with-ssrm-endpoint: backlog
+  3-6-inspection-list-filters-and-date-range-scoping: backlog
+  3-7-inspection-detail-rendered-in-entityrail: backlog
+  3-8-start-inspection-scheduled-inprogress: backlog
+  3-9-complete-inspection-with-findings-and-auto-open-violations-atomically: backlog
+  3-10-cancel-scheduled-inspection-with-reason: backlog
+  epic-3-retrospective: optional
+
+  # ===== Epic 4: Violation Lifecycle & Assignment =====
+  epic-4: backlog
+  4-1-extend-violation-data-layer-with-write-operations-assign-void-reassign: backlog
+  4-2-violation-list-ag-grid-with-ssrm-endpoint: backlog
+  4-3-violation-detail-rendered-in-entityrail: backlog
+  4-4-assign-and-reassign-violation-to-site-supervisor: backlog
+  4-5-site-supervisors-assigned-violation-queue: backlog
+  4-6-server-rendered-overdue-marking: backlog
+  4-7-void-violation-administrator-with-score-recompute: backlog
+  4-8-block-reopening-of-resolved-or-voided-violations: backlog
+  epic-4-retrospective: optional
+
+  # ===== Epic 5: Corrective Action Workflow — The Anchor Demo =====
+  epic-5: backlog
+  5-1-map-domain-corrective-action-writes-into-each-stacks-data-layer: backlog
+  5-2-submit-corrective-action-site-supervisor: backlog
+  5-3-render-corrective-action-list-within-violation-detail: backlog
+  5-4-take-corrective-action-for-review-submitted-underreview: backlog
+  5-5-approve-corrective-action-canonical-anchor-three-region-demo: backlog
+  5-6-reject-corrective-action-with-notes-underreview-rejected: backlog
+  5-7-cross-stack-anchor-demo-e2e-and-timing-parity: backlog
+  epic-5-retrospective: optional
+
+  # ===== Epic 6: Project Closure & Compliance Gate Enforcement =====
+  epic-6: backlog
+  6-1-implement-closure-gate-rules-openviolationgate-and-requiredinspectionpertrade: backlog
+  6-2-implement-project-close-entity-method-with-closuregateerror: backlog
+  6-3-close-actionbutton-trichotomy-and-closure-flow: backlog
+  6-4-aishas-denial-then-recovery-user-flow-end-to-end: backlog
+  6-5-verify-dynamic-compliance-rule-parameter-changes-take-effect-without-code-change: backlog
+  epic-6-retrospective: optional
+
+  # ===== Epic 7: Cross-Stack Parity Demonstration & Demo-Ready Quality =====
+  epic-7: backlog
+  7-1-full-playwright-cross-stack-e2e-suite-for-every-mvp-workflow: backlog
+  7-2-cross-stack-visual-regression-suite: backlog
+  7-3-color-blindness-simulation-and-200-percent-browser-zoom-verification: backlog
+  7-4-cross-stack-latency-divergence-verification: backlog
+  7-5-domain-method-unit-test-coverage-closure: backlog
+  7-6-final-cross-stack-inventory-check-routes-indexes-audit-strings: backlog
+  7-7-canonical-component-example-gallery-with-per-stack-snapshot-tests: backlog
+  7-8-ag-grid-axe-ruleset-manual-sr-test-recipe-and-demo-run-documentation: backlog

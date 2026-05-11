@@ -91,16 +91,14 @@ Do not introduce Identity during any story that does not explicitly call for it.
 - EF Core entities use private setters and parameter-validating constructors.
 - Domain entities receive infrastructure dependencies (e.g., `IClock`) via method parameters, not constructor DI.
 
-## Hard Rules
+## Hard Rules (.NET-specific)
+
+Root `CLAUDE.md` covers the cross-stack rules (no CQRS/MediatR, no repositories, no AutoMapper, no client-side state, real PostgreSQL in tests). The .NET-specific rules are:
 
 - `FieldMark.Domain` has zero project or package references. Adding any is architecturally invalid.
 - No MVC controllers — Razor Pages only. No Blazor.
-- No CQRS, MediatR, or any in-process command bus.
-- No repository or Unit-of-Work abstractions. Use `FieldMarkDbContext` directly.
-- No Clean / Onion / Hexagonal layering.
-- No AutoMapper. Project to view models manually.
-- No client-side state stores. No API-first SPA backend.
-- Tests use real PostgreSQL via Testcontainers. SQLite is prohibited.
+- No Clean / Onion / Hexagonal layering on top of the existing 4-project layout.
+- No Mapster either — manual projection in LINQ. (AutoMapper is forbidden by the root rules; Mapster was evaluated and rejected — see architecture.md → §Core Architectural Decisions → NET-MAPSTER.)
 
 ## Agent Behaviour Rules
 
@@ -110,5 +108,6 @@ Do not introduce Identity during any story that does not explicitly call for it.
 
 ## Reference
 
-- `_bmad-output/planning-artifacts/research/dotnet-reference.md` — full .NET guardrails (authoritative)
-- `_bmad-output/planning-artifacts/research/architecture-decisions.md` — ADRs and hard constraints
+- `_bmad-output/planning-artifacts/architecture.md` — architectural source of truth (canonical request flow with .NET code stub, decisions, patterns)
+- `_bmad-output/planning-artifacts/prd/` — capability source of truth
+- Root `CLAUDE.md` — cross-stack rules and canonical inventories (audit actions, HTMX target IDs, method names)

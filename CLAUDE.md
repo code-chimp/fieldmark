@@ -52,14 +52,21 @@ Every mutating handler in all three stacks follows this sequence — nothing mor
 
 If a handler is doing anything outside this list, the logic belongs on the entity.
 
-### Domain Model
+### Domain Aggregates
 
-Four aggregates, all in `_bmad-output/planning-artifacts/research/domain-model.md` (the schema authority):
+Four aggregates: **Project**, **Inspection**, **Violation** (with **CorrectiveAction** inside it). Full state machines, invariants, and DDL live in `_bmad-output/planning-artifacts/architecture.md` and `_bmad-output/planning-artifacts/prd/`.
 
-- **Project** — root aggregate; owns inspections, violations, and audit entries. `compliance_score` (0–100) is server-computed on every relevant write.
-- **Inspection** — `Scheduled → InProgress → Completed`; also `Scheduled → Cancelled`. Completing with findings spawns `Violation` entities.
-- **Violation** — `Open → InProgress → Resolved` (terminal) or `Voided` (terminal). Resolution only through a Compliance Officer–approved `CorrectiveAction`. No reopen path.
-- **CorrectiveAction** — inside the Violation aggregate. `Submitted → UnderReview → Approved` or `Rejected`.
+### Canonical Audit Action Strings
+
+`ProjectCreated`, `ProjectClosed`, `ProjectPlacedOnHold`, `ProjectResumed`, `InspectionScheduled`, `InspectionStarted`, `InspectionCompleted`, `InspectionCancelled`, `ViolationOpened`, `ViolationAssigned`, `ViolationVoided`, `CorrectiveActionSubmitted`, `CorrectiveActionTakenForReview`, `CorrectiveActionApproved`, `CorrectiveActionRejected`.
+
+Stored verbatim in `domain.audit_entry.action`. Adding a string is an ADR amendment — do not invent semantically-similar variants.
+
+### Canonical HTMX Target IDs
+
+`#project-detail`, `#project-list`, `#violation-detail`, `#violation-list`, `#inspection-list`, `#audit-log`, `#compliance-tile` (OOB only), `#corrective-action-form`, `#corrective-action-list`, `#flash-region` (aria-live).
+
+Identical across all three stacks. Inventing a new id is an ADR amendment.
 
 ### HTMX Patterns
 
@@ -68,14 +75,28 @@ Four aggregates, all in `_bmad-output/planning-artifacts/research/domain-model.m
 - `hx-swap-oob` only for header-level tiles (compliance score, notification badge); document each use site.
 - The server decides whether to render action buttons — absent vs. disabled is a server decision.
 - Domain exceptions return HTTP 409 with the originating partial showing the error and unchanged state.
+- Input validation failures (malformed field, missing required value) return HTTP 422 with the originating form partial re-rendered; field-level `aria-invalid` + `aria-describedby` on each invalid field; top InlineAlert with `role="alert"`. No state is mutated on 422.
 
 ### AG Grid
 
 Server-side row model only. Endpoint contract: `{ "rows": [...], "lastRow": N }`. Row selection fires an HTMX request to load a detail panel — the grid never owns the detail view. No business logic inside grid configurations.
 
-### Styling
+### Shared Front-End Assets
 
-`fieldmark_style/` is the sole CSS source. Tailwind v4 compiles `src/fieldmark.css` → `dist/fieldmark.css`, which is symlinked into all three apps. The compiled `dist/` is committed to the repository — no build step is required after cloning.
+`fieldmark_shared/` is the single source of truth for all shared front-end assets:
+
+- **CSS** — Tailwind v4 compiles `src/fieldmark.css` → `dist/fieldmark.css`. Commit `dist/fieldmark.css`; no build step needed after cloning.
+- **Vendor JS** — `vendor/ag-grid/` and `vendor/htmx/` contain the canonical copies of AG Grid and HTMX.
+
+All three stacks consume these via **symlinks** into their `vendor/` static directories — there are no committed copies of vendor files inside any stack. The layout is identical across stacks:
+
+| Asset | .NET | Django | Go/Fiber |
+|---|---|---|---|
+| `fieldmark.css` | `wwwroot/vendor/fieldmark.css` | `static/vendor/fieldmark.css` | `internal/web/static/vendor/fieldmark.css` |
+| AG Grid | `wwwroot/vendor/ag-grid` | `static/vendor/ag-grid` | `internal/web/static/vendor/ag-grid` |
+| HTMX | `wwwroot/vendor/htmx` | `static/vendor/htmx` | `internal/web/static/vendor/htmx` |
+
+To add a new shared JS library: add it to `fieldmark_shared/vendor/`, create directory symlinks in all three stacks, and update `fieldmark_shared/CLAUDE.md`.
 
 ## Hard Rules (all stacks)
 
@@ -91,18 +112,13 @@ Cannot be relaxed without an ADR amendment:
 - **No SQLite in tests.** Real PostgreSQL only (Testcontainers / pytest-django).
 - **AuditEntry writes are non-optional** and always in the same transaction as the triggering write.
 - **Stack symmetry** on routes, HTMX IDs, AG Grid contracts, audit action strings, and method names.
+- **Casing is canonical at the wire and DB layer; idiomatic in source.** PascalCase in Python and snake_case in C# are *both wrong*. Database columns, JSON fields, and enum values are `snake_case` / `SCREAMING_SNAKE_CASE` everywhere. Code identifiers follow the language's native idiom — never converted for "consistency."
 
 Stack-specific rules are in each project's own `CLAUDE.md`.
 
 ## Key Reference Documents
 
-All in `_bmad-output/planning-artifacts/research/`:
+- `_bmad-output/planning-artifacts/architecture.md` — architectural source of truth (decisions, patterns, structure, validation)
+- `_bmad-output/planning-artifacts/prd/` — product requirements source of truth (sharded; index at `prd/index.md`)
 
-- `project-brief.md` — executive summary, thesis, personas, MVP scope
-- `prd.md` — original product requirements (scope authority)
-- `domain-model.md` — ERD overview, entity catalog, state machines, invariants, compliance scoring, PostgreSQL schema
-- `architecture-decisions.md` — ADR-011 through ADR-014 + hard constraints and guardrails for agents
-- `ux-guide.md` — screen inventory, UX principles, wireframe patterns
-- `dotnet-reference.md` — .NET project structure, patterns, agent guardrails
-- `django-reference.md` — Django project structure, patterns, agent guardrails
-- `fiber-reference.md` — Go/Fiber project structure, patterns, agent guardrails
+The `_bmad-output/planning-artifacts/research/` folder contains pre-kickoff priming material that informed the canonical PRD and architecture. It is not maintained going forward and is not authoritative — agents should not rely on it.
