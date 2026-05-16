@@ -23,5 +23,8 @@ Desktop.ini
 /scratch/
 /tmp/
 
+# Claude Code local settings (machine-specific permissions — not shared)
+.claude/settings.local.json
+
 # fieldmark_style build artifacts
 fieldmark_style/node_modules/

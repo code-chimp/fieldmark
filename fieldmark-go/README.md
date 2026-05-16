@@ -133,7 +133,7 @@ Password: fieldmark
 
 ## Prerequisites
 
-- [Go 1.24+](https://go.dev/dl/)
+- [Go 1.26+](https://go.dev/dl/)
 - [Docker](https://www.docker.com/) — for the shared PostgreSQL instance
 
 ---

@@ -10,7 +10,10 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
+import os
 from pathlib import Path
+
+from psycopg.conninfo import conninfo_to_dict
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -79,19 +82,35 @@ WSGI_APPLICATION = "fieldmark.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
+# FIELDMARK_DATABASE_URL takes precedence when non-blank/whitespace. The value
+# is stripped before parsing so leading/trailing spaces do not reach
+# conninfo_to_dict. psycopg.conninfo.conninfo_to_dict handles postgres:// URIs
+# with proper URL-decoding; all query parameters (sslmode, connect_timeout,
+# application_name, etc.) are forwarded so the URL is a lossless source of
+# connection configuration.
+_db_dsn = (os.environ.get("FIELDMARK_DATABASE_URL") or "").strip() or "postgres://fieldmark:fieldmark@localhost:5432/fieldmark"
+_db = conninfo_to_dict(_db_dsn)
+
+# Standard keys that map to top-level DATABASE dict entries; everything else
+# from the parsed URL is forwarded to OPTIONS for psycopg to consume.
+_DB_STANDARD_KEYS = {"dbname", "user", "password", "host", "port"}
+
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "fieldmark",
-        "USER": "fieldmark",
-        "PASSWORD": "fieldmark",
-        "HOST": "localhost",
-        "PORT": "5432",
+        "NAME": _db.get("dbname", "fieldmark"),
+        "USER": _db.get("user", "fieldmark"),
+        "PASSWORD": _db.get("password", "fieldmark"),
+        "HOST": _db.get("host", "localhost"),
+        "PORT": str(_db.get("port", 5432)),
         "OPTIONS": {
             # Route all unqualified table names (Django's own framework tables)
             # into the django_auth schema. Domain models use schema-qualified
             # db_table values and are unaffected by this setting.
-            "options": "-c search_path=django_auth,public"
+            "options": "-c search_path=django_auth,public",
+            # Forward all non-standard connection parameters from the URL
+            # (sslmode, sslrootcert, connect_timeout, application_name, etc.).
+            **{k: str(v) for k, v in _db.items() if k not in _DB_STANDARD_KEYS},
         },
     }
 }

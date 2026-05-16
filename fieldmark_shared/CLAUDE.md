@@ -32,10 +32,10 @@ fieldmark_shared/
 ## Commands
 
 ```bash
-npm install            # first-time setup
-npm run build          # compile once (development)
-npm run build:prod     # compile and minify (production)
-npm run watch          # watch mode — run alongside app dev servers
+pnpm install           # first-time setup
+pnpm run build         # compile once (development)
+pnpm run build:prod    # compile and minify (production)
+pnpm run watch         # watch mode — run alongside app dev servers
 ```
 
 ## How the CSS Build Works
@@ -74,7 +74,7 @@ All paths are relative so the repo works regardless of where it is cloned.
 
 ```bash
 # Terminal 1 — CSS watcher
-cd fieldmark_shared && npm run watch
+cd fieldmark_shared && pnpm run watch
 
 # Terminal 2 — .NET
 cd FieldMark && dotnet watch run --project FieldMark.Web

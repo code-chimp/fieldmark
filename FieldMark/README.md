@@ -87,7 +87,7 @@ cd FieldMark.Web
 dotnet run
 ```
 
-The app will be available at `https://localhost:5001` (or the port shown in console output).
+The app will be available at `http://localhost:5000`.
 
 ### Creating Migrations
 

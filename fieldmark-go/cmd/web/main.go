@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/gofiber/fiber/v3"
 	"github.com/gofiber/fiber/v3/middleware/logger"
@@ -15,7 +16,7 @@ import (
 
 func main() {
 	// --- Database ---------------------------------------------------------
-	dsn := os.Getenv("DATABASE_URL")
+	dsn := strings.TrimSpace(os.Getenv("FIELDMARK_DATABASE_URL"))
 	if dsn == "" {
 		dsn = "postgres://fieldmark:fieldmark@localhost:5432/fieldmark"
 	}

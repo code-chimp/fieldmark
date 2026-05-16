@@ -11,6 +11,9 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
-    "@tailwindcss/cli": "^4.2.4"
+    "@tailwindcss/cli": "4.2.4"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["@parcel/watcher"]
   }
 }

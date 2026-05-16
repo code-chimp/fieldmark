@@ -39,7 +39,7 @@ fieldmark/
 ├── fieldmark-go/           Go project (Fiber + HTMX)
 │   ├── cmd/web/              Entry point
 │   └── internal/             Domain, app, data, and web layers
-├── fieldmark_style/        Shared CSS source (Tailwind v4)
+├── fieldmark_shared/       Shared CSS source and vendor JS (Tailwind v4, HTMX, AG Grid)
 ├── e2e/                    Shared Playwright browser tests (all three backends)
 ├── docker/
 │   └── postgres/
@@ -94,20 +94,51 @@ These are non-negotiable across all three stacks:
 
 ## Prerequisites
 
-- [Docker](https://www.docker.com/) — for PostgreSQL
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) or [Docker Engine](https://docs.docker.com/engine/install/) — for PostgreSQL
 - [.NET 10 SDK](https://dotnet.microsoft.com/download) — for the .NET stack
 - [Python 3.14+](https://www.python.org/) with [uv](https://docs.astral.sh/uv/) — for the Django stack
-- [Go 1.24+](https://go.dev/dl/) — for the Go stack
+- [Go 1.26+](https://go.dev/dl/) — for the Go stack
+- [Node.js 20+](https://nodejs.org/) with [pnpm](https://pnpm.io/installation) — for CSS builds (`fieldmark_shared`) and e2e tests (later stories); Tailwind's Oxide engine requires Node ≥ 20
 
-## Quick Start
+## Getting Started
 
-**Start PostgreSQL:**
+**1. Start PostgreSQL:**
 
 ```bash
-docker compose up -d
+make up
 ```
 
-This starts PostgreSQL 17 on port 5432, runs the schema init scripts, and makes the database available with credentials `fieldmark / fieldmark / fieldmark`. Then follow the setup instructions in each stack's README.
+This starts PostgreSQL 17 on `localhost:5432` and runs the schema init scripts on first volume creation. Credentials: `fieldmark / fieldmark / fieldmark`.
+
+**2. Run the stacks** (each in its own terminal):
+
+```bash
+make run-net       # .NET Razor Pages  →  http://localhost:5000
+make run-django    # Django Templates  →  http://localhost:8000
+make run-go        # Go Fiber          →  http://localhost:3000
+```
+
+All three stacks connect to the same Postgres instance and can run simultaneously.
+
+**3. Reset the database** (destroy volume and re-run init scripts):
+
+```bash
+make reset
+```
+
+Run `make help` for the full list of available targets.
+
+### Per-stack setup
+
+Each stack has its own README with additional dev instructions:
+
+- [FieldMark/README.md](FieldMark/README.md) — .NET (Razor Pages + EF Core)
+- [fieldmark_py/README.md](fieldmark_py/README.md) — Django (Templates + psycopg)
+- [fieldmark-go/README.md](fieldmark-go/README.md) — Go (Fiber + pgx)
+
+### Architecture rules
+
+See [CLAUDE.md](CLAUDE.md) for the cross-stack architectural rules enforced at every story boundary, and each stack's own `CLAUDE.md` for stack-specific constraints.
 
 ## Status
 
