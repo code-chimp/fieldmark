@@ -99,6 +99,7 @@ These are non-negotiable across all three stacks:
 - [Python 3.14+](https://www.python.org/) with [uv](https://docs.astral.sh/uv/) — for the Django stack
 - [Go 1.26+](https://go.dev/dl/) — for the Go stack
 - [Node.js 20+](https://nodejs.org/) with [pnpm](https://pnpm.io/installation) — for CSS builds (`fieldmark_shared`) and e2e tests (later stories); Tailwind's Oxide engine requires Node ≥ 20
+- `psql` — PostgreSQL client for the verification script. On macOS: `brew install libpq && brew link --force libpq`
 
 ## Getting Started
 
@@ -127,6 +128,24 @@ make reset
 ```
 
 Run `make help` for the full list of available targets.
+
+### Verifying the database
+
+After `make up` or `make reset`, verify the canonical schema:
+
+```bash
+./tools/verify-domain-schema.sh
+```
+
+Expected output:
+
+```
+OK domain schema verified (5 schemas, 12 tables, N reference rows)
+```
+
+Non-zero exit = schema drift. Investigate before running any stack.
+
+<!-- TODO: link from Story 1.3 -->
 
 ### Per-stack setup
 

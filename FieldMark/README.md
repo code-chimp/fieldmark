@@ -97,6 +97,10 @@ When domain entities change:
 dotnet ef migrations add <MigrationName> -p FieldMark.Data -s FieldMark.Web
 ```
 
+### Schema Ownership
+
+The `domain` schema is created and migrated by `docker/postgres/init/`. EF Core migrations in this stack apply only to the `dotnet_auth` schema. Running `dotnet ef migrations add` against a `DbContext` whose default schema is `"domain"` is a defect — it would violate ADR-014 (infrastructure-owned domain schema). Domain entities are mapped to existing tables via `ToTable` in `IEntityTypeConfiguration<T>`; they are not created or altered by EF Core.
+
 ## Architectural Constraints
 
 The following patterns are **explicitly rejected** and will not be introduced without an ADR amendment:

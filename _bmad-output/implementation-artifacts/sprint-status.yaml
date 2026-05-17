@@ -36,7 +36,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-05-11
-last_updated: 2026-05-16
+last_updated: 2026-05-17
 project: FieldMark
 project_key: NOKEY
 tracking_system: file-system
@@ -46,7 +46,7 @@ development_status:
   # ===== Epic 1: Walking Skeleton — Auth, Design System & Parity Foundation =====
   epic-1: in-progress
   1-1-confirm-three-native-scaffolds-root-makefile-and-docker-compose-harness: done
-  1-2-verify-postgres-init-scripts-produce-the-canonical-domain-schema-on-a-fresh-volume: in-progress
+  1-2-verify-postgres-init-scripts-produce-the-canonical-domain-schema-on-a-fresh-volume: done
   1-3-establish-tools-parity-and-make-parity-with-per-stack-dump-routes: backlog
   1-4-bootstrap-design-system-foundation-in-fieldmark-shared: backlog
   1-5-implement-cross-stack-base-layout-with-skip-link-landmarks-and-flashregion: backlog
