@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+# FieldMark pre-commit hook — runs `make parity` when stack source files change.
+#
+# Installation (opt-in):
+#   cp tools/git-hooks/pre-commit.sample .git/hooks/pre-commit
+#   chmod +x .git/hooks/pre-commit
+#
+# This hook aborts the commit if cross-stack route or index parity is broken.
+# Fix the drift, then re-commit.
+set -euo pipefail
+
+# Check whether any staged file touches a stack or the DB init scripts.
+STACK_PATTERN='FieldMark/|fieldmark_py/|fieldmark-go/|docker/postgres/init/'
+
+if git diff --cached --name-only | grep -qE "$STACK_PATTERN"; then
+    echo "  [pre-commit] stack files changed — running make parity..."
+    if ! make parity; then
+        echo ""
+        echo "  COMMIT ABORTED: cross-stack parity check failed."
+        echo "  Fix the drift reported above, then re-commit."
+        exit 1
+    fi
+fi

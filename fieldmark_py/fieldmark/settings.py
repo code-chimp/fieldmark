@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     "compliance",
     "reference",
     "grid",
+    "tools",
 ]
 
 MIDDLEWARE = [

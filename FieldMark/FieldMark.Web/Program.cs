@@ -77,4 +77,10 @@ app.UseAuthorization();
 app.MapStaticAssets();
 app.MapRazorPages().WithStaticAssets();
 
+if (args.Contains("--dump-routes"))
+{
+    FieldMark.Web.Tools.DumpRoutes.Run(app);
+    return; // allows the host to dispose cleanly; no Environment.Exit needed
+}
+
 app.Run();
