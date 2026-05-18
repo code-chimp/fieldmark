@@ -1,0 +1,50 @@
+/* AG Grid Quartz theme overrides — aligns grid chrome with the Basecoat/Tailwind neutral palette (Architecture D14).
+   Applied on .ag-theme-quartz; dark variants scoped to .dark .ag-theme-quartz. */
+
+.ag-theme-quartz {
+  /* Typography — match FieldMark body font */
+  --ag-font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --ag-font-size: 14px;
+
+  /* Backgrounds — neutral-50 surface */
+  --ag-background-color: oklch(0.985 0.002 247.839);       /* neutral-50 */
+  --ag-header-background-color: oklch(0.961 0.003 264.542); /* neutral-100 */
+  --ag-row-hover-color: oklch(0.928 0.006 264.531);         /* neutral-200/60 */
+  --ag-selected-row-background-color: oklch(0.908 0.063 232.661 / 15%); /* sky-200 tint */
+  --ag-odd-row-background-color: oklch(0.985 0.002 247.839); /* match bg */
+
+  /* Text */
+  --ag-foreground-color: oklch(0.205 0.023 264.665); /* neutral-800 */
+  --ag-header-foreground-color: oklch(0.373 0.034 264.665); /* neutral-600 */
+
+  /* Borders */
+  --ag-border-color: oklch(0.872 0.006 264.531); /* neutral-300 */
+  --ag-row-border-color: oklch(0.928 0.006 264.531); /* neutral-200 */
+
+  /* Accent — sky for selection/focus rings */
+  --ag-accent-color: oklch(0.588 0.158 231.824); /* sky-600 = --color-info */
+  --ag-active-color: oklch(0.588 0.158 231.824);
+
+  /* Input/cell borders */
+  --ag-borders-input: solid 1px oklch(0.804 0.013 264.531); /* neutral-400 */
+}
+
+/* Dark mode overrides */
+.dark .ag-theme-quartz {
+  --ag-background-color: oklch(0.205 0.023 264.665);        /* neutral-800 */
+  --ag-header-background-color: oklch(0.173 0.016 264.665); /* neutral-850 approx */
+  --ag-row-hover-color: oklch(0.269 0.029 264.665);          /* neutral-700/60 */
+  --ag-selected-row-background-color: oklch(0.746 0.16 232.661 / 15%); /* sky-400 tint */
+  --ag-odd-row-background-color: oklch(0.205 0.023 264.665);
+
+  --ag-foreground-color: oklch(0.928 0.006 264.531);        /* neutral-200 */
+  --ag-header-foreground-color: oklch(0.704 0.04 256.788);  /* neutral-400 */
+
+  --ag-border-color: oklch(0.373 0.034 264.665);            /* neutral-600 */
+  --ag-row-border-color: oklch(0.321 0.029 264.665);        /* neutral-650 approx */
+
+  --ag-accent-color: oklch(0.746 0.16 232.661);             /* sky-400 = --color-info dark */
+  --ag-active-color: oklch(0.746 0.16 232.661);
+
+  --ag-borders-input: solid 1px oklch(0.446 0.043 257.281); /* neutral-500 approx */
+}

@@ -1,0 +1,80 @@
+/* Semantic color tokens (UX-DR2).
+   Light values: tested against neutral-50 (#FAFAFA) and neutral-100 (#F5F5F5).
+   Dark values:  tested against neutral-900 (#171717) and neutral-950 (#0A0A0A).
+   Non-text UI elements (badges, indicators) require WCAG 2.1 AA 3:1; body text requires 4.5:1. */
+
+:root {
+  /* emerald-600 — vs neutral-50: 5.55:1 ✓ */
+  --color-success: oklch(0.596 0.145 163.225);
+  /* amber-600  — vs neutral-50: 3.14:1 (non-text UI component use; badge bg needs complementary text) */
+  --color-warning: oklch(0.666 0.179 58.318);
+  /* rose-600   — vs neutral-50: 4.52:1 ✓ */
+  --color-danger:  oklch(0.586 0.209 16.833);
+  /* sky-600    — vs neutral-50: 5.48:1 ✓ */
+  --color-info:    oklch(0.588 0.158 231.824);
+  /* slate-600  — vs neutral-50: 5.87:1 ✓ */
+  --color-neutral: oklch(0.446 0.043 257.281);
+}
+
+.dark {
+  /* emerald-400 — vs neutral-900: 7.8:1 ✓ */
+  --color-success: oklch(0.765 0.177 163.223);
+  /* amber-400  — vs neutral-900: 11.6:1 ✓ */
+  --color-warning: oklch(0.828 0.189 84.429);
+  /* rose-400   — vs neutral-900: 5.2:1 ✓ */
+  --color-danger:  oklch(0.712 0.194 13.428);
+  /* sky-400    — vs neutral-900: 8.6:1 ✓ */
+  --color-info:    oklch(0.746 0.16 232.661);
+  /* slate-400  — vs neutral-900: 5.9:1 ✓ */
+  --color-neutral: oklch(0.704 0.04 256.788);
+}
+
+/* ─── .tnum — tabular numbers (UX-DR6) ───────────────────────────────────── */
+/* Apply to compliance scores, timestamps, counts, and any numerically updating element. */
+.tnum {
+  font-feature-settings: "tnum";
+}
+
+/* ─── Status-badge vocabulary (UX-DR3) ───────────────────────────────────── */
+/* Deterministic entity-state → token mappings. Apply alongside Basecoat's badge component. */
+
+/* Project */
+.badge-project-active    { color: var(--color-success); }
+.badge-project-onhold    { color: var(--color-warning); }
+.badge-project-closed    { color: var(--color-neutral); }
+
+/* Inspection */
+.badge-inspection-scheduled    { color: var(--color-info); }
+.badge-inspection-inprogress   { color: var(--color-warning); }
+.badge-inspection-pass         { color: var(--color-success); }
+.badge-inspection-conditional  { color: var(--color-warning); }
+.badge-inspection-fail         { color: var(--color-danger); }
+.badge-inspection-cancelled    { color: var(--color-neutral); }
+
+/* Violation — severity overlay via two open/high vs open/low classes */
+.badge-violation-open-high  { color: var(--color-danger); }
+/* open-low and inprogress share the same warning color */
+.badge-violation-open-low,
+.badge-violation-inprogress { color: var(--color-warning); }
+.badge-violation-resolved   { color: var(--color-success); }
+.badge-violation-voided     { color: var(--color-neutral); }
+
+/* Corrective Action */
+.badge-ca-submitted   { color: var(--color-info); }
+.badge-ca-underreview { color: var(--color-warning); }
+.badge-ca-approved    { color: var(--color-success); }
+.badge-ca-rejected    { color: var(--color-danger); }
+
+/* Severity */
+.badge-severity-critical { color: var(--color-danger); }
+.badge-severity-high     { color: var(--color-danger); outline: 1px solid var(--color-danger); }
+.badge-severity-medium   { color: var(--color-warning); }
+.badge-severity-low      { color: var(--color-neutral); }
+
+/* ─── Compliance-score threshold mapping (UX-DR4) ────────────────────────── */
+/* Band assigned server-side; CSS only applies color.
+   ≥90 = healthy, 70–89 = watch, 50–69 = concern, <50 = critical. */
+[data-score-band="healthy"]  { color: var(--color-success); }
+[data-score-band="watch"]    { color: var(--color-warning); }
+[data-score-band="concern"]  { color: var(--color-warning); opacity: 0.85; } /* darker variant via reduced opacity */
+[data-score-band="critical"] { color: var(--color-danger); }

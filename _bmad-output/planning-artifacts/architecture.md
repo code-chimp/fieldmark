@@ -419,8 +419,9 @@ Architectural concerns the BMad architecture document needs to fill in over the 
 
 - **D14 — AG Grid theming:** AG Grid Quartz theme compiled into `fieldmark_shared/dist/fieldmark.css` as part of the same Tailwind compile pass. Theme variables overridden in `fieldmark_shared/src/ag-grid-overrides.css` to align colors/spacing with the Tailwind palette.
 - **D15 — Asset loading:** vendor locally; no CDN.
-  - HTMX: `fieldmark_shared/vendor/htmx/htmx.min.js` (committed).
-  - AG Grid Community 35.x: `fieldmark_shared/vendor/ag-grid/35.2.1/ag-grid-community.min.js` (committed).
+  - HTMX: `fieldmark_shared/vendor/htmx/htmx.min.js` (committed). Pinned: `4.0.0-beta2`.
+  - AG Grid Community 35.x: `fieldmark_shared/vendor/ag-grid/35.2.1/ag-grid-community.min.js` (committed). Pinned: `35.2.1`.
+  - Basecoat CSS component library: installed via `pnpm` in `fieldmark_shared/`. Pinned: `basecoat-css@0.3.11` (exact; no `^` or `~`). Pre-1.0 — treat minor bumps as breaking.
   - Symlinked into each app's `vendor/` static dir.
   Vendoring makes the version-pinning rule auditable (you can't audit a CDN URL pinned to "@latest"; you can audit a committed file).
 - **D16 — Tailwind compilation trigger:** manual via `cd fieldmark_shared && npm run build` (npm script in `fieldmark_shared/package.json`). Compiled `dist/` is committed; CSS authoring is rare. Each stack's `CLAUDE.md` documents that CSS edits require a rebuild + commit. No watcher needed.

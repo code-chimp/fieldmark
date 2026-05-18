@@ -1,9 +1,29 @@
-/* Full Tailwind v4 import: theme + preflight reset + utilities.
-   Bootstrap has been removed; this is the sole CSS foundation for both apps. */
+/* Full Tailwind v4 import: theme + preflight reset + utilities. */
 @import "tailwindcss";
 
-/* Scan both project template directories for Tailwind class references.
-   Paths are relative to this file (fieldmark_style/src/). */
+/* Basecoat component library (pinned: 0.3.11 — pre-1.0, pin exact) — must follow tailwindcss import. */
+@import "basecoat-css";
+
+/* Self-hosted fonts */
+@import "./_fonts.css";
+
+/* Semantic color tokens, status-badge vocabulary, score-band mapping */
+@import "./_tokens.css";
+
+/* Layout foundation: container, gutter collapse */
+@import "./_layout.css";
+
+/* AG Grid Quartz theme overrides */
+@import "./_ag-grid.css";
+
+/* Scan all three stacks' template directories for Tailwind class references.
+   Paths are relative to this file (fieldmark_shared/src/). */
 @source "../../FieldMark/FieldMark.Web/Pages/**/*.cshtml";
 @source "../../fieldmark_py/templates/**/*.html";
 @source "../../fieldmark-go/internal/web/templates/**/*.html";
+
+/* Font family overrides — set Inter and JetBrains Mono as the stack defaults. */
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}

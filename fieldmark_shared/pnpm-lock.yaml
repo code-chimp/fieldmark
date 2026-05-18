@@ -7,10 +7,17 @@ settings:
 importers:
 
   .:
+    dependencies:
+      basecoat-css:
+        specifier: 0.3.11
+        version: 0.3.11
     devDependencies:
       '@tailwindcss/cli':
         specifier: 4.2.4
         version: 4.2.4
+      lightningcss:
+        specifier: 1.32.0
+        version: 1.32.0
 
 packages:
 
@@ -210,6 +217,9 @@ packages:
   '@tailwindcss/oxide@4.2.4':
     resolution: {integrity: sha512-9El/iI069DKDSXwTvB9J4BwdO5JhRrOweGaK25taBAvBXyXqJAX+Jqdvs8r8gKpsI/1m0LeJLyQYTf/WLrBT1Q==}
     engines: {node: '>= 20'}
+
+  basecoat-css@0.3.11:
+    resolution: {integrity: sha512-cU91Egcg9AhKJ1HswpKFItHC//FWDt1T8AlL5Yk9Fh5I2WYe+QhN3MtiVJ2vemqFF4iAM1vfbikhhjc+vkr2zA==}
 
   detect-libc@2.1.2:
     resolution: {integrity: sha512-Btj2BOOO83o3WyH59e8MgXsxEQVcarkUOpEYrubB0urwnN10yQ364rsiByU11nZlqWYZm05i/of7io4mzihBtQ==}
@@ -487,6 +497,8 @@ snapshots:
       '@tailwindcss/oxide-wasm32-wasi': 4.2.4
       '@tailwindcss/oxide-win32-arm64-msvc': 4.2.4
       '@tailwindcss/oxide-win32-x64-msvc': 4.2.4
+
+  basecoat-css@0.3.11: {}
 
   detect-libc@2.1.2: {}
 

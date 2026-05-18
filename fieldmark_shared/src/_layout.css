@@ -1,0 +1,27 @@
+/* Layout foundation — Tailwind defaults only; no custom breakpoints (UX-DR8).
+   Uses standard Tailwind spacing scale and built-in screen sizes. */
+
+/* ─── Application shell ──────────────────────────────────────────────────── */
+
+/* max-w-screen-2xl centres content on large monitors (≥1536px) */
+.app-container {
+  width: 100%;
+  max-width: 1536px; /* max-w-screen-2xl */
+  margin-inline: auto;
+  padding-inline: 1.5rem; /* px-6: 24px — default gutter */
+}
+
+/* px-6 → px-4 gutter collapse at sm (640px) breakpoint */
+@media (max-width: 640px) {
+  .app-container {
+    padding-inline: 1rem; /* px-4: 16px — sm collapse point */
+  }
+}
+
+/* ─── Default body text size ─────────────────────────────────────────────── */
+
+/* text-sm (14px) base for content density — overriding Tailwind's 16px default */
+body {
+  font-size: 0.875rem; /* text-sm */
+  line-height: 1.375;  /* leading-snug */
+}
