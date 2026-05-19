@@ -92,7 +92,13 @@ uv sync
 uv run python manage.py migrate
 ```
 
-**4. Run the development server:**
+**4. Seed conceptual-role Groups (idempotent — safe to re-run):**
+
+```bash
+uv run python manage.py seed_groups
+```
+
+**5. Run the development server:**
 
 ```bash
 uv run python manage.py runserver

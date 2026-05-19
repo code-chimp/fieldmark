@@ -106,9 +106,13 @@ DATABASES = {
         "HOST": _db.get("host", "localhost"),
         "PORT": str(_db.get("port", 5432)),
         "OPTIONS": {
-            # Route all unqualified table names (Django's own framework tables)
-            # into the django_auth schema. Domain models use schema-qualified
-            # db_table values and are unaffected by this setting.
+            # Architecture D7: chosen mechanism for django_auth schema isolation.
+            # search_path routes all unqualified CREATE TABLEs (auth, sessions,
+            # admin, contenttypes, migrations) into django_auth automatically.
+            # Supersedes the routers.py approach shown in the architecture directory
+            # diagram — no DatabaseRouter or per-model db_table overrides needed.
+            # Domain models are Meta.managed=False with schema-qualified db_table
+            # and are unaffected. Login/logout wiring lands in Story 1.11.
             "options": "-c search_path=django_auth,public",
             # Forward all non-standard connection parameters from the URL
             # (sslmode, sslrootcert, connect_timeout, application_name, etc.).

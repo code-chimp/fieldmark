@@ -63,6 +63,24 @@ Root `CLAUDE.md` covers cross-stack rules (no service layers, no client-side sta
 - **No cross-app side effects.** An action in `violations/` must not trigger behavior in `inspections/` implicitly.
 - **Django migrations are scoped to `django_auth` only.** Domain models must set `Meta.managed = False` and `db_table = 'domain"."<table>'` so Django never attempts to create or alter `domain.*` tables.
 
+## Authentication
+
+Django's built-in `auth`, `sessions`, `admin`, and `contenttypes` apps are the framework-native auth source. No custom user model — `AbstractUser` is not subclassed (Architecture D7).
+
+**Schema mechanism:** All framework-managed tables land in `django_auth` via `OPTIONS["options"] = "-c search_path=django_auth,public"` on `DATABASES["default"]`. This supersedes the `fieldmark/routers.py` approach shown in the architecture directory diagram — a custom `DatabaseRouter` and per-model `db_table` overrides are not needed and must not be added. The divergence is intentional.
+
+**Domain model isolation:** Domain models set `Meta.managed = False` and `db_table = 'domain"."<table>'` so Django never CREATEs or ALTERs `domain.*` tables (ADR-014). Django migrations are scoped to `django_auth` only.
+
+**Conceptual roles:** Roles map to Django `Group` objects. The five canonical group names are `ADMIN`, `COMPLIANCE_OFFICER`, `INSPECTOR`, `SITE_SUPERVISOR`, `EXECUTIVE`. Seed them with:
+
+```bash
+uv run python manage.py seed_groups
+```
+
+The command lives in `tools/management/commands/seed_groups.py` and is idempotent — safe to re-run. Do not wire it to `AppConfig.ready()` or a `post_migrate` signal.
+
+**Login and logout** views and the unauthenticated-redirect contract are Story 1.11's scope.
+
 ## Reference
 
 - `_bmad-output/planning-artifacts/architecture.md` — architectural source of truth (canonical request flow with Django code stub, decisions, patterns)
