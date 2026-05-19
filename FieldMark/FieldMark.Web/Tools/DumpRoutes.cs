@@ -7,7 +7,15 @@ namespace FieldMark.Web.Tools;
 internal static class DumpRoutes
 {
     private static readonly string[] HttpMethodNames =
-        ["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"];
+    [
+        "GET",
+        "POST",
+        "PUT",
+        "DELETE",
+        "PATCH",
+        "HEAD",
+        "OPTIONS",
+    ];
 
     internal static void Run(WebApplication app)
     {
@@ -27,8 +35,7 @@ internal static class DumpRoutes
 
                 // Prefer explicit route template (e.g. "@page "/preferences/theme""),
                 // otherwise derive the path from the view engine path.
-                var rawPath = descriptor.AttributeRouteInfo?.Template
-                    ?? descriptor.ViewEnginePath;
+                var rawPath = descriptor.AttributeRouteInfo?.Template ?? descriptor.ViewEnginePath;
                 var path = rawPath.Length == 0 ? "/" : "/" + rawPath.TrimStart('/');
                 if (path.Length > 1)
                     path = path.TrimEnd('/');
@@ -62,14 +69,15 @@ internal static class DumpRoutes
         // the On{Method}[Async] handler naming convention is a stable Razor Pages
         // contract (unchanged since ASP.NET Core 2.0).
         var segments = viewEnginePath.TrimStart('/').Split('/');
-        var typeName = "FieldMark.Web.Pages."
+        var typeName =
+            "FieldMark.Web.Pages."
             + string.Join('.', segments.Take(segments.Length - 1).Append(segments[^1] + "Model"));
 
         // Search all loaded assemblies so the dumper works correctly if pages are
         // ever split into a separate assembly; verify the resolved type is a PageModel
         // to rule out accidental name collisions.
-        var type = AppDomain.CurrentDomain
-            .GetAssemblies()
+        var type = AppDomain
+            .CurrentDomain.GetAssemblies()
             .Select(a => a.GetType(typeName))
             .FirstOrDefault(t => t is not null && typeof(PageModel).IsAssignableFrom(t));
 

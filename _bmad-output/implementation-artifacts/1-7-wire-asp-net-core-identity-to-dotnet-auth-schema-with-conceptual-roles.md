@@ -1,6 +1,6 @@
 # Story 1.7: Wire ASP.NET Core Identity to `dotnet_auth` schema with conceptual roles
 
-Status: ready-for-dev
+Status: done
 
 ## Story
 
@@ -53,25 +53,25 @@ So that user identity is owned by .NET, is isolated from `domain.*`, and is read
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Add NuGet packages to `FieldMark.Data` and `FieldMark.Web` (AC: #1, #2, #3)
-  - [ ] 1.1 Add to `FieldMark.Data/FieldMark.Data.csproj`:
+- [x] Task 1: Add NuGet packages to `FieldMark.Data` and `FieldMark.Web` (AC: #1, #2, #3)
+  - [x] 1.1 Add to `FieldMark.Data/FieldMark.Data.csproj`:
     - `Microsoft.AspNetCore.Identity.EntityFrameworkCore` (version matching .NET 10 / EF Core 10.0.7 — confirm latest 10.x with `dotnet add package`; do not pin to a 9.x version)
     - `EFCore.NamingConventions` (latest stable compatible with EF Core 10) — required for `UseSnakeCaseNamingConvention()` per Architecture D1
-  - [ ] 1.2 Run `dotnet restore` and confirm `dotnet build` is clean before writing code
+  - [x] 1.2 Run `dotnet restore` and confirm `dotnet build` is clean before writing code
 
-- [ ] Task 2: Create `AuthDbContext` in `FieldMark.Data` (AC: #1, #2)
-  - [ ] 2.1 Create `FieldMark/FieldMark.Data/Context/AuthDbContext.cs`
-  - [ ] 2.2 Inherit from `IdentityDbContext<IdentityUser<Guid>, IdentityRole<Guid>, Guid>` (Guid PKs — UUID at rest, per Architecture §Schema ownership "UUIDs generated in app code")
-  - [ ] 2.3 Override `OnModelCreating(ModelBuilder modelBuilder)`:
+- [x] Task 2: Create `AuthDbContext` in `FieldMark.Data` (AC: #1, #2)
+  - [x] 2.1 Create `FieldMark/FieldMark.Data/Context/AuthDbContext.cs`
+  - [x] 2.2 Inherit from `IdentityDbContext<IdentityUser<Guid>, IdentityRole<Guid>, Guid>` (Guid PKs — UUID at rest, per Architecture §Schema ownership "UUIDs generated in app code")
+  - [x] 2.3 Override `OnModelCreating(ModelBuilder modelBuilder)`:
     - Call `base.OnModelCreating(modelBuilder)` first (required by `IdentityDbContext`)
     - Call `modelBuilder.HasDefaultSchema("dotnet_auth")` after
-  - [ ] 2.4 Constructor accepts `DbContextOptions<AuthDbContext>` and forwards to base
-  - [ ] 2.5 Namespace: `FieldMark.Data.Context` (matches `FieldMarkDbContext`)
+  - [x] 2.4 Constructor accepts `DbContextOptions<AuthDbContext>` and forwards to base
+  - [x] 2.5 Namespace: `FieldMark.Data.Context` (matches `FieldMarkDbContext`)
 
-- [ ] Task 3: Register Identity, both DbContexts, and password policy in `Program.cs` (AC: #1, #3, #6, #8)
-  - [ ] 3.1 Register `AuthDbContext` via `builder.Services.AddDbContext<AuthDbContext>(options => options.UseNpgsql(connectionString).UseSnakeCaseNamingConvention())` — note `UseSnakeCaseNamingConvention()` is on the options builder, not in `OnModelCreating`
-  - [ ] 3.2 Apply `UseSnakeCaseNamingConvention()` to the existing `FieldMarkDbContext` registration too (it was missing — adding it now keeps both contexts consistent and aligns with Architecture D1)
-  - [ ] 3.3 Register Identity with the canonical password policy using `AddIdentityCore` (NOT `AddDefaultIdentity` — see AC #6):
+- [x] Task 3: Register Identity, both DbContexts, and password policy in `Program.cs` (AC: #1, #3, #6, #8)
+  - [x] 3.1 Register `AuthDbContext` via `builder.Services.AddDbContext<AuthDbContext>(options => options.UseNpgsql(connectionString).UseSnakeCaseNamingConvention())` — note `UseSnakeCaseNamingConvention()` is on the options builder, not in `OnModelCreating`
+  - [x] 3.2 Apply `UseSnakeCaseNamingConvention()` to the existing `FieldMarkDbContext` registration too (it was missing — adding it now keeps both contexts consistent and aligns with Architecture D1)
+  - [x] 3.3 Register Identity with the canonical password policy using `AddIdentityCore` (NOT `AddDefaultIdentity` — see AC #6):
     ```csharp
     builder.Services
         .AddIdentityCore<IdentityUser<Guid>>(options =>
@@ -87,21 +87,21 @@ So that user identity is owned by .NET, is isolated from `domain.*`, and is read
         .AddSignInManager()
         .AddDefaultTokenProviders();
     ```
-  - [ ] 3.4 Do **not** add `app.UseAuthentication()` or scaffold Identity UI in this story — wiring the auth middleware and login pages is Story 1.11's scope. Keeping it absent here is what holds AC #6 + AC #7 (parity).
-  - [ ] 3.5 Confirm `--dump-routes` flag handling still precedes `app.Run()` and works unchanged
+  - [x] 3.4 Do **not** add `app.UseAuthentication()` or scaffold Identity UI in this story — wiring the auth middleware and login pages is Story 1.11's scope. Keeping it absent here is what holds AC #6 + AC #7 (parity).
+  - [x] 3.5 Confirm `--dump-routes` flag handling still precedes `app.Run()` and works unchanged
 
-- [ ] Task 4: Generate and apply the initial Identity migration (AC: #4)
-  - [ ] 4.1 From `FieldMark/`, run: `dotnet ef migrations add InitialIdentity --context AuthDbContext --project FieldMark.Data --startup-project FieldMark.Web --output-dir Migrations/Auth`
-  - [ ] 4.2 Open the generated migration file and verify every `CreateTable`, `CreateIndex`, `AddForeignKey` call has `schema: "dotnet_auth"`. If `EFCore.NamingConventions` is correctly wired, table and column names will already be snake_case. **Do not hand-edit the migration to "fix" anything except verify the schema target.**
-  - [ ] 4.3 Run: `dotnet ef database update --context AuthDbContext --project FieldMark.Data --startup-project FieldMark.Web`
-  - [ ] 4.4 Verify via `psql`: `\dt dotnet_auth.*` lists the seven tables; spot-check `\d dotnet_auth.users` for snake_case columns (`normalized_user_name`, `email_confirmed`, etc.)
-  - [ ] 4.5 Run `grep -rn '"domain"' FieldMark/FieldMark.Data/Migrations/Auth/` — must return zero matches
+- [x] Task 4: Generate and apply the initial Identity migration (AC: #4)
+  - [x] 4.1 From `FieldMark/`, run: `dotnet ef migrations add InitialIdentity --context AuthDbContext --project FieldMark.Data --startup-project FieldMark.Web --output-dir Migrations/Auth`
+  - [x] 4.2 Open the generated migration file and verify every `CreateTable`, `CreateIndex`, `AddForeignKey` call has `schema: "dotnet_auth"`. If `EFCore.NamingConventions` is correctly wired, table and column names will already be snake_case. **Do not hand-edit the migration to "fix" anything except verify the schema target.**
+  - [x] 4.3 Run: `dotnet ef database update --context AuthDbContext --project FieldMark.Data --startup-project FieldMark.Web`
+  - [x] 4.4 Verify via `psql`: `\dt dotnet_auth.*` lists the seven tables; spot-check `\d dotnet_auth.users` for snake_case columns (`normalized_user_name`, `email_confirmed`, etc.)
+  - [x] 4.5 Run `grep -rn '"domain"' FieldMark/FieldMark.Data/Migrations/Auth/` — must return zero matches
 
-- [ ] Task 5: Seed the five canonical roles idempotently (AC: #5)
-  - [ ] 5.1 Create `FieldMark/FieldMark.Web/SeedData/RoleSeeder.cs` with a static async method (e.g., `SeedAsync(IServiceProvider services, CancellationToken ct)`)
-  - [ ] 5.2 Inside, resolve `RoleManager<IdentityRole<Guid>>` from the provided scope and iterate the five canonical role names. For each, call `await roleManager.RoleExistsAsync(name)`; if false, `await roleManager.CreateAsync(new IdentityRole<Guid>(name) { Id = Guid.NewGuid() })`. This is the idempotent path — `RoleExistsAsync` short-circuits on subsequent runs.
-  - [ ] 5.3 Define the five names as a private `static readonly string[]` inside the seeder class. Names exactly: `ADMIN`, `COMPLIANCE_OFFICER`, `INSPECTOR`, `SITE_SUPERVISOR`, `EXECUTIVE`. Do **not** introduce a shared `Role` enum in `FieldMark.Domain` for this story — Domain has zero outbound references and that work belongs to Story 1.12 (`authz.Can` primitive). At this story the names live as strings in the seeder.
-  - [ ] 5.4 In `Program.cs`, after `var app = builder.Build();` and before `app.Run()`, call the seeder inside a fresh scope:
+- [x] Task 5: Seed the five canonical roles idempotently (AC: #5)
+  - [x] 5.1 Create `FieldMark/FieldMark.Web/SeedData/RoleSeeder.cs` with a static async method (e.g., `SeedAsync(IServiceProvider services, CancellationToken ct)`)
+  - [x] 5.2 Inside, resolve `RoleManager<IdentityRole<Guid>>` from the provided scope and iterate the five canonical role names. For each, call `await roleManager.RoleExistsAsync(name)`; if false, `await roleManager.CreateAsync(new IdentityRole<Guid>(name) { Id = Guid.NewGuid() })`. This is the idempotent path — `RoleExistsAsync` short-circuits on subsequent runs.
+  - [x] 5.3 Define the five names as a private `static readonly string[]` inside the seeder class. Names exactly: `ADMIN`, `COMPLIANCE_OFFICER`, `INSPECTOR`, `SITE_SUPERVISOR`, `EXECUTIVE`. Do **not** introduce a shared `Role` enum in `FieldMark.Domain` for this story — Domain has zero outbound references and that work belongs to Story 1.12 (`authz.Can` primitive). At this story the names live as strings in the seeder.
+  - [x] 5.4 In `Program.cs`, after `var app = builder.Build();` and before `app.Run()`, call the seeder inside a fresh scope:
     ```csharp
     using (var scope = app.Services.CreateScope())
     {
@@ -109,23 +109,23 @@ So that user identity is owned by .NET, is isolated from `domain.*`, and is read
     }
     ```
     Place the call **after** the `--dump-routes` early-return so route-dump invocations do not touch the database. Place it **before** `app.Run()`.
-  - [ ] 5.5 Change `Program.cs` top-level to `await` if not already (the new seed call is async)
+  - [x] 5.5 Change `Program.cs` top-level to `await` if not already (the new seed call is async)
 
-- [ ] Task 6: Verify build, tests, and parity (AC: #7, #8)
-  - [ ] 6.1 `cd FieldMark && dotnet build` — zero warnings (Directory.Build.props sets `TreatWarningsAsErrors=true`)
-  - [ ] 6.2 `cd FieldMark && dotnet test` — `FieldMark.Tests.Domain` still passes
-  - [ ] 6.3 `make reset && make run-net` (let it start, then Ctrl-C) — confirm migration applies on a fresh volume; query `dotnet_auth.roles` to confirm five rows; restart the app and re-query to confirm idempotence (same five rows, no duplicates)
-  - [ ] 6.4 `make parity` — exits 0; routes still identical across stacks; `pg_indexes` for `domain.*` unchanged from canonical snapshot
-  - [ ] 6.5 `cd FieldMark && dotnet run --project FieldMark.Web -- --dump-routes` — output unchanged from HEAD-before-this-story
+- [x] Task 6: Verify build, tests, and parity (AC: #7, #8)
+  - [x] 6.1 `cd FieldMark && dotnet build` — zero warnings (Directory.Build.props sets `TreatWarningsAsErrors=true`)
+  - [x] 6.2 `cd FieldMark && dotnet test` — `FieldMark.Tests.Domain` still passes
+  - [x] 6.3 `make reset && make run-net` (let it start, then Ctrl-C) — confirm migration applies on a fresh volume; query `dotnet_auth.roles` to confirm five rows; restart the app and re-query to confirm idempotence (same five rows, no duplicates)
+  - [x] 6.4 `make parity` — exits 0; routes still identical across stacks; `pg_indexes` for `domain.*` unchanged from canonical snapshot
+  - [x] 6.5 `cd FieldMark && dotnet run --project FieldMark.Web -- --dump-routes` — output unchanged from HEAD-before-this-story
 
-- [ ] Task 7: Update `FieldMark/CLAUDE.md` (AC: #9)
-  - [ ] 7.1 Rewrite the `## Authentication` section. New content (paraphrased — author it in your own voice; structure below):
+- [x] Task 7: Update `FieldMark/CLAUDE.md` (AC: #9)
+  - [x] 7.1 Rewrite the `## Authentication` section. New content (paraphrased — author it in your own voice; structure below):
     - State: "ASP.NET Core Identity is wired against the `dotnet_auth` schema via `AuthDbContext`. Login/logout pages are not yet added — Story 1.11."
     - Explain: `FieldMark.Data/Context/AuthDbContext.cs` owns the seven Identity tables under `dotnet_auth`. `FieldMarkDbContext` owns `domain.*` mappings (work for later stories). The two contexts are independent — never merge them.
     - Document migration folder: `FieldMark.Data/Migrations/Auth/`. Auth migrations only. `domain.*` is infrastructure-owned and NOT touched by any EF Core migration (re-state ADR-014).
     - Document the EF migration command shape (the `--context AuthDbContext --output-dir Migrations/Auth` flags).
     - Document the five conceptual roles and where they are seeded (`SeedData/RoleSeeder.cs`).
-  - [ ] 7.2 The existing `## Migration Ownership` section is already correct ("EF Core migrations are scoped to the `dotnet_auth` schema only"). Confirm it still reads correctly given the new wiring; no edit needed unless a sentence has been invalidated.
+  - [x] 7.2 The existing `## Migration Ownership` section is already correct ("EF Core migrations are scoped to the `dotnet_auth` schema only"). Confirm it still reads correctly given the new wiring; no edit needed unless a sentence has been invalidated.
 
 ## Dev Notes
 
@@ -334,10 +334,41 @@ No prior commit has added Identity, EF Core migrations, or any `dotnet_auth.*` t
 
 ### Agent Model Used
 
-_(populated by dev agent)_
+claude-sonnet-4-6
 
 ### Debug Log References
 
+- **EF Core package version mismatch**: `Microsoft.AspNetCore.Identity.EntityFrameworkCore 10.0.8` requires EF Core `>= 10.0.8`, forcing a bump from 10.0.7 → 10.0.8 across all EF Core packages in both `FieldMark.Data` and `FieldMark.Web`.
+- **Design DLL version conflict**: `Microsoft.EntityFrameworkCore.Tools 10.0.8` nuspec hard-depends on `Microsoft.EntityFrameworkCore.Design 8.0.0` (packaging quirk). This caused `MissingMethodException` when running `dotnet ef migrations add`. Fixed by adding an explicit `Microsoft.EntityFrameworkCore.Design 10.0.8` reference to `FieldMark.Web.csproj` with `PrivateAssets="all"` to force the correct version.
+- **Table names not snake_case**: `EFCore.NamingConventions.UseSnakeCaseNamingConvention()` converts column and constraint names but does NOT strip the explicit `AspNet*` table names set by `IdentityDbContext.OnModelCreating()`. Added `ToTable()` overrides in `AuthDbContext.OnModelCreating()` for all seven Identity entities to produce `users`, `roles`, `user_roles`, etc. per AC #2.
+- **CA1725 parameter name mismatch**: `IdentityDbContext`'s `OnModelCreating` uses `builder`, not `modelBuilder`. Fixed to satisfy `TreatWarningsAsErrors=true`.
+- **dotnet-ef tool version**: Global `dotnet-ef` was 9.0.9; updated to 10.0.8 to match EF Core 10.0.8 project packages.
+
 ### Completion Notes List
 
+- Added `Microsoft.AspNetCore.Identity.EntityFrameworkCore 10.0.8` and `EFCore.NamingConventions 10.0.1` to `FieldMark.Data`. Bumped all EF Core packages to 10.0.8 to match Identity's requirement.
+- Added explicit `Microsoft.EntityFrameworkCore.Design 10.0.8` to `FieldMark.Web` to override the stale 8.0.0 version that `Microsoft.EntityFrameworkCore.Tools` nuspec incorrectly pins.
+- Created `AuthDbContext` inheriting from `IdentityDbContext<IdentityUser<Guid>, IdentityRole<Guid>, Guid>` with `HasDefaultSchema("dotnet_auth")` and explicit `ToTable()` overrides for all 7 Identity entities.
+- Registered both `FieldMarkDbContext` and `AuthDbContext` with `UseSnakeCaseNamingConvention()`. Registered Identity using `AddIdentityCore` (not `AddDefaultIdentity`) per AC #6 to avoid scaffolding UI routes.
+- Generated `InitialIdentity` migration under `FieldMark.Data/Migrations/Auth/`. All 7 tables land in `dotnet_auth` with snake_case columns and clean names (`users`, `roles`, etc.). Zero `domain` schema references.
+- Created `RoleSeeder.cs` with idempotent `SeedAsync` that seeds 5 canonical roles. Verified: first run creates rows; second run produces no duplicates and no mutations.
+- `make parity` exits 0 — routes identical across stacks (4 routes), `pg_indexes` for `domain.*` unchanged (21 indexes).
+- `--dump-routes` continues to list only 4 application routes; no `/identity/*` paths added.
+- `dotnet build` zero warnings, `dotnet test` all pass.
+- `FieldMark/CLAUDE.md` `## Authentication` section rewritten to document the new wiring.
+
 ### File List
+
+- **New:** `FieldMark/FieldMark.Data/Context/AuthDbContext.cs`
+- **New:** `FieldMark/FieldMark.Web/SeedData/RoleSeeder.cs`
+- **New:** `FieldMark/FieldMark.Data/Migrations/Auth/20260519112023_InitialIdentity.cs`
+- **New:** `FieldMark/FieldMark.Data/Migrations/Auth/20260519112023_InitialIdentity.Designer.cs`
+- **New:** `FieldMark/FieldMark.Data/Migrations/Auth/AuthDbContextModelSnapshot.cs`
+- **Updated:** `FieldMark/FieldMark.Data/FieldMark.Data.csproj` — added Identity.EntityFrameworkCore 10.0.8, EFCore.NamingConventions 10.0.1; bumped EF Core to 10.0.8
+- **Updated:** `FieldMark/FieldMark.Web/FieldMark.Web.csproj` — added Design 10.0.8 explicit reference; bumped EF Core Tools to 10.0.8
+- **Updated:** `FieldMark/FieldMark.Web/Program.cs` — AuthDbContext registration, UseSnakeCaseNamingConvention on both contexts, Identity registration with password options, role seed call
+- **Updated:** `FieldMark/CLAUDE.md` — rewrote `## Authentication` section
+
+## Change Log
+
+- 2026-05-19: Story 1.7 implemented — wired ASP.NET Core Identity to `dotnet_auth` schema with `AuthDbContext`, generated `InitialIdentity` migration, seeded five canonical roles idempotently, updated CLAUDE.md authentication documentation.

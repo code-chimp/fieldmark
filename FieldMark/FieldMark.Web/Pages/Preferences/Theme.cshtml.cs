@@ -7,8 +7,12 @@ namespace FieldMark.Web.Pages.Preferences;
 [IgnoreAntiforgeryToken]
 public class ThemeModel : PageModel
 {
-    private static readonly HashSet<string> AllowedValues =
-        new(StringComparer.Ordinal) { "system", "light", "dark" };
+    private static readonly HashSet<string> AllowedValues = new(StringComparer.Ordinal)
+    {
+        "system",
+        "light",
+        "dark",
+    };
 
     public IActionResult OnPost()
     {

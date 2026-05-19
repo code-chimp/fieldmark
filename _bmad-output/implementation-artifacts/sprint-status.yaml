@@ -36,7 +36,8 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-05-11
-last_updated: 2026-05-18
+last_updated: 2026-05-19
+#   (1-7 code review clean; status set to done)
 #   (1-6 final sign-off — all ACs passed, all action items resolved after 4 review rounds; status set to done)
 #   (1-6 decision items resolved — Go CSRF exemption documented, dumpers hardened; status set to review)
 #   (1-6 two decision-needed action items remain open — CSRF middleware for Go + dumper refactor; status set to in-progress)
@@ -83,7 +84,7 @@ development_status:
   1-4-bootstrap-design-system-foundation-in-fieldmark-shared: done
   1-5-implement-cross-stack-base-layout-with-skip-link-landmarks-and-flashregion: done
   1-6-implement-themetoggle-with-cookie-persistence-per-stack: done
-  1-7-wire-asp-net-core-identity-to-dotnet-auth-schema-with-conceptual-roles: ready-for-dev
+  1-7-wire-asp-net-core-identity-to-dotnet-auth-schema-with-conceptual-roles: done
   1-8-wire-django-built-in-auth-to-django-auth-schema-with-conceptual-role-groups: ready-for-dev
   1-9-implement-go-fiber-stub-authentication-middleware: ready-for-dev
   1-10-author-shared-uuid-dev-user-manifest-and-per-stack-idempotent-seed-runners: ready-for-dev

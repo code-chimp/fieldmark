@@ -1,4 +1,5 @@
 using FieldMark.Data.Context;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 
@@ -23,8 +24,8 @@ if (!string.IsNullOrWhiteSpace(rawDbUrl))
     var rawParts = uri.UserInfo.Split(':', 2);
     var csb = new NpgsqlConnectionStringBuilder
     {
-        Host     = uri.Host,
-        Port     = uri.Port > 0 ? uri.Port : 5432,
+        Host = uri.Host,
+        Port = uri.Port > 0 ? uri.Port : 5432,
         Database = Uri.UnescapeDataString(uri.AbsolutePath.TrimStart('/')),
         Username = rawParts.Length > 0 ? Uri.UnescapeDataString(rawParts[0]) : string.Empty,
         Password = rawParts.Length > 1 ? Uri.UnescapeDataString(rawParts[1]) : string.Empty,
@@ -33,12 +34,14 @@ if (!string.IsNullOrWhiteSpace(rawDbUrl))
     // etc.) so the URL is a complete, lossless source of connection configuration.
     if (!string.IsNullOrEmpty(uri.Query))
     {
-        foreach (var param in uri.Query.TrimStart('?').Split('&', StringSplitOptions.RemoveEmptyEntries))
+        foreach (
+            var param in uri.Query.TrimStart('?').Split('&', StringSplitOptions.RemoveEmptyEntries)
+        )
         {
             var kv = param.Split('=', 2);
             if (kv.Length == 2)
             {
-                var key   = Uri.UnescapeDataString(kv[0]);
+                var key = Uri.UnescapeDataString(kv[0]);
                 var value = Uri.UnescapeDataString(kv[1]);
                 csb[key] = value;
             }
@@ -54,9 +57,26 @@ else
 }
 
 builder.Services.AddDbContext<FieldMarkDbContext>(options =>
-{
-    options.UseNpgsql(connectionString);
-});
+    options.UseNpgsql(connectionString).UseSnakeCaseNamingConvention()
+);
+
+builder.Services.AddDbContext<AuthDbContext>(options =>
+    options.UseNpgsql(connectionString).UseSnakeCaseNamingConvention()
+);
+
+builder
+    .Services.AddIdentityCore<IdentityUser<Guid>>(options =>
+    {
+        options.Password.RequireDigit = true;
+        options.Password.RequireLowercase = true;
+        options.Password.RequireUppercase = true;
+        options.Password.RequireNonAlphanumeric = false;
+        options.Password.RequiredLength = 10;
+    })
+    .AddRoles<IdentityRole<Guid>>()
+    .AddEntityFrameworkStores<AuthDbContext>()
+    .AddSignInManager()
+    .AddDefaultTokenProviders();
 
 var app = builder.Build();
 
@@ -83,4 +103,12 @@ if (args.Contains("--dump-routes"))
     return; // allows the host to dispose cleanly; no Environment.Exit needed
 }
 
-app.Run();
+using (var scope = app.Services.CreateScope())
+{
+    await FieldMark.Web.SeedData.RoleSeeder.SeedAsync(
+        scope.ServiceProvider,
+        CancellationToken.None
+    );
+}
+
+await app.RunAsync();

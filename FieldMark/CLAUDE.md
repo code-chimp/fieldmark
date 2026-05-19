@@ -77,12 +77,39 @@ EF Core migrations are scoped to the `dotnet_auth` schema only — ASP.NET Core 
 
 ## Authentication
 
-ASP.NET Core Identity is **deferred by design**. Do not scaffold it until:
-- Domain schema is stable
-- Migration ownership is explicit and settled
-- Architectural rules are locked
+ASP.NET Core Identity is wired against the `dotnet_auth` schema via `AuthDbContext`. Login and logout pages are not yet added — that work lands in Story 1.11.
 
-Do not introduce Identity during any story that does not explicitly call for it.
+### AuthDbContext and FieldMarkDbContext are independent
+
+`FieldMark.Data/Context/AuthDbContext.cs` owns the seven Identity tables under `dotnet_auth`:
+- `dotnet_auth.users`, `dotnet_auth.roles`, `dotnet_auth.user_roles`
+- `dotnet_auth.role_claims`, `dotnet_auth.user_claims`, `dotnet_auth.user_logins`, `dotnet_auth.user_tokens`
+
+`FieldMarkDbContext` owns `domain.*` mappings (added in later stories). **Never merge these two contexts** — Identity types extend `IdentityDbContext<...>` and the migration ownership is cleanly bifurcated.
+
+### Migration folder convention
+
+Auth migrations live in `FieldMark.Data/Migrations/Auth/`. The `domain.*` schema is infrastructure-owned and managed by SQL init scripts; it is **not** touched by any EF Core migration (ADR-014).
+
+To add an auth migration, always specify the context and output directory:
+
+```bash
+dotnet ef migrations add <Name> --context AuthDbContext --project FieldMark.Data --startup-project FieldMark.Web --output-dir Migrations/Auth
+dotnet ef database update --context AuthDbContext --project FieldMark.Data --startup-project FieldMark.Web
+```
+
+### Role seeding
+
+Five conceptual roles are seeded idempotently at startup via `FieldMark.Web/SeedData/RoleSeeder.cs`:
+- `ADMIN`, `COMPLIANCE_OFFICER`, `INSPECTOR`, `SITE_SUPERVISOR`, `EXECUTIVE`
+
+The seeder is called from `Program.cs` after the `--dump-routes` early-return so route-dump invocations do not touch the database. A `Role` value object in `FieldMark.Domain` and the `authz.Can` primitive are deferred to Story 1.12.
+
+### What is still deferred
+
+- `app.UseAuthentication()` / `app.UseAuthorization()` pipeline wiring — Story 1.11
+- Login and logout Razor Pages — Story 1.11
+- `authz.Can` primitive and `ActionButton` trichotomy — Story 1.12
 
 ## Coding Standards
 
