@@ -1,0 +1,55 @@
+/* Accessibility primitives (UX-DR33, UX-DR35, FR60).
+   Skip-link, focus-visible ring, and touch-target sizing on coarse pointers.
+   These rules are additive — they layer over Tailwind/Basecoat without conflict. */
+
+/* ─── Skip-link (UX-DR33) ────────────────────────────────────────────────── */
+/* Visually hidden until it receives keyboard focus, at which point it pops
+   into the top-left corner with a high z-index. Pointer-only users never see
+   it; keyboard users get it as the first focus stop on every page. */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  z-index: 9999;
+}
+
+.skip-link:focus {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: auto;
+  height: auto;
+  padding: 0.75rem 1.5rem;
+  background: var(--color-background, #fff);
+  color: var(--color-foreground, #000);
+  font-weight: 600;
+  z-index: 9999;
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+/* ─── Global focus ring (UX-DR35) ─────────────────────────────────────────── */
+/* 2px outline at 2px offset in body text color. :focus-visible (not :focus)
+   so mouse clicks don't paint a ring around buttons. */
+:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+/* ─── Touch targets on coarse pointers (UX-DR35) ──────────────────────────── */
+/* WCAG 2.5.5 target size: 44×44px minimum for primary touch devices.
+   Scoped to (pointer: coarse) so dense desktop UIs aren't penalised. */
+@media (pointer: coarse) {
+  button,
+  a,
+  [role="button"],
+  input,
+  select,
+  textarea {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}

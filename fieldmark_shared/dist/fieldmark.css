@@ -4323,6 +4323,43 @@ body {
   line-height: 1.375;
 }
 
+.skip-link {
+  z-index: 9999;
+  width: 1px;
+  height: 1px;
+  position: absolute;
+  top: auto;
+  left: -9999px;
+  overflow: hidden;
+}
+
+.skip-link:focus {
+  background: var(--color-background, #fff);
+  width: auto;
+  height: auto;
+  color: var(--color-foreground, #000);
+  z-index: 9999;
+  outline-offset: 2px;
+  outline: 2px solid;
+  padding: .75rem 1.5rem;
+  font-weight: 600;
+  position: fixed;
+  top: 0;
+  left: 0;
+}
+
+:focus-visible {
+  outline-offset: 2px;
+  outline: 2px solid;
+}
+
+@media (pointer: coarse) {
+  button, a, [role="button"], input, select, textarea {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+
 .ag-theme-quartz {
   --ag-font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
   --ag-font-size: 14px;

@@ -1,6 +1,6 @@
 # Story 1.5: Implement cross-stack base layout with skip-link, landmarks, and FlashRegion
 
-Status: ready-for-dev
+Status: done
 
 ## Story
 
@@ -24,39 +24,39 @@ So that I can navigate the application predictably regardless of which stack ser
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Update `fieldmark_shared/src/fieldmark.css` with skip-link, focus, and touch-target styles (AC: #1, #5)
-  - [ ] 1.1 Add `.skip-link` class (sr-only by default, visible on `:focus`)
-  - [ ] 1.2 Add `:focus-visible` ring: 2px solid, 2px offset, body text color
-  - [ ] 1.3 Add `(pointer: coarse)` media query for 44x44px minimum touch targets on interactive elements
-  - [ ] 1.4 Recompile: `cd fieldmark_shared && pnpm run build`
-  - [ ] 1.5 Commit updated `dist/fieldmark.css`
+- [x] Task 1: Update `fieldmark_shared/src/fieldmark.css` with skip-link, focus, and touch-target styles (AC: #1, #5)
+  - [x] 1.1 Add `.skip-link` class (sr-only by default, visible on `:focus`)
+  - [x] 1.2 Add `:focus-visible` ring: 2px solid, 2px offset, body text color
+  - [x] 1.3 Add `(pointer: coarse)` media query for 44x44px minimum touch targets on interactive elements
+  - [x] 1.4 Recompile: `cd fieldmark_shared && pnpm run build`
+  - [x] 1.5 Commit updated `dist/fieldmark.css`
 
-- [ ] Task 2: Rewrite .NET `_Layout.cshtml` (AC: #1, #2, #3, #4, #6)
-  - [ ] 2.1 Add skip-link as first child of `<body>`
-  - [ ] 2.2 Restructure to semantic landmarks: `<header>` containing `<nav aria-label="Main">`, `<main id="main-content">`, `<footer>`
-  - [ ] 2.3 Add `<div id="flash-region" role="status" aria-live="polite" aria-atomic="false"></div>` inside `<main>` before `@RenderBody()`
-  - [ ] 2.4 Create `_FlashRegion.cshtml` partial for message rendering
-  - [ ] 2.5 Ensure exactly one `<h1>` via page title convention
+- [x] Task 2: Rewrite .NET `_Layout.cshtml` (AC: #1, #2, #3, #4, #6)
+  - [x] 2.1 Add skip-link as first child of `<body>`
+  - [x] 2.2 Restructure to semantic landmarks: `<header>` containing `<nav aria-label="Main">`, `<main id="main-content">`, `<footer>`
+  - [x] 2.3 Add `<div id="flash-region" role="status" aria-live="polite" aria-atomic="false"></div>` inside `<main>` before `@RenderBody()`
+  - [x] 2.4 Create `_FlashRegion.cshtml` partial for message rendering
+  - [x] 2.5 Ensure exactly one `<h1>` via page title convention
 
-- [ ] Task 3: Rewrite Django `base.html` (AC: #1, #2, #3, #4, #6)
-  - [ ] 3.1 Add skip-link as first child of `<body>`
-  - [ ] 3.2 Restructure to semantic landmarks: `<header>` containing `<nav aria-label="Main">`, `<main id="main-content">`, `<footer>`
-  - [ ] 3.3 Add `<div id="flash-region" role="status" aria-live="polite" aria-atomic="false"></div>` inside `<main>` before `{% block content %}`
-  - [ ] 3.4 Create `_flash_region.html` partial with `{% for message in messages %}` loop using Django messages framework
-  - [ ] 3.5 Ensure exactly one `<h1>` via block convention
+- [x] Task 3: Rewrite Django `base.html` (AC: #1, #2, #3, #4, #6)
+  - [x] 3.1 Add skip-link as first child of `<body>`
+  - [x] 3.2 Restructure to semantic landmarks: `<header>` containing `<nav aria-label="Main">`, `<main id="main-content">`, `<footer>`
+  - [x] 3.3 Add `<div id="flash-region" role="status" aria-live="polite" aria-atomic="false"></div>` inside `<main>` before `{% block content %}`
+  - [x] 3.4 Create `_flash_region.html` partial with `{% for message in messages %}` loop using Django messages framework
+  - [x] 3.5 Ensure exactly one `<h1>` via block convention
 
-- [ ] Task 4: Rewrite Go `layouts/base.html`, `partials/header.html`, `partials/footer.html` (AC: #1, #2, #3, #4, #6)
-  - [ ] 4.1 Add skip-link as first child of `<body>` in base layout
-  - [ ] 4.2 Restructure header partial: `<header>` containing `<nav aria-label="Main">`
-  - [ ] 4.3 Restructure footer partial: semantic `<footer>`
-  - [ ] 4.4 Add `<div id="flash-region" role="status" aria-live="polite" aria-atomic="false"></div>` inside `<main>` before content block
-  - [ ] 4.5 Create flash region template helper (Fiber context-based)
-  - [ ] 4.6 Ensure exactly one `<h1>` via block convention
+- [x] Task 4: Rewrite Go `layouts/base.html`, `partials/header.html`, `partials/footer.html` (AC: #1, #2, #3, #4, #6)
+  - [x] 4.1 Add skip-link as first child of `<body>` in base layout
+  - [x] 4.2 Restructure header partial: `<header>` containing `<nav aria-label="Main">`
+  - [x] 4.3 Restructure footer partial: semantic `<footer>`
+  - [x] 4.4 Add `<div id="flash-region" role="status" aria-live="polite" aria-atomic="false"></div>` inside `<main>` before content block
+  - [x] 4.5 Create flash region template helper (Fiber context-based)
+  - [x] 4.6 Ensure exactly one `<h1>` via block convention
 
-- [ ] Task 5: Cross-stack byte-parity verification (AC: #6)
-  - [ ] 5.1 Start all three stacks and curl `/` from each
-  - [ ] 5.2 Normalize and diff the rendered chrome HTML
-  - [ ] 5.3 Fix any divergences until byte-identical
+- [x] Task 5: Cross-stack byte-parity verification (AC: #6)
+  - [x] 5.1 Start all three stacks and curl `/` from each
+  - [x] 5.2 Normalize and diff the rendered chrome HTML
+  - [x] 5.3 Fix any divergences until byte-identical
 
 ## Dev Notes
 
@@ -263,8 +263,44 @@ Stories 1.1 and 1.2 are done (scaffolds confirmed, SQL init scripts verified). S
 
 ### Agent Model Used
 
+claude-opus-4-7 (Claude Code, /bmad-dev-story workflow)
+
 ### Debug Log References
+
+- `make parity` — routes OK (3), pg_indexes OK (21) after the layout rewrite.
+- `dotnet build` — succeeded, 0 warnings, 0 errors.
+- `go build ./...` — succeeded, no output.
+- `uv run python manage.py check` — System check identified no issues.
+- Live render of `/` on all three stacks (.NET on :5050, Django on :8000, Go on :3000), normalized chrome diffs: net == django == go (byte-identical).
 
 ### Completion Notes List
 
+- New shared CSS partial `_a11y.css` carries skip-link, `:focus-visible` ring, and `(pointer: coarse)` 44×44px touch-target rules; wired into `src/fieldmark.css` between `_layout.css` and `_ag-grid.css`. Rebuilt `dist/fieldmark.css` via `pnpm run build` and verified the rules made it through Tailwind + LightningCSS.
+- All three base layouts were rewritten to the same skeleton: skip-link as first body child → `<header>` containing `<nav aria-label="Main">` and the FieldMark brand link → `<main id="main-content">` opening with the `#flash-region` div → `<footer>` with copyright. Removed `<main role="main">` from .NET (redundant landmark), the inline hamburger `onclick` JS, and the per-stack ad-hoc Tailwind nav styling so chrome bytes match.
+- FlashRegion partials are stubbed but plumbed: `.NET _FlashRegion.cshtml` rendered via `<partial name>`, Django `_flash_region.html` rendered via `{% include %}` with a `{% comment %}…{% endcomment %}` block (avoided the multi-line `{# #}` trap that initially leaked the comment into the body), Go `partials/flash_region.html` defines a named template invoked from `layouts/base.html` and iterates an optional `.FlashMessages` slice. Empty by default at this story; future stories will populate the data sources.
+- Removed orphaned `fieldmark-go/internal/web/templates/partials/nav.html` after confirming no references remain — its content was folded into the rewritten `header.html`.
+- Byte-parity verified by curling `/` on all three live stacks, extracting the chrome lines, and diffing — identical across .NET, Django, Go. Known per-stack divergences outside the chrome scope (CSS/JS asset URL prefixes + `asp-append-version` hashes, Django `hx-headers` CSRF attribute on `<body>`, .NET ag-grid in `<head>`) match the exemptions documented in AC #6 and Dev Notes.
+
 ### File List
+
+| Action | File |
+|--------|------|
+| NEW    | `fieldmark_shared/src/_a11y.css` |
+| UPDATE | `fieldmark_shared/src/fieldmark.css` |
+| UPDATE | `fieldmark_shared/dist/fieldmark.css` (recompiled) |
+| UPDATE | `FieldMark/FieldMark.Web/Pages/Shared/_Layout.cshtml` |
+| NEW    | `FieldMark/FieldMark.Web/Pages/Shared/_FlashRegion.cshtml` |
+| UPDATE | `fieldmark_py/templates/base.html` |
+| NEW    | `fieldmark_py/templates/_flash_region.html` |
+| UPDATE | `fieldmark-go/internal/web/templates/layouts/base.html` |
+| UPDATE | `fieldmark-go/internal/web/templates/partials/header.html` |
+| UPDATE | `fieldmark-go/internal/web/templates/partials/footer.html` |
+| NEW    | `fieldmark-go/internal/web/templates/partials/flash_region.html` |
+| DELETE | `fieldmark-go/internal/web/templates/partials/nav.html` (orphaned; content moved into header.html) |
+| UPDATE | `_bmad-output/implementation-artifacts/sprint-status.yaml` (1-5 → in-progress → review) |
+
+## Change Log
+
+| Date       | Description |
+|------------|-------------|
+| 2026-05-18 | Implemented story 1.5: shared a11y CSS (`_a11y.css`), skip-link + landmark rewrite of base layouts across .NET/Django/Go, FlashRegion partials, byte-identical chrome verified. Status → review. |

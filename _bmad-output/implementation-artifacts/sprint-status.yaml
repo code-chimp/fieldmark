@@ -37,6 +37,8 @@
 
 generated: 2026-05-11
 last_updated: 2026-05-18
+#   (1-5 implementation complete; status set to review)
+#   (1-5 started; status set to in-progress)
 #   (1-4 synced to in-progress after rerun review; action items remain)
 #   (1-4 rerun review patch items resolved; story back to review)
 #   (1-4 chunked review patch+decision items resolved; story back to review)
@@ -69,7 +71,7 @@ development_status:
   1-2-verify-postgres-init-scripts-produce-the-canonical-domain-schema-on-a-fresh-volume: done
   1-3-establish-tools-parity-and-make-parity-with-per-stack-dump-routes: done
   1-4-bootstrap-design-system-foundation-in-fieldmark-shared: done
-  1-5-implement-cross-stack-base-layout-with-skip-link-landmarks-and-flashregion: ready-for-dev
+  1-5-implement-cross-stack-base-layout-with-skip-link-landmarks-and-flashregion: done
   1-6-implement-themetoggle-with-cookie-persistence-per-stack: ready-for-dev
   1-7-wire-asp-net-core-identity-to-dotnet-auth-schema-with-conceptual-roles: ready-for-dev
   1-8-wire-django-built-in-auth-to-django-auth-schema-with-conceptual-role-groups: ready-for-dev

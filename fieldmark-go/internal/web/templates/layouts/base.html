@@ -9,10 +9,12 @@
     {{block "extra_css" .}}{{end}}
 </head>
 <body>
+<a href="#main-content" class="skip-link">Skip to main content</a>
 
 {{template "header" .}}
 
-<main class="container mx-auto px-4 py-6">
+<main id="main-content">
+    {{template "flash_region" .}}
     {{block "content" .}}{{end}}
 </main>
 

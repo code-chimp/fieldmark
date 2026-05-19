@@ -8,38 +8,21 @@
     <script src="~/vendor/ag-grid/35.2.1/ag-grid-community.min.js"></script>
 </head>
 <body>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
 <header>
-    <nav class="bg-white border-b shadow-sm mb-3">
-        <div class="container mx-auto px-4 flex items-center justify-between h-14">
-            <a class="text-lg font-semibold text-gray-900" asp-area="" asp-page="/Index">FieldMark</a>
-            <button class="sm:hidden p-2 rounded text-gray-500 hover:text-gray-700 hover:bg-gray-100"
-                    aria-label="Toggle navigation"
-                    onclick="document.getElementById('nav-links').classList.toggle('hidden')">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
-                </svg>
-            </button>
-            <ul id="nav-links" class="hidden sm:flex gap-2">
-                <li>
-                    <a class="px-3 py-2 text-gray-700 hover:text-gray-900 rounded hover:bg-gray-100" asp-area="" asp-page="/Index">Home</a>
-                </li>
-                <li>
-                    <a class="px-3 py-2 text-gray-700 hover:text-gray-900 rounded hover:bg-gray-100" asp-area="" asp-page="/Privacy">Privacy</a>
-                </li>
-            </ul>
-        </div>
+    <nav aria-label="Main">
+        <a asp-area="" asp-page="/Index">FieldMark</a>
     </nav>
 </header>
-<div class="container mx-auto px-4">
-    <main role="main" class="pb-3">
-        @RenderBody()
-    </main>
-</div>
 
-<footer class="border-t text-gray-500 py-4">
-    <div class="container mx-auto px-4">
-        &copy; 2026 - FieldMark - <a class="text-gray-500 hover:text-gray-700" asp-area="" asp-page="/Privacy">Privacy</a>
-    </div>
+<main id="main-content">
+    <partial name="_FlashRegion" />
+    @RenderBody()
+</main>
+
+<footer>
+    <p>&copy; 2026 FieldMark</p>
 </footer>
 
 <script src="~/vendor/htmx/htmx.min.js"></script>

@@ -9,15 +9,16 @@
     {% block extra_css %}{% endblock %}
 </head>
 <body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+<a href="#main-content" class="skip-link">Skip to main content</a>
 
 <header>
-    <nav>
+    <nav aria-label="Main">
         <a href="/">FieldMark</a>
-        {# Navigation will be added during UX design #}
     </nav>
 </header>
 
-<main>
+<main id="main-content">
+    {% include "_flash_region.html" %}
     {% block content %}{% endblock %}
 </main>
 

@@ -13,6 +13,9 @@
 /* Layout foundation: container, gutter collapse */
 @import "./_layout.css";
 
+/* Accessibility primitives: skip-link, focus ring, touch targets */
+@import "./_a11y.css";
+
 /* AG Grid Quartz theme overrides */
 @import "./_ag-grid.css";
 
