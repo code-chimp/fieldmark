@@ -31,7 +31,44 @@ def _collect(resolver: URLResolver, prefix: str, lines: list[str]) -> None:
             path = _normalize(raw)
             if path is None:
                 continue
-            lines.append(f"get {path}")
+            for method in _methods_for(pattern.callback):
+                lines.append(f"{method} {path}")
+
+
+_HTTP_METHODS = {"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"}
+
+
+def _methods_for(callback) -> list[str]:
+    # Class-based views expose http_method_names via the view_class attribute.
+    view_class = getattr(callback, "view_class", None)
+    if view_class is not None:
+        return [m for m in view_class.http_method_names if hasattr(view_class, m)]
+
+    # Function-based views decorated with require_http_methods / require_POST.
+    # Django <= 5 set request_method_list as a direct attribute on the wrapper.
+    methods = getattr(callback, "request_method_list", None)
+    if methods is not None:
+        return [m.lower() for m in methods]
+
+    # Django 6+ stores it as a closure variable.  Rather than relying on the
+    # specific variable name or its index in co_freevars (both are internal
+    # implementation details that can change), walk every closure cell and
+    # look for a non-empty collection whose items are all known HTTP method
+    # strings.  This is version-agnostic and survives decorator refactors.
+    for cell in getattr(callback, "__closure__", None) or []:
+        try:
+            v = cell.cell_contents
+        except ValueError:
+            continue
+        if (
+            isinstance(v, (list, tuple))
+            and v
+            and all(isinstance(m, str) and m.upper() in _HTTP_METHODS for m in v)
+        ):
+            return [m.lower() for m in v]
+
+    # Undecorated function-based view: assume GET (all current page renders).
+    return ["get"]
 
 
 def _strip_regex(raw: str) -> str:

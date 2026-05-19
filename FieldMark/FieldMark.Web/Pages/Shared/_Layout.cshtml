@@ -1,8 +1,17 @@
+@{
+    var fmThemeCookie = Context.Request.Cookies["fm_theme"];
+    var fmTheme = fmThemeCookie is "system" or "light" or "dark" ? fmThemeCookie : "system";
+}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="@fmTheme">
 <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <script>
+(function(){var d=document.documentElement,t=d.getAttribute('data-theme');
+if(t!=='system')return;
+d.setAttribute('data-theme',window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');})();
+    </script>
     <title>@ViewData["Title"] - FieldMark</title>
     <link rel="stylesheet" href="~/vendor/fieldmark.css" asp-append-version="true"/>
     <script src="~/vendor/ag-grid/35.2.1/ag-grid-community.min.js"></script>
@@ -13,6 +22,7 @@
 <header>
     <nav aria-label="Main">
         <a asp-area="" asp-page="/Index">FieldMark</a>
+        <partial name="_ThemeToggle" model="@fmTheme" />
     </nav>
 </header>
 
@@ -26,6 +36,7 @@
 </footer>
 
 <script src="~/vendor/htmx/htmx.min.js"></script>
+<script src="~/vendor/theme-toggle/theme-toggle.js"></script>
 <script src="~/js/site.js" asp-append-version="true"></script>
 
 @await RenderSectionAsync("Scripts", required: false)

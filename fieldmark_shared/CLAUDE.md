@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working in the 
 `fieldmark_shared` is the single source of truth for all shared front-end assets in the FieldMark monorepo:
 
 - **CSS** — Tailwind v4 + Basecoat source compiled to `dist/fieldmark.css`
-- **Vendor JS** — `htmx.min.js` and `ag-grid-community.min.js` live in `vendor/` and are symlinked into each stack's static directory
+- **Vendor JS** — `htmx.min.js`, `ag-grid-community.min.js`, and `theme-toggle/theme-toggle.js` live in `vendor/` and are symlinked into each stack's static directory
 - **Vendor fonts** — Inter and JetBrains Mono woff2 files live in `vendor/fonts/` and are referenced by `_fonts.css`
 
 No stack has its own copy of these files. Adding a library here and symlinking it into the stacks is the only permitted way to introduce a shared JS dependency.
@@ -20,6 +20,7 @@ fieldmark_shared/
 │   ├── fieldmark.css       Main entry point — imports Tailwind, Basecoat, and all partials
 │   ├── _fonts.css          @font-face declarations for Inter and JetBrains Mono
 │   ├── _tokens.css         Semantic color tokens, status-badge vocabulary, score-band mapping
+│   ├── _components.css     Shared UI component styles (ThemeToggle, etc.)
 │   ├── _layout.css         Container, gutter collapse, body text-size defaults
 │   └── _ag-grid.css        AG Grid Quartz theme overrides
 ├── dist/
@@ -30,6 +31,8 @@ fieldmark_shared/
 │   │       └── ag-grid-community.min.js
 │   ├── htmx/
 │   │   └── htmx.min.js
+│   ├── theme-toggle/
+│   │   └── theme-toggle.js                    Client-side theme listener (≤20 LOC; story 1-6)
 │   └── fonts/
 │       ├── inter/
 │       │   └── InterVariable.woff2            Inter v4.1 variable font
@@ -46,6 +49,7 @@ fieldmark_shared/
 | `fieldmark.css` | Main entry point — imports Tailwind, Basecoat, and all partials |
 | `_fonts.css` | `@font-face` declarations for Inter and JetBrains Mono |
 | `_tokens.css` | Semantic color tokens, status-badge vocabulary, score-band mapping, `.tnum` utility |
+| `_components.css` | Shared UI component styles (ThemeToggle icon visibility, future shared components) |
 | `_layout.css` | Container (max-w-screen-2xl), gutter collapse (px-6→px-4 at 640px), body text-sm default |
 | `_ag-grid.css` | AG Grid Quartz theme overrides aligned with Tailwind neutral palette |
 
@@ -103,13 +107,13 @@ Commit `dist/fieldmark.css`. Fresh checkouts need the compiled file to exist bef
 
 ## How the Vendor JS Symlinks Work
 
-Each stack symlinks the `vendor/ag-grid` and `vendor/htmx` directories (not individual files) into its own static tree:
+Each stack symlinks vendor directories (not individual files) into its own static tree:
 
-| Stack | ag-grid symlink | htmx symlink |
-|---|---|---|
-| .NET | `wwwroot/vendor/ag-grid` → `../../../../fieldmark_shared/vendor/ag-grid` | `wwwroot/vendor/htmx` → `../../../../fieldmark_shared/vendor/htmx` |
-| Django | `static/vendor/ag-grid` → `../../../fieldmark_shared/vendor/ag-grid` | `static/vendor/htmx` → `../../../fieldmark_shared/vendor/htmx` |
-| Go/Fiber | `internal/web/static/vendor/ag-grid` → `../../../../../fieldmark_shared/vendor/ag-grid` | `internal/web/static/vendor/htmx` → `../../../../../fieldmark_shared/vendor/htmx` |
+| Stack | ag-grid symlink | htmx symlink | theme-toggle symlink |
+|---|---|---|---|
+| .NET | `wwwroot/vendor/ag-grid` → `../../../../fieldmark_shared/vendor/ag-grid` | `wwwroot/vendor/htmx` → `../../../../fieldmark_shared/vendor/htmx` | `wwwroot/vendor/theme-toggle` → `../../../../fieldmark_shared/vendor/theme-toggle` |
+| Django | `static/vendor/ag-grid` → `../../../fieldmark_shared/vendor/ag-grid` | `static/vendor/htmx` → `../../../fieldmark_shared/vendor/htmx` | `static/vendor/theme-toggle` → `../../../fieldmark_shared/vendor/theme-toggle` |
+| Go/Fiber | `internal/web/static/vendor/ag-grid` → `../../../../../fieldmark_shared/vendor/ag-grid` | `internal/web/static/vendor/htmx` → `../../../../../fieldmark_shared/vendor/htmx` | `internal/web/static/vendor/theme-toggle` → `../../../../../fieldmark_shared/vendor/theme-toggle` |
 
 All paths are relative so the repo works regardless of where it is cloned.
 

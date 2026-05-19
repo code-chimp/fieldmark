@@ -1,0 +1,24 @@
+/* ─── ThemeToggle component (UX-DR15) ────────────────────────────────────── */
+/* 36×36 icon button; displayed in the header strip beside the avatar slot.   */
+
+.theme-toggle {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.theme-toggle__icon {
+  width: 20px;
+  height: 20px;
+  display: none;
+}
+
+/* Show only the icon whose key matches the resolved theme on the button. */
+.theme-toggle[data-theme-resolved="system"] .theme-toggle__icon--system,
+.theme-toggle[data-theme-resolved="light"]  .theme-toggle__icon--light,
+.theme-toggle[data-theme-resolved="dark"]   .theme-toggle__icon--dark {
+  display: block;
+}

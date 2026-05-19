@@ -16,6 +16,9 @@
 /* Accessibility primitives: skip-link, focus ring, touch targets */
 @import "./_a11y.css";
 
+/* Component styles: ThemeToggle and future shared UI components */
+@import "./_components.css";
+
 /* AG Grid Quartz theme overrides */
 @import "./_ag-grid.css";
 

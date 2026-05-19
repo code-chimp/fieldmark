@@ -426,6 +426,22 @@ Architectural concerns the BMad architecture document needs to fill in over the 
   Vendoring makes the version-pinning rule auditable (you can't audit a CDN URL pinned to "@latest"; you can audit a committed file).
 - **D16 — Tailwind compilation trigger:** manual via `cd fieldmark_shared && npm run build` (npm script in `fieldmark_shared/package.json`). Compiled `dist/` is committed; CSS authoring is rare. Each stack's `CLAUDE.md` documents that CSS edits require a rebuild + commit. No watcher needed.
 
+- **D20 — Single inline `<script>` exception (UX-DR5):** The application forbids inline JavaScript **with one deliberate exception**: a 5-line IIFE placed in `<head>` (after `<meta name="viewport">`, before the stylesheet `<link>`) that resolves the `system` theme preference before first paint.
+
+  ```html
+  <script>
+  (function(){var d=document.documentElement,t=d.getAttribute('data-theme');
+  if(t!=='system')return;
+  d.setAttribute('data-theme',window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');})();
+  </script>
+  ```
+
+  **Why it must be inline and blocking:** the script must run synchronously before the browser parses any stylesheet. An external `<script>` tag — even with `<link rel="preload">` — cannot guarantee zero-flash on first paint because resource loading is async. The `defer` attribute is prohibited here; a non-deferred external script would block HTML parsing entirely (worse). Inline is the only mechanism that is both synchronous and does not block the parser beyond its own 5 lines of execution.
+
+  **What it does:** reads the server-rendered `data-theme` attribute on `<html>`. If the value is `"system"`, replaces it with `"light"` or `"dark"` via `matchMedia`. No-op for `"light"` or `"dark"` (which the server emitted directly from the `fm_theme` cookie). The cookie is HTTP-readable (no `HttpOnly`) so the client listener (`theme-toggle.js`) can also read it post-click.
+
+  **This is the only inline JavaScript in the application.** Any future inline `<script>` must go through an architectural decision. The `theme-toggle.js` listener (`fieldmark_shared/vendor/theme-toggle/theme-toggle.js`) is loaded as an external `<script>` after HTMX and handles post-click DOM updates.
+
 ### Infrastructure & Deployment
 
 **Already Locked:**

@@ -17,6 +17,28 @@ import (
 	"github.com/code-chimp/fieldmark-go/internal/data/postgres"
 )
 
+var (
+	fmThemeAllowed = map[string]bool{"system": true, "light": true, "dark": true}
+	fmThemeCycle   = map[string]string{"system": "light", "light": "dark", "dark": "system"}
+)
+
+func resolveFmTheme(c fiber.Ctx) string {
+	v := c.Cookies("fm_theme", "system")
+	if !fmThemeAllowed[v] {
+		return "system"
+	}
+	return v
+}
+
+func themeMap(c fiber.Ctx) fiber.Map {
+	current := resolveFmTheme(c)
+	return fiber.Map{
+		"FmTheme":         current,
+		"FmThemeNext":     fmThemeCycle[current],
+		"FmThemeResolved": current,
+	}
+}
+
 func main() {
 	dumpRoutes := flag.Bool("dump-routes", false, "print normalized route inventory and exit")
 	flag.Parse()
@@ -43,21 +65,42 @@ func main() {
 
 	// Full page — dashboard
 	app.Get("/", func(c fiber.Ctx) error {
-		return c.Render("pages/dashboard", fiber.Map{
-			"Title": "Dashboard",
-		})
+		m := themeMap(c)
+		m["Title"] = "Dashboard"
+		return c.Render("pages/dashboard", m)
 	})
 
 	// Full page — privacy policy
 	app.Get("/privacy", func(c fiber.Ctx) error {
-		return c.Render("pages/privacy", fiber.Map{
-			"Title": "Privacy",
-		}, "")
+		m := themeMap(c)
+		m["Title"] = "Privacy"
+		return c.Render("pages/privacy", m)
 	})
 
 	// HTMX fragment — compliance tile (no layout wrapper)
 	app.Get("/fragments/compliance-tile", func(c fiber.Ctx) error {
 		return c.Render("fragments/compliance_tile", fiber.Map{}, "")
+	})
+
+	// POST /preferences/theme — set fm_theme cookie and signal client listener.
+	// No CSRF middleware is mounted on this stack (auth is deferred; story 1-9 wires
+	// Fiber authentication). Theme preference is non-security-sensitive UI state — a
+	// CSRF attack would only flip a visitor's colour scheme. This is the intentional
+	// parallel to .NET's [IgnoreAntiforgeryToken] on the equivalent Razor Page handler.
+	app.Post("/preferences/theme", func(c fiber.Ctx) error {
+		value := c.FormValue("value")
+		if !fmThemeAllowed[value] {
+			return c.SendStatus(400)
+		}
+		c.Cookie(&fiber.Cookie{
+			Name:     "fm_theme",
+			Value:    value,
+			Path:     "/",
+			MaxAge:   31536000,
+			SameSite: "Lax",
+		})
+		c.Set("HX-Trigger", "theme-changed")
+		return c.SendStatus(204)
 	})
 
 	// --- Dump routes and exit (parity tooling) ----------------------------
