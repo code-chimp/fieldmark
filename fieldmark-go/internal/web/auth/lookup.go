@@ -21,10 +21,10 @@ import (
 // is post-MVP (Story 1.12 introduces the typed Role value object and
 // can revisit then).
 //
-// Canonical role values (ADMIN, COMPLIANCE_OFFICER, INSPECTOR, SITE_SUPERVISOR,
-// EXECUTIVE) are enforced by the Postgres CHECK constraint in
-// internal/data/postgres/migrations/fiber_auth/001_initial.sql. The DB is the
-// authority; no Go string literals need to mirror them at this story.
+// The role string returned from the DB is constrained by the Postgres CHECK
+// on fiber_auth.user_roles.role to the canonical five values enumerated in
+// domain.AllRoles. Actor.Role is kept as string to avoid a cascade change to
+// callers; the domain.Role* constants are the authoritative Go-side names.
 func lookupByUsername(ctx context.Context, pool *pgxpool.Pool, username string) (*app.Actor, error) {
 	const q = `
         SELECT u.id, u.username, COALESCE(MIN(r.role), '') AS role

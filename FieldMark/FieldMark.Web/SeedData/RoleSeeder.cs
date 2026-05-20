@@ -1,3 +1,4 @@
+using FieldMark.Domain.ValueObjects;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -5,14 +6,9 @@ namespace FieldMark.Web.SeedData;
 
 internal static class RoleSeeder
 {
-    private static readonly string[] CanonicalRoles =
-    {
-        "ADMIN",
-        "COMPLIANCE_OFFICER",
-        "INSPECTOR",
-        "SITE_SUPERVISOR",
-        "EXECUTIVE",
-    };
+    private static readonly IReadOnlyList<string> CanonicalRoles = Role
+        .All.Select(r => r.Name)
+        .ToList();
 
     internal static async Task SeedAsync(IServiceProvider services, CancellationToken ct)
     {

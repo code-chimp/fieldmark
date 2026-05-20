@@ -129,6 +129,24 @@ The resolved username is looked up against `fiber_auth.users` joined to `fiber_a
 
 **Replacing the stub with real auth is out of MVP scope.** Do not grow the stub incrementally — when real auth lands, it lands as a coherent epic (session tables, password hashing via `golang.org/x/crypto/bcrypt`, CSRF middleware, real login form, registration/management UI, password reset flow). Until then: this is the stub posture.
 
+## Authorization
+
+The single Go-side authorization decision primitive is `auth.Can` in `internal/web/auth/authz.go`. Signature:
+
+```go
+auth.Can(actor *app.Actor, action string, entityID uuid.UUID) bool
+```
+
+**Rules:**
+- Handlers call `auth.Can`; view models carry the result as a `bool` field — templates must never call `Can` directly.
+- Role names are defined in `internal/domain/role.go` as `domain.RoleAdmin`, `domain.RoleComplianceOfficer`, etc. (`type Role string` consts). Hard-coded role-name string literals elsewhere are a defect.
+- Actions are registered at composition time via `auth.RegisterAction(action, roles...)`. Typically called from `cmd/web/main.go` or a per-aggregate `init()` in `internal/web/handlers/`. Story 1.12 ships the map empty — Epic 1 has no live action affordances.
+- Entity-scope rules are deferred to Epic 2+ and will wire into `evaluateEntityScope` inside `authz.go`.
+
+**ActionButton template:** `internal/web/templates/components/action_button.html`, defined as `{{ define "action_button" }}`. Invoked via `{{ template "action_button" .ActionButton }}` where `.ActionButton` is a `viewmodels.ActionButtonVM` carrying pre-computed `Permission` (from `Can`) and `StateAllows` (from the entity's `can_*` predicate). The template handles the trichotomy internally.
+
+Canonical snapshot reference: `fieldmark_shared/components/action_button.example.html`.
+
 ## Hard Rules (Go-specific)
 
 Root `CLAUDE.md` covers cross-stack rules (no client-side state, no fat service layers, real PostgreSQL in tests, infrastructure-owned `domain` schema). The Go-specific rules are:

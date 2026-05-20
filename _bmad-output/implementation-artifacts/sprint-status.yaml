@@ -37,6 +37,9 @@
 
 generated: 2026-05-11
 last_updated: 2026-05-20
+#   (1-12 all three stack test suites green after escalated reruns; status set to done)
+#   (1-12 implementation complete; status set to review)
+#   (1-12 implementation started; status set to in-progress)
 #   (1-11 final code-review rerun clean; status set to done)
 #   (1-11 re-review found remaining .NET return-target binding gap; status set to in-progress)
 #   (1-11 code review found 3 patch items; status set to in-progress)
@@ -98,7 +101,7 @@ development_status:
   1-9-implement-go-fiber-stub-authentication-middleware: done
   1-10-author-shared-uuid-dev-user-manifest-and-per-stack-idempotent-seed-runners: done
   1-11-login-logout-and-unauthenticated-redirect-across-all-three-stacks: done
-  1-12-implement-authz-can-primitive-and-actionbutton-trichotomy-helper-per-stack: ready-for-dev
+  1-12-implement-authz-can-primitive-and-actionbutton-trichotomy-helper-per-stack: done
   1-13-render-empty-role-aware-home-page-identically-across-all-three-stacks: ready-for-dev
   epic-1-retrospective: optional
 

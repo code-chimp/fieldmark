@@ -13,7 +13,10 @@ import "github.com/google/uuid"
 type Actor struct {
 	ID       uuid.UUID
 	Username string
-	Role     string // "" for anonymous; one of the five canonical roles otherwise
+	// Role is "" for anonymous; otherwise one of the five canonical role
+	// values enumerated in domain.AllRoles. Typed as string to avoid a
+	// refactor cascade; domain.Role* constants are the authoritative names.
+	Role string
 }
 
 // Anonymous returns the sentinel actor representing an unauthenticated

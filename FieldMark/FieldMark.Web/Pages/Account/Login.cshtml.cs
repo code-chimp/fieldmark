@@ -58,7 +58,11 @@ public class LoginModel : PageModel
         }
 
         var result = await _signInManager.PasswordSignInAsync(
-            Username, Password, isPersistent: true, lockoutOnFailure: false);
+            Username,
+            Password,
+            isPersistent: true,
+            lockoutOnFailure: false
+        );
 
         if (result.Succeeded)
         {

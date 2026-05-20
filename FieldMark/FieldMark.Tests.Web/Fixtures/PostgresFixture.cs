@@ -37,11 +37,16 @@ public sealed class PostgresFixture : IAsyncLifetime
         await authCtx.Database.MigrateAsync();
 
         await FieldMark.Web.SeedData.RoleSeeder.SeedAsync(
-            scope.ServiceProvider, CancellationToken.None);
+            scope.ServiceProvider,
+            CancellationToken.None
+        );
 
         var env = scope.ServiceProvider.GetRequiredService<IWebHostEnvironment>();
         await FieldMark.Web.SeedData.DevUsersSeeder.SeedAsync(
-            scope.ServiceProvider, env, CancellationToken.None);
+            scope.ServiceProvider,
+            env,
+            CancellationToken.None
+        );
     }
 
     public async Task DisposeAsync() => await _postgres.DisposeAsync();
@@ -69,27 +74,37 @@ public sealed class PostgresFixture : IAsyncLifetime
         where T : Microsoft.EntityFrameworkCore.DbContext
     {
         var descriptor = services.SingleOrDefault(d => d.ServiceType == typeof(T));
-        if (descriptor != null) services.Remove(descriptor);
+        if (descriptor != null)
+            services.Remove(descriptor);
 
-        var optDescriptor = services.SingleOrDefault(
-            d => d.ServiceType == typeof(Microsoft.EntityFrameworkCore.DbContextOptions<T>));
-        if (optDescriptor != null) services.Remove(optDescriptor);
+        var optDescriptor = services.SingleOrDefault(d =>
+            d.ServiceType == typeof(Microsoft.EntityFrameworkCore.DbContextOptions<T>)
+        );
+        if (optDescriptor != null)
+            services.Remove(optDescriptor);
 
-        services.AddDbContext<T>(o =>
-            o.UseNpgsql(cs).UseSnakeCaseNamingConvention());
+        services.AddDbContext<T>(o => o.UseNpgsql(cs).UseSnakeCaseNamingConvention());
     }
 }
 
 // Antiforgery no-op for integration tests — always validates, emits a predictable token.
 internal sealed class NoOpAntiforgery : IAntiforgery
 {
-    private static readonly AntiforgeryTokenSet _tokens =
-        new("test-token", "test-token", "__RequestVerificationToken", "test");
+    private static readonly AntiforgeryTokenSet _tokens = new(
+        "test-token",
+        "test-token",
+        "__RequestVerificationToken",
+        "test"
+    );
 
     public AntiforgeryTokenSet GetAndStoreTokens(HttpContext httpContext) => _tokens;
+
     public AntiforgeryTokenSet GetTokens(HttpContext httpContext) => _tokens;
+
     public Task<bool> IsRequestValidAsync(HttpContext httpContext) => Task.FromResult(true);
+
     public void SetCookieTokenAndHeader(HttpContext httpContext) { }
+
     public Task ValidateRequestAsync(HttpContext httpContext) => Task.CompletedTask;
 }
 

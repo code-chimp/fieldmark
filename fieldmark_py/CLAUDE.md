@@ -81,6 +81,24 @@ The command lives in `tools/management/commands/seed_groups.py` and is idempoten
 
 **Story 1.11 shipped:** `login_view` (`GET`/`POST`, `@login_not_required`) and `logout_view` (`POST`, `@login_not_required`) are in `fieldmark/views.py`. `LoginRequiredMiddleware` enforces unauthenticated-redirect for all other views. `LOGIN_URL = "/login"`, `LOGIN_REDIRECT_URL = "/"`, `LOGOUT_REDIRECT_URL = "/login"` are set in `settings.py`.
 
+## Authorization
+
+The single Django-side authorization decision primitive is `fieldmark.authz.can` in `fieldmark/authz.py`. Signature:
+
+```python
+can(user, action: str, entity_id: uuid.UUID | None = None) -> bool
+```
+
+**Rules:**
+- Views call `can(request.user, action)`; templates receive pre-computed `permission` booleans — templates must never call `can` directly.
+- Role names are defined in `fieldmark/roles.py` as the `Role` StrEnum (`Role.ADMIN`, `Role.COMPLIANCE_OFFICER`, etc.). Hard-coded role-name string literals elsewhere are a defect.
+- Actions are registered at module load time via `register_action(action, *roles)`. Do not wire registration to `AppConfig.ready()` or signals; use module-level statements in the handler package. Story 1.12 ships the map empty — Epic 1 has no live action affordances.
+- Entity-scope rules are deferred to Epic 2+ and will wire into `_evaluate_entity_scope` inside `authz.py`.
+
+**ActionButton template:** `templates/components/_action_button.html`. Include via `{% include "components/_action_button.html" with id=... permission=... state_allows=... ... %}`. The caller supplies pre-computed `permission` (from `can`) and `state_allows` (from the entity's `can_*` predicate). The template handles the trichotomy internally.
+
+Canonical snapshot reference: `fieldmark_shared/components/action_button.example.html`.
+
 ## Authentication / User UUIDs
 
 Django's `auth_user.id` is a `BIGSERIAL` AutoField. The project does not use a custom user model, so the canonical cross-stack UUIDs (from `docker/postgres/init/seed-uuids/dev-users.json`) **cannot** be `auth_user` primary keys. The chosen approach is a side table:

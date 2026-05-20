@@ -13,11 +13,14 @@ public sealed class LoginFormSnapshotTests(PostgresFixture pg)
     [Fact]
     public async Task GetLogin_FormBlock_MatchesCanonicalExample()
     {
-        var client = _pg.CreateFactory().CreateClient(new WebApplicationFactoryClientOptions
-        {
-            AllowAutoRedirect = false,
-            HandleCookies = true,
-        });
+        var client = _pg.CreateFactory()
+            .CreateClient(
+                new WebApplicationFactoryClientOptions
+                {
+                    AllowAutoRedirect = false,
+                    HandleCookies = true,
+                }
+            );
 
         var resp = await client.GetAsync("/login");
         resp.IsSuccessStatusCode.Should().BeTrue();
@@ -30,12 +33,20 @@ public sealed class LoginFormSnapshotTests(PostgresFixture pg)
         // Path: repo-root/fieldmark_shared/components/login-form.example.html
         var repoRoot = FindRepoRoot();
         var canonicalPath = Path.Combine(
-            repoRoot, "fieldmark_shared", "components", "login-form.example.html");
+            repoRoot,
+            "fieldmark_shared",
+            "components",
+            "login-form.example.html"
+        );
         var canonical = NormaliseHtml.ExtractLoginForm(await File.ReadAllTextAsync(canonicalPath));
 
-        actual.Should().Be(canonical,
-            because: "the rendered login form must be byte-identical to the canonical example " +
-                     "(minus antiforgery token)");
+        actual
+            .Should()
+            .Be(
+                canonical,
+                because: "the rendered login form must be byte-identical to the canonical example "
+                    + "(minus antiforgery token)"
+            );
     }
 
     private static string FindRepoRoot()
@@ -45,6 +56,9 @@ public sealed class LoginFormSnapshotTests(PostgresFixture pg)
         {
             dir = dir.Parent;
         }
-        return dir?.FullName ?? throw new InvalidOperationException("Could not locate repo root (no Makefile found).");
+        return dir?.FullName
+            ?? throw new InvalidOperationException(
+                "Could not locate repo root (no Makefile found)."
+            );
     }
 }

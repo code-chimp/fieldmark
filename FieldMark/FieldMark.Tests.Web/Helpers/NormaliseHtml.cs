@@ -12,16 +12,25 @@ public static partial class NormaliseHtml
     [GeneratedRegex(@"\s+")]
     private static partial Regex WhitespaceRun();
 
-    [GeneratedRegex(@"<input[^>]*name=""__RequestVerificationToken""[^>]*>", RegexOptions.IgnoreCase)]
+    [GeneratedRegex(
+        @"<input[^>]*name=""__RequestVerificationToken""[^>]*>",
+        RegexOptions.IgnoreCase
+    )]
     private static partial Regex AntiforgeryInput();
 
     [GeneratedRegex(@"<input[^>]*name=""csrfmiddlewaretoken""[^>]*>", RegexOptions.IgnoreCase)]
     private static partial Regex CsrfInput();
 
-    [GeneratedRegex(@"<form[^>]*id=""login-form""[^>]*>.*?</form>", RegexOptions.Singleline | RegexOptions.IgnoreCase)]
+    [GeneratedRegex(
+        @"<form[^>]*id=""login-form""[^>]*>.*?</form>",
+        RegexOptions.Singleline | RegexOptions.IgnoreCase
+    )]
     private static partial Regex LoginFormBlock();
 
-    [GeneratedRegex(@"<div[^>]*id=""login-errors""[^>]*>.*?</div>", RegexOptions.Singleline | RegexOptions.IgnoreCase)]
+    [GeneratedRegex(
+        @"<div[^>]*id=""login-errors""[^>]*>.*?</div>",
+        RegexOptions.Singleline | RegexOptions.IgnoreCase
+    )]
     private static partial Regex LoginErrorBlock();
 
     /// <summary>
@@ -41,6 +50,48 @@ public static partial class NormaliseHtml
     {
         var match = LoginErrorBlock().Match(html);
         return match.Success ? Normalise(match.Value) : "";
+    }
+
+    [GeneratedRegex(@"<!--.*?-->", RegexOptions.Singleline)]
+    private static partial Regex HtmlComment();
+
+    /// <summary>
+    /// Extracts the content of a named variant block from a canonical component example file.
+    /// Blocks are delimited by <c>&lt;!-- variant: name ... --&gt;</c> comment lines.
+    /// </summary>
+    public static string ExtractVariant(string exampleFileContent, string variantName)
+    {
+        var lines = exampleFileContent.Split('\n');
+        var startMarker = $"<!-- variant: {variantName}";
+        var inBlock = false;
+        var sb = new System.Text.StringBuilder();
+
+        foreach (var line in lines)
+        {
+            var trimmed = line.TrimEnd();
+            if (trimmed.StartsWith(startMarker, StringComparison.OrdinalIgnoreCase))
+            {
+                inBlock = true;
+                continue;
+            }
+            if (inBlock && trimmed.StartsWith("<!-- variant:", StringComparison.OrdinalIgnoreCase))
+                break;
+            if (inBlock)
+                sb.AppendLine(trimmed);
+        }
+
+        return NormaliseComponent(sb.ToString());
+    }
+
+    /// <summary>
+    /// Normalises component HTML for cross-stack snapshot comparison:
+    /// strips HTML comments, collapses whitespace, trims.
+    /// </summary>
+    public static string NormaliseComponent(string html)
+    {
+        html = HtmlComment().Replace(html, "");
+        html = WhitespaceRun().Replace(html, " ").Trim();
+        return html;
     }
 
     private static string Normalise(string html)

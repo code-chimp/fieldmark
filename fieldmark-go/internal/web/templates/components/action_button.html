@@ -1,0 +1,27 @@
+{{ define "action_button" -}}
+{{- if .Permission -}}
+{{- if .StateAllows -}}
+<button
+  type="button"
+  id="{{ .ID }}"
+  class="btn btn-primary"
+  hx-post="{{ .HxPost }}"
+  hx-target="{{ .HxTarget }}"
+  hx-swap="outerHTML"
+  hx-disabled-elt="this"
+>{{ .Label }}</button>
+{{- else -}}
+<button
+  type="button"
+  id="{{ .ID }}"
+  class="btn btn-secondary"
+  disabled
+  aria-disabled="true"
+  tabindex="0"
+  data-tooltip="{{ .DisabledReason }}"
+  aria-describedby="{{ .ID }}-reason"
+>{{ .Label }}</button>
+<span id="{{ .ID }}-reason" class="sr-only">{{ .DisabledReason }}</span>
+{{- end -}}
+{{- end -}}
+{{- end }}

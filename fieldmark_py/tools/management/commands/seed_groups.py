@@ -8,13 +8,9 @@ authorization model (Architecture D7). Idempotent — safe to re-run.
 from django.contrib.auth.models import Group
 from django.core.management.base import BaseCommand
 
-CANONICAL_GROUPS = (
-    "ADMIN",
-    "COMPLIANCE_OFFICER",
-    "INSPECTOR",
-    "SITE_SUPERVISOR",
-    "EXECUTIVE",
-)
+from fieldmark.roles import Role
+
+CANONICAL_GROUPS = tuple(r.value for r in Role)
 
 
 class Command(BaseCommand):

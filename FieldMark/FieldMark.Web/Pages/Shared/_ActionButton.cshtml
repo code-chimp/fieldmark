@@ -1,0 +1,31 @@
+@model FieldMark.Web.ViewModels.Components.ActionButtonVm
+@{
+    // Trichotomy decision (UX-DR21, FR6): absent when not permitted.
+    if (!Model.Permission) { return; }
+}
+@if (!Model.StateAllows)
+{
+    <button
+        type="button"
+        id="@Model.Id"
+        class="btn btn-secondary"
+        disabled
+        aria-disabled="true"
+        tabindex="0"
+        data-tooltip="@Model.DisabledReason"
+        aria-describedby="@(Model.Id)-reason"
+    >@Model.Label</button>
+    <span id="@(Model.Id)-reason" class="sr-only">@Model.DisabledReason</span>
+}
+else
+{
+    <button
+        type="button"
+        id="@Model.Id"
+        class="btn btn-primary"
+        hx-post="@Model.HxPost"
+        hx-target="@Model.HxTarget"
+        hx-swap="outerHTML"
+        hx-disabled-elt="this"
+    >@Model.Label</button>
+}

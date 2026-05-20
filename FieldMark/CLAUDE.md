@@ -125,7 +125,25 @@ Manifest source: `docker/postgres/init/seed-uuids/dev-users.json` — resolved r
 
 ### What is still deferred
 
-- `authz.Can` primitive and `ActionButton` trichotomy — Story 1.12
+_(Nothing in Epic 1 remains deferred after Story 1.12.)_
+
+## Authorization
+
+The single .NET-side authorization decision primitive is `DomainPolicies.Can` in `FieldMark.Web/Authorization/DomainPolicies.cs`. Signature:
+
+```csharp
+DomainPolicies.Can(ClaimsPrincipal user, string action, Guid? entityId = null) : bool
+```
+
+**Rules:**
+- Handlers and Razor page-model code call `Can`; templates receive pre-computed `permission` booleans — templates must never call `Can` directly.
+- Role names are defined in `FieldMark.Domain/ValueObjects/Role.cs` as `Role.Admin`, `Role.ComplianceOfficer`, etc. Hard-coded role-name string literals anywhere else are a defect.
+- Actions are registered via `DomainPolicies.RegisterAction(action, roles...)`. Epic 2+ stories register their actions at startup (typically in `Program.cs` or a per-aggregate `<Aggregate>Policies.Register()` helper). Story 1.12 ships the map empty — Epic 1 has no live action affordances.
+- Entity-scope rules (e.g., "Site Supervisor can act only on assigned Violations") are deferred to Epic 2+ and will wire into `EvaluateEntityScope` inside `DomainPolicies.cs` without changing the call-site contract.
+
+**ActionButton partial:** `Pages/Shared/_ActionButton.cshtml` with view model `ViewModels/Components/ActionButtonVm.cs`. The caller supplies pre-computed `Permission` (from `Can`) and `StateAllows` (from the entity's `can_*` predicate). The partial renders the absent / disabled / present trichotomy; callers never implement the trichotomy themselves.
+
+Canonical snapshot reference: `fieldmark_shared/components/action_button.example.html`.
 
 ## Coding Standards
 

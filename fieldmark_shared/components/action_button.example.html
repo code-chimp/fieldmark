@@ -1,0 +1,40 @@
+<!--
+ActionButton component — canonical example.
+Each variant is delimited by a `<!-- variant: <name> -->` line. The block
+between two delimiters is the helper's expected output for the inputs
+documented in `inputs:` for that variant. The per-stack snapshot tests
+parse this file by delimiter, normalize whitespace + comments + attribute
+order, and compare against the helper output.
+
+fixture:
+  id: ab-fixture-1
+  label: Approve Resolution
+  hx_post: /violations/00000000-0000-0000-0000-000000000001/corrective-actions/00000000-0000-0000-0000-000000000002/approve
+  hx_target: #violation-detail
+  disabled_reason: Awaiting review
+-->
+
+<!-- variant: absent (inputs: permission=false, state_allows=*) -->
+<!-- variant: disabled (inputs: permission=true, state_allows=false) -->
+<button
+  type="button"
+  id="ab-fixture-1"
+  class="btn btn-secondary"
+  disabled
+  aria-disabled="true"
+  tabindex="0"
+  data-tooltip="Awaiting review"
+  aria-describedby="ab-fixture-1-reason"
+>Approve Resolution</button>
+<span id="ab-fixture-1-reason" class="sr-only">Awaiting review</span>
+
+<!-- variant: present (inputs: permission=true, state_allows=true) -->
+<button
+  type="button"
+  id="ab-fixture-1"
+  class="btn btn-primary"
+  hx-post="/violations/00000000-0000-0000-0000-000000000001/corrective-actions/00000000-0000-0000-0000-000000000002/approve"
+  hx-target="#violation-detail"
+  hx-swap="outerHTML"
+  hx-disabled-elt="this"
+>Approve Resolution</button>

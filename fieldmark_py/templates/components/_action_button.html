@@ -1,0 +1,31 @@
+{% comment %}
+  ActionButton — affordance trichotomy (UX-DR10, UX-DR21).
+
+  Inputs:
+    - id: stable element id (string)
+    - permission: bool (server-computed via authz.can)
+    - state_allows: bool (server-computed from entity state)
+    - label: string
+    - hx_post: string (HTMX POST target)
+    - hx_target: string (CSS selector)
+    - disabled_reason: string (rendered in tooltip + sr-only span when disabled)
+{% endcomment %}
+{% if not permission %}{% else %}{% if not state_allows %}<button
+  type="button"
+  id="{{ id }}"
+  class="btn btn-secondary"
+  disabled
+  aria-disabled="true"
+  tabindex="0"
+  data-tooltip="{{ disabled_reason }}"
+  aria-describedby="{{ id }}-reason"
+>{{ label }}</button>
+<span id="{{ id }}-reason" class="sr-only">{{ disabled_reason }}</span>{% else %}<button
+  type="button"
+  id="{{ id }}"
+  class="btn btn-primary"
+  hx-post="{{ hx_post }}"
+  hx-target="{{ hx_target }}"
+  hx-swap="outerHTML"
+  hx-disabled-elt="this"
+>{{ label }}</button>{% endif %}{% endif %}

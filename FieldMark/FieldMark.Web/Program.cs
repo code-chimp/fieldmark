@@ -85,26 +85,27 @@ builder
     .AddSignInManager()
     .AddDefaultTokenProviders();
 
-builder.Services
-    .AddAuthentication(IdentityConstants.ApplicationScheme)
-    .AddCookie(IdentityConstants.ApplicationScheme, options =>
-    {
-        options.LoginPath = "/login";
-        options.LogoutPath = "/logout";
-        options.AccessDeniedPath = "/login";
-        options.ReturnUrlParameter = "return_url";
-        options.ExpireTimeSpan = TimeSpan.FromDays(14);
-        options.SlidingExpiration = true;
-        options.Cookie.SameSite = SameSiteMode.Lax;
-        options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
-        options.Cookie.HttpOnly = true;
-    });
+builder
+    .Services.AddAuthentication(IdentityConstants.ApplicationScheme)
+    .AddCookie(
+        IdentityConstants.ApplicationScheme,
+        options =>
+        {
+            options.LoginPath = "/login";
+            options.LogoutPath = "/logout";
+            options.AccessDeniedPath = "/login";
+            options.ReturnUrlParameter = "return_url";
+            options.ExpireTimeSpan = TimeSpan.FromDays(14);
+            options.SlidingExpiration = true;
+            options.Cookie.SameSite = SameSiteMode.Lax;
+            options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+            options.Cookie.HttpOnly = true;
+        }
+    );
 
 builder.Services.AddAuthorization(options =>
 {
-    options.FallbackPolicy = new AuthorizationPolicyBuilder()
-        .RequireAuthenticatedUser()
-        .Build();
+    options.FallbackPolicy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
 });
 
 var app = builder.Build();
@@ -140,8 +141,15 @@ if (args.Contains("--seed-dev-users"))
 {
     using var scope = app.Services.CreateScope();
     await scope.ServiceProvider.GetRequiredService<AuthDbContext>().Database.MigrateAsync();
-    await FieldMark.Web.SeedData.RoleSeeder.SeedAsync(scope.ServiceProvider, CancellationToken.None);
-    await FieldMark.Web.SeedData.DevUsersSeeder.SeedAsync(scope.ServiceProvider, app.Environment, CancellationToken.None);
+    await FieldMark.Web.SeedData.RoleSeeder.SeedAsync(
+        scope.ServiceProvider,
+        CancellationToken.None
+    );
+    await FieldMark.Web.SeedData.DevUsersSeeder.SeedAsync(
+        scope.ServiceProvider,
+        app.Environment,
+        CancellationToken.None
+    );
     Console.WriteLine("✓ Roles and dev users seeded.");
     return;
 }
@@ -149,8 +157,15 @@ if (args.Contains("--seed-dev-users"))
 using (var scope = app.Services.CreateScope())
 {
     await scope.ServiceProvider.GetRequiredService<AuthDbContext>().Database.MigrateAsync();
-    await FieldMark.Web.SeedData.RoleSeeder.SeedAsync(scope.ServiceProvider, CancellationToken.None);
-    await FieldMark.Web.SeedData.DevUsersSeeder.SeedAsync(scope.ServiceProvider, app.Environment, CancellationToken.None);
+    await FieldMark.Web.SeedData.RoleSeeder.SeedAsync(
+        scope.ServiceProvider,
+        CancellationToken.None
+    );
+    await FieldMark.Web.SeedData.DevUsersSeeder.SeedAsync(
+        scope.ServiceProvider,
+        app.Environment,
+        CancellationToken.None
+    );
 }
 
 await app.RunAsync();
