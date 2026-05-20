@@ -18,7 +18,7 @@
     - [Vision (Future)](./product-scope.md#vision-future)
   - [User Journeys](./user-journeys.md)
     - [Journey 1 — Marisol, Compliance Officer (the anchor demo, happy path)](./user-journeys.md#journey-1-marisol-compliance-officer-the-anchor-demo-happy-path)
-    - [Journey 2 — Diego, Site Supervisor (edge case — rejection and resubmission)](./user-journeys.md#journey-2-diego-site-supervisor-edge-case-rejection-and-resubmission)
+    - [Journey 2 — Pat, Site Supervisor (edge case — rejection and resubmission)](./user-journeys.md#journey-2-pat-site-supervisor-edge-case-rejection-and-resubmission)
     - [Journey 3 — Aisha, Project Manager (portfolio drill-down, closure attempt)](./user-journeys.md#journey-3-aisha-project-manager-portfolio-drill-down-closure-attempt)
     - [Journey 4 — Kenji, Executive Oversight (read-only)](./user-journeys.md#journey-4-kenji-executive-oversight-read-only)
     - [Journey 5 — The Talk Audience (the meta-persona)](./user-journeys.md#journey-5-the-talk-audience-the-meta-persona)

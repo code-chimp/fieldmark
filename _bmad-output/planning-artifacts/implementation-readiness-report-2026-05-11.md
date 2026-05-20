@@ -315,7 +315,7 @@ All 40 UX-DRs (UX-DR1 through UX-DR40) are covered:
 
 ### UX ↔ PRD Alignment
 
-**Alignment: Excellent.** All five PRD user journeys (Marisol, Diego, Aisha, Kenji, Talk Audience) are mirrored as first-class Mermaid journey flows in the UX spec. Each key PRD functional requirement is reflected in at least one named pattern or component:
+**Alignment: Excellent.** All five PRD user journeys (Marisol, Pat, Aisha, Kenji, Talk Audience) are mirrored as first-class Mermaid journey flows in the UX spec. Each key PRD functional requirement is reflected in at least one named pattern or component:
 
 | PRD Requirement | UX Spec Realization | Status |
 |---|---|---|

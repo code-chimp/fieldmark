@@ -159,7 +159,7 @@ overallStatus: Pass
 **Success Criteria → User Journeys:** Intact
 - Anchor smoothness (200ms p95 for action → panel + tile + audit row in one round trip) → Journey 1 (Marisol, climax: violation status + score tile OOB + audit row, all in one swap).
 - Role-gated rendering / "absent vs disabled" → Journey 3 (Aisha closure denial showing disabled Close with tooltip) and Journey 4 (Kenji executive — no action buttons present).
-- Rejection-doesn't-revert invariant → Journey 2 (Diego rejection / resubmission).
+- Rejection-doesn't-revert invariant → Journey 2 (Pat rejection / resubmission).
 - Cross-stack symmetry → Journey 5 (Talk Audience meta-reveal showing same handler shape across .NET / Django / Go).
 - Closure gate → Journey 3.
 

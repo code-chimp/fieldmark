@@ -352,7 +352,7 @@ Site Supervisor sees a queue of Violations assigned to them, filterable by statu
 
 ### Epic 5: Corrective Action Workflow — The Anchor Demo
 
-The thesis-proving epic. Site Supervisor submits a Corrective Action on an InProgress Violation (Violation Open → InProgress on first submission); Compliance Officer takes the CA for review (Submitted → UnderReview); approves it (CA → Approved, Violation → Resolved, compliance score recomputed) atomically in one transaction — and in one HTTP response the primary `#violation-detail` partial swap, OOB `#compliance-tile` update, and OOB `#audit-log` row append all land in a single paint, across all three stacks. Rejection-with-notes keeps the Violation in InProgress and re-renders the Submit affordance so Diego can resubmit; multiple CAs accumulate, only the latest non-Rejected is eligible for approval, and the submitter cannot review their own CA. This is where the canonical three-region orchestration pattern (UX-DR20) and audit-as-receipt pattern (UX-DR23) are verified end-to-end.
+The thesis-proving epic. Site Supervisor submits a Corrective Action on an InProgress Violation (Violation Open → InProgress on first submission); Compliance Officer takes the CA for review (Submitted → UnderReview); approves it (CA → Approved, Violation → Resolved, compliance score recomputed) atomically in one transaction — and in one HTTP response the primary `#violation-detail` partial swap, OOB `#compliance-tile` update, and OOB `#audit-log` row append all land in a single paint, across all three stacks. Rejection-with-notes keeps the Violation in InProgress and re-renders the Submit affordance so Pat can resubmit; multiple CAs accumulate, only the latest non-Rejected is eligible for approval, and the submitter cannot review their own CA. This is where the canonical three-region orchestration pattern (UX-DR20) and audit-as-receipt pattern (UX-DR23) are verified end-to-end.
 **FRs covered:** FR28, FR29, FR30, FR31, FR32, FR33, FR35 (CA-approved/resolved paths), FR36 (anchor canonical OOB)
 **UX-DRs:** UX-DR20 (canonical demonstration)
 
@@ -688,7 +688,7 @@ So that audit comparison and cross-stack E2E parity tests can assert on actor id
 
 **Given** `docker/postgres/init/seed-uuids/dev-users.json`
 **When** I read it
-**Then** it contains exactly six users: Marisol (`COMPLIANCE_OFFICER`), Diego (`SITE_SUPERVISOR`), Aisha (`ADMIN`), an inspector "Ravi" (`INSPECTOR`), Kenji (`EXECUTIVE`), and a no-role test user
+**Then** it contains exactly six users: Marisol (`COMPLIANCE_OFFICER`), Pat (`SITE_SUPERVISOR`), Aisha (`ADMIN`), an inspector "Ravi" (`INSPECTOR`), Kenji (`EXECUTIVE`), and a no-role test user
 **And** each entry has a canonical UUID (UUIDv7 preferred), a username, a display name, an initial password, and a role.
 
 **Given** the .NET seeder `FieldMark.Web/SeedData/DevUsers.cs`
@@ -2048,7 +2048,7 @@ So that the cross-stack thesis is mechanically verifiable in one command (FR65, 
 
 **Given** `e2e/tests/`
 **When** I inspect it
-**Then** one spec exists per MVP user journey (Journey 1 — anchor demo; Journey 2 — Diego reject/resubmit cycle; Journey 3 — Aisha closure denial+recovery; Journey 4 — Kenji read-only browse) plus per-feature specs (project create, place-on-hold, resume, schedule inspection, complete inspection, assign violation, void violation, theme toggle, login/logout, reference-data read).
+**Then** one spec exists per MVP user journey (Journey 1 — anchor demo; Journey 2 — Pat reject/resubmit cycle; Journey 3 — Aisha closure denial+recovery; Journey 4 — Kenji read-only browse) plus per-feature specs (project create, place-on-hold, resume, schedule inspection, complete inspection, assign violation, void violation, theme toggle, login/logout, reference-data read).
 
 **Given** `playwright.config.ts`
 **When** I inspect it

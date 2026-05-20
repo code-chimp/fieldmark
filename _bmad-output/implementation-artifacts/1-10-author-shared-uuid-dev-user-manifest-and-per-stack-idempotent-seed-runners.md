@@ -22,13 +22,13 @@ So that audit comparison and cross-stack E2E parity tests can assert on actor id
    | username | display_name | role |
    |---|---|---|
    | `marisol` | Marisol Vega | `COMPLIANCE_OFFICER` |
-   | `diego` | Diego Santos | `SITE_SUPERVISOR` |
+   | `pat` | Pat Smith | `SITE_SUPERVISOR` |
    | `aisha` | Aisha Patel | `ADMIN` |
    | `ravi` | Ravi Kumar | `INSPECTOR` |
    | `kenji` | Kenji Tanaka | `EXECUTIVE` |
    | `testuser` | Test User (no role) | `null` |
 
-   Display names listed above are recommendations; the dev may adjust to taste, but the **set of six personas, usernames, and role assignments is fixed** (the names `marisol`, `diego`, `aisha`, `ravi`, `kenji` are referenced in epic AC, Story 1.9, Story 5.5, Story 6.4, and `domain-model.md` persona narratives — changing them would orphan downstream references).
+   Display names listed above are recommendations; the dev may adjust to taste, but the **set of six personas, usernames, and role assignments is fixed** (the names `marisol`, `pat`, `aisha`, `ravi`, `kenji` are referenced in epic AC, Story 1.9, Story 5.5, Story 6.4, and `domain-model.md` persona narratives — changing them would orphan downstream references).
 
 2. **The manifest is valid JSON, schema-stable, and easy to read.** Specifically:
    - File is pretty-printed with two-space indent (matches `fieldmark_shared/package.json` and `e2e/package.json` conventions).
@@ -103,7 +103,7 @@ So that audit comparison and cross-stack E2E parity tests can assert on actor id
    SELECT id, username FROM fiber_auth.users WHERE username = 'marisol';
    ```
 
-   All three queries return the **identical UUID string** (case-insensitive — Postgres' `uuid` type normalizes case). Repeat the spot-check for `diego`, `aisha`, `ravi`, `kenji`, `testuser` — six matches, three stacks, zero mismatches. Capture the proof in the story's Completion Notes.
+   All three queries return the **identical UUID string** (case-insensitive — Postgres' `uuid` type normalizes case). Repeat the spot-check for `pat`, `aisha`, `ravi`, `kenji`, `testuser` — six matches, three stacks, zero mismatches. Capture the proof in the story's Completion Notes.
 
 7. **No seeder writes to `domain.*` schema.** This is the cross-cutting invariant the epic AC names explicitly. Verify by:
    - `grep -rn 'domain\.' FieldMark/FieldMark.Web/SeedData/DevUsersSeeder.cs` — zero matches.
@@ -896,7 +896,7 @@ No prior commit has authored a dev-user manifest or any seeder code. Story 1.10 
 - [Architecture: Cross-Cutting Concerns line 270](_bmad-output/planning-artifacts/architecture.md#cross-cutting-concerns-identified) — "Seed scripts using identical UUIDs across stacks — referenced in `domain-model.md` §3.11 but implementation status to confirm." This story confirms it.
 - [PRD §NFR Security](_bmad-output/planning-artifacts/prd/non-functional-requirements.md) — "Password hashing: Framework-native salted." Justifies per-stack hasher choice.
 - [PRD architectural-constraints-prd-binding.md — Authentication & Authorization](_bmad-output/planning-artifacts/prd/architectural-constraints-prd-binding.md) — ADR-012 schema isolation; opaque UUIDs; auth ownership per stack.
-- [domain-model.md §3.12 — Conceptual Roles](_bmad-output/planning-artifacts/research/domain-model.md) — the five canonical role names. Personas (Marisol, Diego, Aisha, Ravi, Kenji) appear in user journeys throughout this document.
+- [domain-model.md §3.12 — Conceptual Roles](_bmad-output/planning-artifacts/research/domain-model.md) — the five canonical role names. Personas (Marisol, Pat, Aisha, Ravi, Kenji) appear in user journeys throughout this document.
 - [docs/hard-rules.md](docs/hard-rules.md) — backend authority, infrastructure-owned domain schema, real Postgres in tests, no service layers.
 - [FieldMark/CLAUDE.md](FieldMark/CLAUDE.md) — .NET-specific rules; what belongs in `FieldMark.Web` vs. `FieldMark.Data`.
 - [fieldmark_py/CLAUDE.md](fieldmark_py/CLAUDE.md) — Django-specific rules; no signals; migrations scoped to `django_auth` only.

@@ -42,7 +42,7 @@ The UX north star: *the interface does not negotiate with users — it reflects 
 
 **Marisol — Compliance Officer (anchor persona).** Reviews and approves/rejects corrective actions across a portfolio of active projects. Dashboard → Project Detail → Violation → Approve is the canonical demo flow. Needs portfolio-level visibility and a single screen per project where truth and action coexist.
 
-**Diego — Site Supervisor.** Submits corrective actions against violations assigned to his crew. Sees only what is his; cannot resolve violations himself. Encounters rejection-and-resubmission as a first-class flow.
+**Pat — Site Supervisor.** Submits corrective actions against violations assigned to their crew. Sees only what is theirs; cannot resolve violations themselves. Encounters rejection-and-resubmission as a first-class flow.
 
 **Aisha — Project Manager.** Owns project lifecycle (start, place on hold, resume, close). Encounters closure-gate denial as a designed UX moment: HTTP 409, originating partial re-renders with inline explanation, Close button visibly disabled with tooltip until prerequisites are met.
 
@@ -65,7 +65,7 @@ The UX north star: *the interface does not negotiate with users — it reflects 
 
 1. **The "one round trip, three regions" moment as the signature interaction.** Treat Approve / Resolve / Close as designed demo beats. Every detail — focus shift, score-tile transition, audit row appearance, absence of any spinner — is choreography in service of trust. This is the screen the talk turns on.
 2. **Inline rule-violation rendering as a competitive UX advantage over the SPA default.** Most enterprise apps surface "you can't do that" via a toast or modal that the user dismisses. FieldMark renders the explanation in the originating partial, with the disabled-button tooltip explaining why. Calmer, more authoritative, and — because it is in-DOM rather than ephemeral — more accessible.
-3. **Role-scoped affordance rendering as enterprise calm.** Kenji never sees an Approve button. Diego never sees an Approve button. The UI *is* the permission model — no grayed-out clutter, no "you don't have permission" errors, no negotiation between the user and the system.
+3. **Role-scoped affordance rendering as enterprise calm.** Kenji never sees an Approve button. Pat never sees an Approve button. The UI *is* the permission model — no grayed-out clutter, no "you don't have permission" errors, no negotiation between the user and the system.
 4. **The Project Detail anchor screen as the system's spine.** Status, compliance score, inspections, violations, audit log — one screen, current truth, tabs as HTMX swaps rather than client routes. Investing disproportionately in this screen's clarity, density, and interaction precision is higher leverage than any other surface in the product.
 
 ## Core User Experience
@@ -111,7 +111,7 @@ The interactions on which the architectural thesis is judged. Each is a designed
 1. **The "three regions, one round trip" moment (Approve / Resolve).** A single HTMX request returns a partial that updates the violation status, the OOB compliance score tile in the page header, and the audit log. No follow-up request. No client orchestration. No spinner long enough to register. **This is the hinge of the talk.**
 2. **The 409 + originating partial moment (Closure denial).** Aisha clicks Close on a project missing a required Plumbing inspection. Server returns HTTP 409 with the Project Detail partial re-rendered: explanation inline, Close button visibly disabled with a tooltip stating the missing prerequisite, project status unchanged. The user learned the rule from the UI without ever reading documentation. **No modal, no toast, no client validation.**
 3. **The role-scoped first render (Executive read-only).** Kenji logs in. Every action button is *absent* — not greyed out, not hidden by CSS, simply not rendered by the server. The page is information, not affordance. He cannot encounter a permission error because the UI does not offer him actions he cannot take.
-4. **The rejection-resubmission cycle.** Diego's corrective action is rejected. The rejection note is visible. The **Submit Corrective Action** button is back. The violation remains InProgress (rejection does not revert state). The state machine is legible from the UI alone, with no documentation reference required.
+4. **The rejection-resubmission cycle.** Pat's corrective action is rejected. The rejection note is visible. The **Submit Corrective Action** button is back. The violation remains InProgress (rejection does not revert state). The state machine is legible from the UI alone, with no documentation reference required.
 5. **Tab-swap continuity on the Project Detail anchor screen.** Switching between Summary / Inspections / Violations / Audit must feel continuous. If a tab swap reads as a navigation, the anchor-screen metaphor breaks and the talk loses its visual centerpiece.
 6. **Cross-stack identical interaction.** The same scenario performed in the .NET, Django, and Go demos is visually and temporally indistinguishable. The framework is the variable; the experience is the constant.
 
@@ -178,7 +178,7 @@ The micro-emotional pairs that govern detail-level UX decisions:
 
 1. **Trust is built in the receipt, not in the request.** What the user sees after the round trip is what makes them trust the system. Invest disproportionately in the post-action render — the simultaneity of status flip, OOB tile update, and audit row appearance is the trust mechanism, not a nice-to-have.
 2. **Calm is the absence of unnecessary signals.** No spinner unless the request is genuinely slow. No animation unless it carries information. No modal unless action is required outside the current flow. Subtraction is design work.
-3. **The system informs; it does not scold.** Rule violations and denials render with rationale, not reproach. The tone is "here is what is true," never "you did the wrong thing." Diego is not blamed for a rejected corrective action; he is told what was missing.
+3. **The system informs; it does not scold.** Rule violations and denials render with rationale, not reproach. The tone is "here is what is true," never "you did the wrong thing." Pat is not blamed for a rejected corrective action; they are told what was missing.
 4. **Affordance ambiguity is a defect.** A button must read clearly as available, unavailable-with-reason, or not-applicable-to-you. There is no fourth state. Greyed-out-without-explanation is forbidden.
 5. **Inevitability over delight.** The user's strongest possible emotional response is to stop noticing the tool. The architecture recedes behind the work. This principle outranks any "moment of delight" instinct downstream.
 
@@ -651,7 +651,7 @@ An interactive single-file HTML mockup of these directions has been generated at
 
 ## User Journey Flows
 
-The PRD defines five user journeys as narrative (Marisol, Diego, Aisha, Kenji, the Talk Audience). This section designs the **interaction mechanics** for the four actionable journeys — the click-by-click flow, HTMX target IDs, server transaction steps, and OOB regions affected. The Talk Audience journey is meta (observation, not interaction); its mechanics are the architecture revealed by the diagrams below.
+The PRD defines five user journeys as narrative (Marisol, Pat, Aisha, Kenji, the Talk Audience). This section designs the **interaction mechanics** for the four actionable journeys — the click-by-click flow, HTMX target IDs, server transaction steps, and OOB regions affected. The Talk Audience journey is meta (observation, not interaction); its mechanics are the architecture revealed by the diagrams below.
 
 ### Mermaid legend
 
@@ -697,9 +697,9 @@ flowchart TD
 | ~125 | Focus moved | `#violation-detail` (`tabindex="-1"` or `HX-Trigger` event) |
 | ~125 | SR announces change | `#compliance-tile`, `#audit-log` (`aria-live="polite"`) |
 
-### Journey 2 — Diego's rejection-resubmission cycle
+### Journey 2 — Pat's rejection-resubmission cycle
 
-**Pre-conditions:** Diego (Site Supervisor) assigned to a Critical violation (`Open`); `Submit Corrective Action` is rendered.
+**Pre-conditions:** Pat (Site Supervisor) assigned to a Critical violation (`Open`); `Submit Corrective Action` is rendered.
 
 ```mermaid
 flowchart TD
@@ -711,13 +711,13 @@ flowchart TD
   F --> N1[(audit: CorrectiveActionSubmitted)]
   N1 --> G[Commit]
   G --> H[#violation-detail · InProgress · CA card · Submit button gone]
-  H --> WAIT[Diego waits]
+  H --> WAIT[Pat waits]
   WAIT -. Marisol takes for review .-> J[CA -> UnderReview]
   J -. Marisol rejects with notes .-> K[/POST .../reject/]
   K --> L[CA -> Rejected · Violation stays InProgress]
   L --> N2[(audit: CorrectiveActionRejected)]
   L --> M[#violation-detail · rejection notes · Submit button BACK]
-  M -->|Diego returns| RETURN[#violation-detail loaded fresh]
+  M -->|Pat returns| RETURN[#violation-detail loaded fresh]
   RETURN -->|click Submit again| B2[/POST .../corrective-actions/]
   B2 --> CYCLE[New CA Submitted · violation InProgress · prior CA stays Rejected]
   CYCLE --> N3[(audit: CorrectiveActionSubmitted)]
@@ -727,7 +727,7 @@ flowchart TD
 - Rejection does **not** revert the violation to `Open` — `InProgress` persists.
 - The `Submit Corrective Action` button is server-rendered as **present** after a rejection (no eligible non-Rejected CA exists).
 - Multiple CAs accumulate; only the latest non-Rejected is eligible for review/approval.
-- Diego never sees Approve/Reject — server doesn't render them for his role.
+- Pat never sees Approve/Reject — server doesn't render them for their role.
 
 ### Journey 3 — Aisha closes a project (denial-then-recovery)
 
@@ -1154,7 +1154,7 @@ FieldMark is **desktop-first responsive** (per PRD §Web App Specific Requiremen
 | Tier | Width | Posture | Who |
 |---|---|---|---|
 | **Desktop** | ≥ 1280px | Primary — designed and tested here | Marisol, Aisha, Kenji at their desks; the talk demo |
-| **Tablet** | 768px – 1279px | Secondary — credible, fully functional | Diego on a tablet on-site; Marisol on the train |
+| **Tablet** | 768px – 1279px | Secondary — credible, fully functional | Pat on a tablet on-site; Marisol on the train |
 | **Mobile** | < 768px | Tertiary — site does not break, UX is not optimized | Anyone on a phone — readable, navigable, basic actions work |
 
 **Layout collapse rules:**

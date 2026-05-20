@@ -22,15 +22,15 @@ She didn't navigate. Nothing reloaded. The state she sees is the state the datab
 
 ---
 
-## Journey 2 — Diego, Site Supervisor (edge case — rejection and resubmission)
+## Journey 2 — Pat, Site Supervisor (edge case — rejection and resubmission)
 
-**Persona.** Diego runs the electrical crew at Riverside Substation Upgrade. He sees violations assigned to him and submits remediation work as corrective actions. He is not authorized to resolve violations himself — that's the Compliance Officer's job.
+**Persona.** Pat runs the electrical crew at Riverside Substation Upgrade. Pat sees violations assigned to them and submits remediation work as corrective actions. Pat is not authorized to resolve violations themselves — that's the Compliance Officer's job.
 
 **Opening scene.** He gets a notification (out of MVP scope, but he's been told verbally) that a Critical violation has been opened against his crew's work: `RULE_GROUNDING_REQUIRED` on a panel installed yesterday. He logs in, navigates to his assigned violations, and opens the one in question.
 
-**Rising action.** The violation detail screen shows Open status, a 2-day due window (Critical), and a **Submit Corrective Action** button. He clicks it, fills in the description ("Re-grounded panel per spec; verified continuity to bus bar; photo attached as reference"), and submits. The page swaps to show his submission with status `Submitted`. The violation has moved Open → InProgress; the assigned-to field shows him.
+**Rising action.** The violation detail screen shows Open status, a 2-day due window (Critical), and a **Submit Corrective Action** button. Pat clicks it, fills in the description ("Re-grounded panel per spec; verified continuity to bus bar; photo attached as reference"), and submits. The page swaps to show the submission with status `Submitted`. The violation has moved Open → InProgress; the assigned-to field shows Pat.
 
-**Climax — the rejection.** Marisol takes the action for review (status → `UnderReview`), reads it, and rejects it: the description references a photo, but evidence_ref is empty in MVP, and her review notes say "Need explicit measurement of ground resistance, not just continuity check." Diego refreshes — or, more accurately, his screen polls / he navigates back — and sees:
+**Climax — the rejection.** Marisol takes the action for review (status → `UnderReview`), reads it, and rejects it: the description references a photo, but evidence_ref is empty in MVP, and her review notes say "Need explicit measurement of ground resistance, not just continuity check." Pat refreshes — or, more accurately, the screen polls / Pat navigates back — and sees:
 
 - Corrective action status: `Rejected`.
 - Review notes from Marisol visible.
@@ -38,7 +38,7 @@ She didn't navigate. Nothing reloaded. The state she sees is the state the datab
 - A new audit row: `CorrectiveActionRejected`.
 - The **Submit Corrective Action** button is _back_. He can submit a new one.
 
-**Resolution.** He runs the resistance test, submits a second corrective action with the measurement data in the description. This one passes review. The violation resolves. His next screen shows it as terminal — there is no reopen path.
+**Resolution.** Pat runs the resistance test, submits a second corrective action with the measurement data in the description. This one passes review. The violation resolves. The next screen shows it as terminal — there is no reopen path.
 
 **Capabilities revealed.** Role-gated action buttons (server decides what renders); submit/review/reject corrective action workflow; rejection-does-not-revert-violation invariant; audit log captures both rejection and resubmission; multiple corrective actions per violation with only the latest non-Rejected eligible for approval.
 
@@ -99,7 +99,7 @@ The Reference-Data Admin manages TradeType, ViolationCategory, and ComplianceRul
 | Journey                                               | Primary capability cluster                                                                                                        |
 | ----------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
 | 1 — Marisol, Compliance Officer (anchor demo)         | Dashboard, Project Detail, violation detail, corrective action approval, OOB compliance score swap, audit log                     |
-| 2 — Diego, Site Supervisor (rejection / resubmission) | Role-gated action buttons, corrective action submit/review/reject, rejection-doesn't-revert invariant, multi-action per violation |
+| 2 — Pat, Site Supervisor (rejection / resubmission) | Role-gated action buttons, corrective action submit/review/reject, rejection-doesn't-revert invariant, multi-action per violation |
 | 3 — Aisha, Project Manager (closure denial)           | Closure gate evaluation, HTTP 409 with originating partial, server-decided button states, inspection lifecycle                    |
 | 4 — Kenji, Executive (read-only)                      | Role-based rendering with action buttons absent, portfolio aggregation, full audit visibility without write                       |
 | 5 — Talk Audience (meta)                              | The architectural reveal — interaction smoothness, three-stack symmetry, AG Grid as island                                        |

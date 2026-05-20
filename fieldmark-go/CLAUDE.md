@@ -120,7 +120,7 @@ The resolved username is looked up against `fiber_auth.users` joined to `fiber_a
 **Schema ownership:** `fiber_auth.users` and `fiber_auth.user_roles` are framework-local (ADR-012), Go-owned, defined in `internal/data/postgres/migrations/fiber_auth/001_initial.sql`. Apply with `go run ./cmd/migrate-fiber-auth` after `make reset`. **Never** colocate this DDL with `domain.*` init scripts — `domain` is infrastructure-owned (ADR-014).
 
 **What lands later:**
-- Story 1.10 seeds the six dev users (`marisol`, `diego`, `aisha`, `ravi`, `kenji`, plus a no-role test user) into `fiber_auth` from the shared UUID manifest.
+- Story 1.10 seeds the six dev users (`marisol`, `pat`, `aisha`, `ravi`, `kenji`, plus a no-role test user) into `fiber_auth` from the shared UUID manifest.
 - Story 1.11 introduces `/login` (user-switcher stub list rendered as Basecoat buttons) and `/logout` on all three stacks simultaneously, plus mounts `auth.RequireAuth()` on business routes.
 
 **Replacing the stub with real auth is out of MVP scope.** Do not grow the stub incrementally — when real auth lands, it lands as a coherent epic (session tables, password hashing via `golang.org/x/crypto/bcrypt`, CSRF middleware, real login form, registration/management UI, password reset flow). Until then: this is the stub posture.
