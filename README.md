@@ -111,7 +111,28 @@ make up
 
 This starts PostgreSQL 17 on `localhost:5432` and runs the schema init scripts on first volume creation. Credentials: `fieldmark / fieldmark / fieldmark`.
 
-**2. Run the stacks** (each in its own terminal):
+**2. Apply auth migrations and seed dev users:**
+
+Each stack manages its own auth schema. After starting Postgres, apply migrations then seed:
+
+```bash
+# .NET — applies dotnet_auth migrations and seeds roles + users
+cd FieldMark && dotnet ef database update --context AuthDbContext --project FieldMark.Data --startup-project FieldMark.Web
+
+# Django — applies django_auth migrations
+cd fieldmark_py && uv run python manage.py migrate
+uv run python manage.py seed_groups
+
+# Go — applies fiber_auth DDL
+cd fieldmark-go && go run ./cmd/migrate-fiber-auth
+
+# Seed all three stacks at once (requires auth schemas to exist first)
+make seed
+```
+
+`make seed` reads `docker/postgres/init/seed-uuids/dev-users.json` and writes the six dev users into all three stacks' auth schemas with identical UUIDs. It is idempotent — re-running is safe.
+
+**3. Run the stacks** (each in its own terminal):
 
 ```bash
 make run-net       # .NET Razor Pages  →  http://localhost:5000
@@ -121,7 +142,7 @@ make run-go        # Go Fiber          →  http://localhost:3000
 
 All three stacks connect to the same Postgres instance and can run simultaneously.
 
-**3. Reset the database** (destroy volume and re-run init scripts):
+**4. Reset the database** (destroy volume and re-run init scripts):
 
 ```bash
 make reset

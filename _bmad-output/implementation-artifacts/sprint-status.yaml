@@ -37,6 +37,10 @@
 
 generated: 2026-05-11
 last_updated: 2026-05-19
+#   (1-10 re-review clean; all findings resolved; status set to done)
+#   (1-10 all review findings resolved; status set to review)
+#   (1-10 re-review found 1 remaining strict-validation patch item; status set to in-progress)
+#   (1-10 implementation complete; status set to review)
 #   (1-9 re-review clean after patch items resolved; status set to done)
 #   (1-8 code review clean; status set to done)
 #   (1-7 code review clean; status set to done)
@@ -89,7 +93,7 @@ development_status:
   1-7-wire-asp-net-core-identity-to-dotnet-auth-schema-with-conceptual-roles: done
   1-8-wire-django-built-in-auth-to-django-auth-schema-with-conceptual-role-groups: done
   1-9-implement-go-fiber-stub-authentication-middleware: done
-  1-10-author-shared-uuid-dev-user-manifest-and-per-stack-idempotent-seed-runners: ready-for-dev
+  1-10-author-shared-uuid-dev-user-manifest-and-per-stack-idempotent-seed-runners: done
   1-11-login-logout-and-unauthenticated-redirect-across-all-three-stacks: ready-for-dev
   1-12-implement-authz-can-primitive-and-actionbutton-trichotomy-helper-per-stack: ready-for-dev
   1-13-render-empty-role-aware-home-page-identically-across-all-three-stacks: ready-for-dev

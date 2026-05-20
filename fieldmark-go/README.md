@@ -162,7 +162,15 @@ go run ./cmd/migrate-fiber-auth
 
 Creates the `fiber_auth.users` and `fiber_auth.user_roles` tables (idempotent — safe to re-run). Required once after `make reset`.
 
-**4. Run the application:**
+**4. Seed dev users:**
+
+```bash
+go run ./cmd/seed
+```
+
+Reads the shared `docker/postgres/init/seed-uuids/dev-users.json` manifest and writes six users into `fiber_auth.users` + `fiber_auth.user_roles`. Idempotent — re-running produces zero new rows. No passwords are persisted (stub auth posture per ADR-012). See `make seed` in the root `Makefile` for the cross-stack convenience command.
+
+**5. Run the application:**
 
 ```bash
 go run cmd/web/main.go

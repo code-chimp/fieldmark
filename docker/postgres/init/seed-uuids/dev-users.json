@@ -1,0 +1,47 @@
+{
+  "$schema": "./dev-users.schema.json",
+  "users": [
+    {
+      "id":           "4470e3c8-e754-419b-8b45-acb90fc5c7e9",
+      "username":     "marisol",
+      "display_name": "Marisol Vega",
+      "password":     "FieldMark!2026",
+      "role":         "COMPLIANCE_OFFICER"
+    },
+    {
+      "id":           "a57d5cd1-e7ed-4776-8335-dee10115ff20",
+      "username":     "pat",
+      "display_name": "Pat Smith",
+      "password":     "FieldMark!2026",
+      "role":         "SITE_SUPERVISOR"
+    },
+    {
+      "id":           "372da3c7-1cf5-4455-9f01-005117e48d76",
+      "username":     "aisha",
+      "display_name": "Aisha Patel",
+      "password":     "FieldMark!2026",
+      "role":         "ADMIN"
+    },
+    {
+      "id":           "93435c4e-f246-432f-b9fd-6fc5fbce5e9f",
+      "username":     "ravi",
+      "display_name": "Ravi Kumar",
+      "password":     "FieldMark!2026",
+      "role":         "INSPECTOR"
+    },
+    {
+      "id":           "cd53d8ed-4a55-4412-961d-497a93d3441c",
+      "username":     "kenji",
+      "display_name": "Kenji Tanaka",
+      "password":     "FieldMark!2026",
+      "role":         "EXECUTIVE"
+    },
+    {
+      "id":           "2710d590-38d0-4720-9ae0-306e5d0b8970",
+      "username":     "testuser",
+      "display_name": "Test User",
+      "password":     "FieldMark!2026",
+      "role":         null
+    }
+  ]
+}

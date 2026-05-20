@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "dev-users.schema.json",
+  "title": "FieldMark Dev User Manifest",
+  "description": "Canonical dev user manifest shared across all three stacks (see docker/postgres/init/README.md).",
+  "type": "object",
+  "required": ["users"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": { "type": "string" },
+    "users": {
+      "type": "array",
+      "minItems": 6,
+      "maxItems": 6,
+      "items": {
+        "type": "object",
+        "required": ["id", "username", "display_name", "password", "role"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+          },
+          "username": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{1,63}$"
+          },
+          "display_name": { "type": "string", "minLength": 1 },
+          "password":     { "type": "string", "minLength": 1 },
+          "role": {
+            "oneOf": [
+              {
+                "type": "string",
+                "enum": ["ADMIN", "COMPLIANCE_OFFICER", "INSPECTOR", "SITE_SUPERVISOR", "EXECUTIVE"]
+              },
+              { "type": "null" }
+            ]
+          }
+        }
+      }
+    }
+  }
+}

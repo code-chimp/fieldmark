@@ -53,3 +53,17 @@ css: ## Build shared Tailwind CSS (skips if fieldmark_shared/ deps not installed
 	else \
 		echo "(skip) fieldmark_shared deps not installed — run: cd fieldmark_shared && pnpm install"; \
 	fi
+
+.PHONY: seed seed-net seed-django seed-go
+
+seed: seed-net seed-django seed-go ## Seed dev users into all three stacks' auth schemas
+	@echo "✓ All three stacks seeded from docker/postgres/init/seed-uuids/dev-users.json"
+
+seed-net: ## Seed dev users into dotnet_auth (runs roles seeder then users seeder)
+	cd FieldMark && dotnet run --project FieldMark.Web -- --seed-dev-users
+
+seed-django: ## Seed dev users into django_auth
+	cd fieldmark_py && uv run python manage.py seed_dev_users
+
+seed-go: ## Seed dev users into fiber_auth
+	cd fieldmark-go && go run ./cmd/seed

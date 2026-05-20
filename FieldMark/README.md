@@ -74,17 +74,24 @@ If a dependency violates this direction, it is architecturally invalid.
 docker compose up -d
 ```
 
-**2. Run migrations:**
+**2. Run auth migrations:**
 
 ```bash
-dotnet ef database update -p FieldMark.Data -s FieldMark.Web
+dotnet ef database update --context AuthDbContext --project FieldMark.Data --startup-project FieldMark.Web
 ```
 
-**3. Run the application:**
+**3. Seed roles and dev users:**
 
 ```bash
-cd FieldMark.Web
-dotnet run
+dotnet run --project FieldMark.Web -- --seed-dev-users
+```
+
+This seeds the five conceptual roles and the six dev users (from the shared `docker/postgres/init/seed-uuids/dev-users.json` manifest) into `dotnet_auth`. The command is idempotent. See `make seed` in the root `Makefile` for the canonical cross-stack convenience that seeds all three stacks at once.
+
+**4. Run the application:**
+
+```bash
+dotnet run --project FieldMark.Web
 ```
 
 The app will be available at `http://localhost:5000`.

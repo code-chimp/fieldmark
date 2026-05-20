@@ -98,7 +98,15 @@ uv run python manage.py migrate
 uv run python manage.py seed_groups
 ```
 
-**5. Run the development server:**
+**5. Seed dev users (idempotent — safe to re-run):**
+
+```bash
+uv run python manage.py seed_dev_users
+```
+
+Reads `docker/postgres/init/seed-uuids/dev-users.json` and writes six dev users into `django_auth.auth_user`, recording their canonical UUIDs in `django_auth.dev_user_uuid`. The `tools/migrations` migration (applied by `manage.py migrate` in step 3) creates the side table. See `make seed` in the root `Makefile` for the cross-stack convenience command.
+
+**6. Run the development server:**
 
 ```bash
 uv run python manage.py runserver

@@ -105,6 +105,15 @@ Five conceptual roles are seeded idempotently at startup via `FieldMark.Web/Seed
 
 The seeder is called from `Program.cs` after the `--dump-routes` early-return so route-dump invocations do not touch the database. A `Role` value object in `FieldMark.Domain` and the `authz.Can` primitive are deferred to Story 1.12.
 
+### Dev User Seeding
+
+Six dev users are seeded idempotently via `FieldMark.Web/SeedData/DevUsersSeeder.cs` immediately after `RoleSeeder`:
+- `marisol` (COMPLIANCE_OFFICER), `pat` (SITE_SUPERVISOR), `aisha` (ADMIN), `ravi` (INSPECTOR), `kenji` (EXECUTIVE), `testuser` (no role)
+
+The seeder runs on every web-app startup (inside the existing `IServiceScope` block in `Program.cs`) and is also invocable standalone via `dotnet run --project FieldMark.Web -- --seed-dev-users`. Identity hashing uses `IPasswordHasher<IdentityUser<Guid>>` (PBKDF2, framework-native) — the seeder must never call the hasher directly. The manifest plaintext password (`FieldMark!2026`) is for dev-environment first-login only.
+
+Manifest source: `docker/postgres/init/seed-uuids/dev-users.json` — resolved relative to `env.ContentRootPath` at runtime.
+
 ### What is still deferred
 
 - `app.UseAuthentication()` / `app.UseAuthorization()` pipeline wiring — Story 1.11

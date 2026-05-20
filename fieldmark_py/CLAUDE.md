@@ -81,6 +81,20 @@ The command lives in `tools/management/commands/seed_groups.py` and is idempoten
 
 **Login and logout** views and the unauthenticated-redirect contract are Story 1.11's scope.
 
+## Authentication / User UUIDs
+
+Django's `auth_user.id` is a `BIGSERIAL` AutoField. The project does not use a custom user model, so the canonical cross-stack UUIDs (from `docker/postgres/init/seed-uuids/dev-users.json`) **cannot** be `auth_user` primary keys. The chosen approach is a side table:
+
+```
+django_auth.dev_user_uuid (user_id BIGINT FK → auth_user.id, uuid UUID UNIQUE)
+```
+
+Model: `tools.models.DevUserUuid` — `OneToOneField(User, related_name="dev_uuid")`.
+
+**Why a side table** (not a custom user model or a custom column on `auth_user`): A custom user model requires being committed before any migrations land — `auth_user` already has an integer PK from Story 1.8, so that option is closed. Adding a `uuid` column to `auth_user` mutates the framework table beyond its standard shape. The side table adds one row per user, leaves `auth_user` untouched, and lives in `django_auth` (clean ADR-012 story).
+
+**Lookup at audit-write time (Epic 2+):** `request.user.dev_uuid.uuid` — the `dev_uuid` reverse accessor returns the `DevUserUuid` row, and `.uuid` is the `domain.audit_entry.actor_id` value to write. Do not use `request.user.pk` (integer) as an actor ID.
+
 ## Reference
 
 - `_bmad-output/planning-artifacts/architecture.md` — architectural source of truth (canonical request flow with Django code stub, decisions, patterns)

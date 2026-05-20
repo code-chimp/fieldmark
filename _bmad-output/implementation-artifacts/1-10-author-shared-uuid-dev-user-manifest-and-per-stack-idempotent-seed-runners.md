@@ -1,6 +1,6 @@
 # Story 1.10: Author shared UUID dev-user manifest and per-stack idempotent seed runners
 
-Status: ready-for-dev
+Status: done
 
 ## Story
 
@@ -143,12 +143,12 @@ So that audit comparison and cross-stack E2E parity tests can assert on actor id
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Generate and commit the canonical manifest (AC: #1, #2)
-  - [ ] 1.1 Generate six UUIDv7 strings. Recommended tools:
+- [x] Task 1: Generate and commit the canonical manifest (AC: #1, #2)
+  - [x] 1.1 Generate six UUIDv7 strings. Recommended tools:
     - macOS / Linux with Python: `uv tool run --from uuid-extensions python -c "from uuid_extensions import uuid7; print(uuid7())"` six times.
     - Or any UUIDv7 generator — the values are committed once and never regenerated.
-  - [ ] 1.2 Create `docker/postgres/init/seed-uuids/` (does not exist yet — verify via `ls docker/postgres/init/` before creating).
-  - [ ] 1.3 Author `docker/postgres/init/seed-uuids/dev-users.json` with the six entries per AC #1. Use the recommended display names unless you have a strong preference. Pick a password that satisfies the Identity policy (≥ 10 chars, digit, lowercase, uppercase) — e.g., `FieldMark!2026` — and use the **same plaintext for every user** at first seed; this is dev-only and is rotated post-MVP. Example skeleton:
+  - [x] 1.2 Create `docker/postgres/init/seed-uuids/` (does not exist yet — verify via `ls docker/postgres/init/` before creating).
+  - [x] 1.3 Author `docker/postgres/init/seed-uuids/dev-users.json` with the six entries per AC #1. Use the recommended display names unless you have a strong preference. Pick a password that satisfies the Identity policy (≥ 10 chars, digit, lowercase, uppercase) — e.g., `FieldMark!2026` — and use the **same plaintext for every user** at first seed; this is dev-only and is rotated post-MVP. Example skeleton:
 
     ```json
     {
@@ -165,12 +165,12 @@ So that audit comparison and cross-stack E2E parity tests can assert on actor id
     }
     ```
 
-  - [ ] 1.4 Author `docker/postgres/init/seed-uuids/dev-users.schema.json` (JSON Schema draft 2020-12) validating: `users` array of 6 objects, `id` UUID regex, `username` ASCII regex, `role` enum + nullable. Keep it minimal — about 40 lines.
-  - [ ] 1.5 Add a `## Dev User Manifest` section to `docker/postgres/init/README.md` (create the file if missing) documenting: the manifest's purpose, the six personas, the password policy origin (.NET Identity), the rotation rule ("never rotate IDs once committed without coordinating all three seeders"), and a one-line reminder that this file is **read** by per-stack seeders but **not** applied directly to Postgres by the init scripts.
+  - [x] 1.4 Author `docker/postgres/init/seed-uuids/dev-users.schema.json` (JSON Schema draft 2020-12) validating: `users` array of 6 objects, `id` UUID regex, `username` ASCII regex, `role` enum + nullable. Keep it minimal — about 40 lines.
+  - [x] 1.5 Add a `## Dev User Manifest` section to `docker/postgres/init/README.md` (create the file if missing) documenting: the manifest's purpose, the six personas, the password policy origin (.NET Identity), the rotation rule ("never rotate IDs once committed without coordinating all three seeders"), and a one-line reminder that this file is **read** by per-stack seeders but **not** applied directly to Postgres by the init scripts.
 
-- [ ] Task 2: Implement the .NET dev-users seeder (AC: #3, #9)
-  - [ ] 2.1 Confirm Story 1.7 has landed (or is at least merged enough to provide): `FieldMark/FieldMark.Web/SeedData/RoleSeeder.cs`, `FieldMark/FieldMark.Data/Context/AuthDbContext.cs`, ASP.NET Core Identity registered in `Program.cs` with `IdentityUser<Guid>` / `IdentityRole<Guid>`. If 1.7 has not yet merged to this branch, **stop and surface the dependency** — do not invent the Identity wiring.
-  - [ ] 2.2 Create `FieldMark/FieldMark.Web/SeedData/DevUsersSeeder.cs`. Sketch:
+- [x] Task 2: Implement the .NET dev-users seeder (AC: #3, #9)
+  - [x] 2.1 Confirm Story 1.7 has landed (or is at least merged enough to provide): `FieldMark/FieldMark.Web/SeedData/RoleSeeder.cs`, `FieldMark/FieldMark.Data/Context/AuthDbContext.cs`, ASP.NET Core Identity registered in `Program.cs` with `IdentityUser<Guid>` / `IdentityRole<Guid>`. If 1.7 has not yet merged to this branch, **stop and surface the dependency** — do not invent the Identity wiring.
+  - [x] 2.2 Create `FieldMark/FieldMark.Web/SeedData/DevUsersSeeder.cs`. Sketch:
 
     ```csharp
     using System.Text.Json;
@@ -243,8 +243,8 @@ So that audit comparison and cross-stack E2E parity tests can assert on actor id
     }
     ```
 
-  - [ ] 2.3 Update `Program.cs`: inside the existing `using (var scope = app.Services.CreateScope()) { await RoleSeeder.SeedAsync(scope.ServiceProvider, ct); }` block (introduced by Story 1.7), add a second line: `await DevUsersSeeder.SeedAsync(scope.ServiceProvider, env, CancellationToken.None);`. The order is **roles first, then users** — `AddToRoleAsync` requires roles to exist.
-  - [ ] 2.4 Add the `--seed-dev-users` command-line flag (AC #9). Sketch — placed near the top of `Program.cs` after `var builder = WebApplication.CreateBuilder(args);` and the DB connection-string setup, but **before** route registration:
+  - [x] 2.3 Update `Program.cs`: inside the existing `using (var scope = app.Services.CreateScope()) { await RoleSeeder.SeedAsync(scope.ServiceProvider, ct); }` block (introduced by Story 1.7), add a second line: `await DevUsersSeeder.SeedAsync(scope.ServiceProvider, env, CancellationToken.None);`. The order is **roles first, then users** — `AddToRoleAsync` requires roles to exist.
+  - [x] 2.4 Add the `--seed-dev-users` command-line flag (AC #9). Sketch — placed near the top of `Program.cs` after `var builder = WebApplication.CreateBuilder(args);` and the DB connection-string setup, but **before** route registration:
 
     ```csharp
     if (args.Contains("--seed-dev-users"))
@@ -264,15 +264,15 @@ So that audit comparison and cross-stack E2E parity tests can assert on actor id
     ```
 
     Refactor the Identity/DbContext registration into a private static helper (`RegisterIdentityAndAuthDbContext(WebApplicationBuilder)`) so both paths share it without duplication. The flag must short-circuit **before** the web server binds to its listener port.
-  - [ ] 2.5 Run `cd FieldMark && dotnet build` — clean. Then end-to-end:
+  - [x] 2.5 Run `cd FieldMark && dotnet build` — clean. Then end-to-end:
     - `make reset` (from repo root) — destroys volume.
     - `cd FieldMark && dotnet ef database update --project FieldMark.Data --startup-project FieldMark.Web --context AuthDbContext` (Story 1.7's auth migrations).
     - `cd FieldMark && dotnet run --project FieldMark.Web -- --seed-dev-users` — expects clean exit with the success line.
     - Re-run the same command — expects clean exit with the same success line, **no exceptions**, and zero new rows (verify via psql).
 
-- [ ] Task 3: Implement the Django side-table migration + seeder (AC: #4, #7)
-  - [ ] 3.1 Confirm Story 1.8 has landed: `search_path=django_auth,public` in `settings.py`, Django `auth` migrations applied, `seed_groups` command exists and the five Groups are in `django_auth.auth_group`. If not, stop and surface the dependency.
-  - [ ] 3.2 Create `fieldmark_py/tools/models.py` with the side-table model (if a `tools/models.py` already exists with other content, append):
+- [x] Task 3: Implement the Django side-table migration + seeder (AC: #4, #7)
+  - [x] 3.1 Confirm Story 1.8 has landed: `search_path=django_auth,public` in `settings.py`, Django `auth` migrations applied, `seed_groups` command exists and the five Groups are in `django_auth.auth_group`. If not, stop and surface the dependency.
+  - [x] 3.2 Create `fieldmark_py/tools/models.py` with the side-table model (if a `tools/models.py` already exists with other content, append):
 
     ```python
     """Cross-cutting tools models.
@@ -301,8 +301,8 @@ So that audit comparison and cross-stack E2E parity tests can assert on actor id
 
     Note the deliberate `'django_auth"."dev_user_uuid'` quoting — this is the Django idiom for cross-schema `db_table` (mirrors `domain-model.md` patterns referenced from `fieldmark_py/CLAUDE.md`).
 
-  - [ ] 3.3 Generate the migration: `cd fieldmark_py && uv run python manage.py makemigrations tools`. Verify the migration file lands at `fieldmark_py/tools/migrations/0001_initial.py` (or next-available number) and only creates `django_auth.dev_user_uuid`. Run `uv run python manage.py migrate tools` and verify via psql: `\dt django_auth.dev_user_uuid` exists.
-  - [ ] 3.4 Create `fieldmark_py/projects/management/commands/seed_dev_users.py`. Sketch:
+  - [x] 3.3 Generate the migration: `cd fieldmark_py && uv run python manage.py makemigrations tools`. Verify the migration file lands at `fieldmark_py/tools/migrations/0001_initial.py` (or next-available number) and only creates `django_auth.dev_user_uuid`. Run `uv run python manage.py migrate tools` and verify via psql: `\dt django_auth.dev_user_uuid` exists.
+  - [x] 3.4 Create `fieldmark_py/projects/management/commands/seed_dev_users.py`. Sketch:
 
     ```python
     """Seed dev users from the shared UUID manifest.
@@ -397,7 +397,7 @@ So that audit comparison and cross-stack E2E parity tests can assert on actor id
             ))
     ```
 
-  - [ ] 3.5 Add a pytest covering create + idempotence at `fieldmark_py/projects/tests/test_seed_dev_users.py`:
+  - [x] 3.5 Add a pytest covering create + idempotence at `fieldmark_py/projects/tests/test_seed_dev_users.py`:
 
     ```python
     import pytest
@@ -440,7 +440,7 @@ So that audit comparison and cross-stack E2E parity tests can assert on actor id
 
     `pytest-django` is already configured (Story 1.8 added it); `@pytest.mark.django_db` hits the real test database — no SQLite (root `CLAUDE.md` → `docs/hard-rules.md`).
 
-  - [ ] 3.6 Run end-to-end:
+  - [x] 3.6 Run end-to-end:
     - `make reset` (from repo root).
     - `cd fieldmark_py && uv run python manage.py migrate` (Story 1.8's auth + Task 3.3's `dev_user_uuid` migration).
     - `uv run python manage.py seed_groups` (Story 1.8).
@@ -448,9 +448,9 @@ So that audit comparison and cross-stack E2E parity tests can assert on actor id
     - Re-run `seed_dev_users` — zero new rows.
     - Verify in psql: `SELECT au.username, d.uuid FROM django_auth.auth_user au JOIN django_auth.dev_user_uuid d ON d.user_id = au.id ORDER BY au.username;` — six rows, UUIDs match the manifest.
 
-- [ ] Task 4: Implement the Go dev-users seeder (AC: #5, #7)
-  - [ ] 4.1 Confirm Story 1.9 has landed: `fiber_auth.users` and `fiber_auth.user_roles` exist after `cmd/migrate-fiber-auth`. If not, stop and surface the dependency.
-  - [ ] 4.2 Create `fieldmark-go/cmd/seed/main.go`. Sketch:
+- [x] Task 4: Implement the Go dev-users seeder (AC: #5, #7)
+  - [x] 4.1 Confirm Story 1.9 has landed: `fiber_auth.users` and `fiber_auth.user_roles` exist after `cmd/migrate-fiber-auth`. If not, stop and surface the dependency.
+  - [x] 4.2 Create `fieldmark-go/cmd/seed/main.go`. Sketch:
 
     ```go
     // Command seed reads docker/postgres/init/seed-uuids/dev-users.json and
@@ -609,7 +609,7 @@ So that audit comparison and cross-stack E2E parity tests can assert on actor id
     }
     ```
 
-  - [ ] 4.3 Add a unit test for `parseManifest` at `fieldmark-go/cmd/seed/main_test.go` (pure-Go, no DB):
+  - [x] 4.3 Add a unit test for `parseManifest` at `fieldmark-go/cmd/seed/main_test.go` (pure-Go, no DB):
 
     ```go
     package main
@@ -656,36 +656,36 @@ So that audit comparison and cross-stack E2E parity tests can assert on actor id
     }
     ```
 
-  - [ ] 4.4 Run end-to-end:
+  - [x] 4.4 Run end-to-end:
     - `make reset` (from repo root).
     - `cd fieldmark-go && go run ./cmd/migrate-fiber-auth` (Story 1.9).
     - `go run ./cmd/seed` — six users created. Log line: `seed_dev_users: 6 users, 0 errors`.
     - Re-run `go run ./cmd/seed` — same log line, zero new rows (verify via psql).
     - `make test` (from `fieldmark-go/`) — all tests pass including the new `parseManifest` tests.
 
-- [ ] Task 5: Add `make seed` and update READMEs (AC: #9, #10)
-  - [ ] 5.1 Append the `seed` target block (AC #9 sketch) to the root `Makefile`. Confirm `make seed` invokes all three seeders in order and prints the trailing success line. The dependency chain is `seed: seed-net seed-django seed-go` so any single failure halts the chain (`make` default behavior).
-  - [ ] 5.2 Update `README.md` (repo root): add a `make seed` step after `make reset` + per-stack migrate steps. One-line note: "Seeds the six dev users into all three stacks' auth schemas, with identical UUIDs sourced from `docker/postgres/init/seed-uuids/dev-users.json`."
-  - [ ] 5.3 Update `FieldMark/README.md`: add a `dotnet run --project FieldMark.Web -- --seed-dev-users` step after the Story 1.7 auth-migration step. Cross-reference `make seed` as the canonical cross-stack convenience.
-  - [ ] 5.4 Update `fieldmark_py/README.md`: add a `uv run python manage.py seed_dev_users` step after `seed_groups`. Note the side-table dependency (`tools/migrations`) is applied by the regular `migrate` step.
-  - [ ] 5.5 Update `fieldmark-go/README.md`: add a `go run ./cmd/seed` step after the Story 1.9 `migrate-fiber-auth` step. One-line note: "Reads the shared `dev-users.json` manifest and writes six users into `fiber_auth.users` + `fiber_auth.user_roles`. Idempotent."
+- [x] Task 5: Add `make seed` and update READMEs (AC: #9, #10)
+  - [x] 5.1 Append the `seed` target block (AC #9 sketch) to the root `Makefile`. Confirm `make seed` invokes all three seeders in order and prints the trailing success line. The dependency chain is `seed: seed-net seed-django seed-go` so any single failure halts the chain (`make` default behavior).
+  - [x] 5.2 Update `README.md` (repo root): add a `make seed` step after `make reset` + per-stack migrate steps. One-line note: "Seeds the six dev users into all three stacks' auth schemas, with identical UUIDs sourced from `docker/postgres/init/seed-uuids/dev-users.json`."
+  - [x] 5.3 Update `FieldMark/README.md`: add a `dotnet run --project FieldMark.Web -- --seed-dev-users` step after the Story 1.7 auth-migration step. Cross-reference `make seed` as the canonical cross-stack convenience.
+  - [x] 5.4 Update `fieldmark_py/README.md`: add a `uv run python manage.py seed_dev_users` step after `seed_groups`. Note the side-table dependency (`tools/migrations`) is applied by the regular `migrate` step.
+  - [x] 5.5 Update `fieldmark-go/README.md`: add a `go run ./cmd/seed` step after the Story 1.9 `migrate-fiber-auth` step. One-line note: "Reads the shared `dev-users.json` manifest and writes six users into `fiber_auth.users` + `fiber_auth.user_roles`. Idempotent."
 
-- [ ] Task 6: Update each stack's CLAUDE.md (AC: #3, #4, #5)
-  - [ ] 6.1 `FieldMark/CLAUDE.md` — add to (or create) an `## Authentication / Dev User Seeding` section: the seeder lives at `FieldMark/FieldMark.Web/SeedData/DevUsersSeeder.cs`, runs on every web-app startup (after `RoleSeeder`), and is also invocable via `dotnet run --project FieldMark.Web -- --seed-dev-users`. Identity hashing uses `IPasswordHasher` (framework-native); the manifest plaintext password is for dev-environment first-login only.
-  - [ ] 6.2 `fieldmark_py/CLAUDE.md` — add an `## Authentication / User UUIDs` section pointing at `tools.models.DevUserUuid` and the chosen side-table approach (rationale per AC #4). Note that `domain.audit_entry.actor_id` writes (Epic 2+) must look up the UUID via `request.user.dev_uuid.uuid` rather than the integer `request.user.pk`.
-  - [ ] 6.3 `fieldmark-go/CLAUDE.md` — extend the existing `## Authentication` section (rewritten in Story 1.9): note that `cmd/seed` populates `fiber_auth.users` / `fiber_auth.user_roles` from the shared manifest, and that the manifest's `password` field is intentionally not persisted on the Go side (stub posture).
+- [x] Task 6: Update each stack's CLAUDE.md (AC: #3, #4, #5)
+  - [x] 6.1 `FieldMark/CLAUDE.md` — add to (or create) an `## Authentication / Dev User Seeding` section: the seeder lives at `FieldMark/FieldMark.Web/SeedData/DevUsersSeeder.cs`, runs on every web-app startup (after `RoleSeeder`), and is also invocable via `dotnet run --project FieldMark.Web -- --seed-dev-users`. Identity hashing uses `IPasswordHasher` (framework-native); the manifest plaintext password is for dev-environment first-login only.
+  - [x] 6.2 `fieldmark_py/CLAUDE.md` — add an `## Authentication / User UUIDs` section pointing at `tools.models.DevUserUuid` and the chosen side-table approach (rationale per AC #4). Note that `domain.audit_entry.actor_id` writes (Epic 2+) must look up the UUID via `request.user.dev_uuid.uuid` rather than the integer `request.user.pk`.
+  - [x] 6.3 `fieldmark-go/CLAUDE.md` — extend the existing `## Authentication` section (rewritten in Story 1.9): note that `cmd/seed` populates `fiber_auth.users` / `fiber_auth.user_roles` from the shared manifest, and that the manifest's `password` field is intentionally not persisted on the Go side (stub posture).
 
-- [ ] Task 7: Cross-stack UUID parity verification (AC: #6, #7, #8)
-  - [ ] 7.1 With all three stacks seeded, run the six spot-check queries (AC #6) against psql. Capture the output in the story's Completion Notes — six matches, three stacks each.
-  - [ ] 7.2 Run the `grep` invariants (AC #7) — three zero-match runs. Capture the commands and zero-match outputs.
-  - [ ] 7.3 Run `make parity` from the repo root — exits 0. Capture stdout.
-  - [ ] 7.4 Run `make seed` twice in a row from the repo root — both runs complete cleanly; second run produces zero new rows on every stack (psql row-count check before/after).
+- [x] Task 7: Cross-stack UUID parity verification (AC: #6, #7, #8)
+  - [x] 7.1 With all three stacks seeded, run the six spot-check queries (AC #6) against psql. Capture the output in the story's Completion Notes — six matches, three stacks each.
+  - [x] 7.2 Run the `grep` invariants (AC #7) — three zero-match runs. Capture the commands and zero-match outputs.
+  - [x] 7.3 Run `make parity` from the repo root — exits 0. Capture stdout.
+  - [x] 7.4 Run `make seed` twice in a row from the repo root — both runs complete cleanly; second run produces zero new rows on every stack (psql row-count check before/after).
 
-- [ ] Task 8: Final QA gates (AC: #11)
-  - [ ] 8.1 .NET: `cd FieldMark && dotnet build && dotnet test` — clean.
-  - [ ] 8.2 Django: `cd fieldmark_py && uv run ruff check . && uv run mypy . && uv run python -m pytest` — clean. New tests added under `projects/tests/test_seed_dev_users.py` pass.
-  - [ ] 8.3 Go: `cd fieldmark-go && make fmt-check && make vet && make staticcheck && make test` — clean. New tests under `cmd/seed/main_test.go` pass.
-  - [ ] 8.4 `make parity` (repo root) — exits 0.
+- [x] Task 8: Final QA gates (AC: #11)
+  - [x] 8.1 .NET: `cd FieldMark && dotnet build && dotnet test` — clean.
+  - [x] 8.2 Django: `cd fieldmark_py && uv run ruff check . && uv run mypy . && uv run python -m pytest` — clean. New tests added under `projects/tests/test_seed_dev_users.py` pass.
+  - [x] 8.3 Go: `cd fieldmark-go && make fmt-check && make vet && make staticcheck && make test` — clean. New tests under `cmd/seed/main_test.go` pass.
+  - [x] 8.4 `make parity` (repo root) — exits 0.
 
 ## Dev Notes
 
@@ -906,14 +906,71 @@ No prior commit has authored a dev-user manifest or any seeder code. Story 1.10 
 - [Story 1.9 implementation artifact](_bmad-output/implementation-artifacts/1-9-implement-go-fiber-stub-authentication-middleware.md) — Go dependency: `fiber_auth.users` / `fiber_auth.user_roles` schema, `cmd/migrate-fiber-auth` invocation idiom.
 - [Story 1.11 (forthcoming)](_bmad-output/planning-artifacts/epics.md#story-111-login-logout-and-unauthenticated-redirect-across-all-three-stacks) — downstream consumer: the user-switcher on Go reads `fiber_auth.users` populated by this story; .NET / Django `/login` forms authenticate against the users populated by this story.
 
+### Review Findings
+
+- [x] [Review][Patch] .NET seeder should converge existing users to manifest values (username/email/password and role set convergence, including stale-role pruning) [FieldMark/FieldMark.Web/SeedData/DevUsersSeeder.cs:48]
+- [x] [Review][Patch] Go seeder should strictly validate manifest contract before writing (exactly six users and required non-empty fields) [fieldmark-go/cmd/seed/main.go:117]
+- [x] [Review][Patch] Go no-role branch should match AC SQL flow (skip `user_roles` writes for no-role entries, not unconditional delete) [fieldmark-go/cmd/seed/main.go:85]
+- [x] [Review][Patch] Go strict validation still allows invalid manifest values (`password` can be empty and `role` can be any string); enforce non-empty password and role enum/null before writes [fieldmark-go/cmd/seed/main.go:128]
+
 ## Dev Agent Record
 
 ### Agent Model Used
 
-_(populated by dev agent)_
+claude-sonnet-4-6
 
 ### Debug Log References
 
+- `tools/migrations/0001_initial.py` needed a `RunSQL("CREATE SCHEMA IF NOT EXISTS django_auth")` operation prepended — the test database starts from scratch without the schema that production gets from `001_schemas.sql`. This was discovered when `pytest` failed with `schema "django_auth" does not exist` during test DB migration. The RunSQL is idempotent (IF NOT EXISTS) so it no-ops in production.
+- `tools/models.py` ruff violations: import sort in generated migration (auto-fixed), missing `__str__`, and Django style guide ordering (Meta before magic methods). All fixed.
+
 ### Completion Notes List
 
+- Architecture line 314's `091_seed_dev_users.sql` is incorrect and was intentionally NOT created. The per-stack seeder model (architecture lines 349–356, 947–948) is correct. This discrepancy is noted here for the architecture maintainer.
+- UUID parity spot-check confirmed (2026-05-19):
+  - All six users (marisol, pat, aisha, ravi, kenji, testuser) have identical UUIDs across dotnet_auth, django_auth.dev_user_uuid, and fiber_auth.users.
+  - .NET: `SELECT user_name, id FROM dotnet_auth.users ORDER BY user_name` → 6 rows ✓
+  - Django: `SELECT au.username, d.uuid FROM django_auth.dev_user_uuid d JOIN django_auth.auth_user au ON au.id = d.user_id ORDER BY au.username` → 6 rows ✓
+  - Go: `SELECT username, id FROM fiber_auth.users ORDER BY username` → 6 rows ✓
+  - All three return identical UUID values for each username.
+- grep invariants confirmed: zero `domain.` references in any seeder.
+- `make parity` exits 0 (4 routes, 21 pg_indexes).
+- Second `make seed` run: .NET "✓ Roles and dev users seeded." (no new rows), Django "6 users (0 created, 6 updated)", Go "seed_dev_users: 6 users, 0 errors".
+- Row counts after seeding: dotnet_auth.users=6, dotnet_auth.user_roles=5 (testuser has no role), django_auth.auth_user=6, django_auth.dev_user_uuid=6, fiber_auth.users=6, fiber_auth.user_roles=5.
+
 ### File List
+
+**New — Manifest (shared):**
+- `docker/postgres/init/seed-uuids/dev-users.json`
+- `docker/postgres/init/seed-uuids/dev-users.schema.json`
+- `docker/postgres/init/README.md`
+
+**.NET:**
+- `FieldMark/FieldMark.Web/SeedData/DevUsersSeeder.cs`
+- `FieldMark/FieldMark.Web/Program.cs` (updated)
+- `FieldMark/README.md` (updated)
+- `FieldMark/CLAUDE.md` (updated)
+
+**Django:**
+- `fieldmark_py/tools/models.py`
+- `fieldmark_py/tools/migrations/__init__.py` (auto-created by makemigrations)
+- `fieldmark_py/tools/migrations/0001_initial.py`
+- `fieldmark_py/projects/management/__init__.py`
+- `fieldmark_py/projects/management/commands/__init__.py`
+- `fieldmark_py/projects/management/commands/seed_dev_users.py`
+- `fieldmark_py/projects/tests/__init__.py`
+- `fieldmark_py/projects/tests/test_seed_dev_users.py`
+- `fieldmark_py/projects/tests.py` (deleted — replaced by tests package)
+- `fieldmark_py/README.md` (updated)
+- `fieldmark_py/CLAUDE.md` (updated)
+
+**Go:**
+- `fieldmark-go/cmd/seed/main.go`
+- `fieldmark-go/cmd/seed/main_test.go`
+- `fieldmark-go/README.md` (updated)
+- `fieldmark-go/CLAUDE.md` (updated)
+
+**Root:**
+- `Makefile` (seed, seed-net, seed-django, seed-go targets added)
+- `README.md` (updated Getting Started with seed step)
+- `_bmad-output/implementation-artifacts/sprint-status.yaml` (status updated)

@@ -103,12 +103,19 @@ if (args.Contains("--dump-routes"))
     return; // allows the host to dispose cleanly; no Environment.Exit needed
 }
 
+if (args.Contains("--seed-dev-users"))
+{
+    using var scope = app.Services.CreateScope();
+    await FieldMark.Web.SeedData.RoleSeeder.SeedAsync(scope.ServiceProvider, CancellationToken.None);
+    await FieldMark.Web.SeedData.DevUsersSeeder.SeedAsync(scope.ServiceProvider, app.Environment, CancellationToken.None);
+    Console.WriteLine("✓ Roles and dev users seeded.");
+    return;
+}
+
 using (var scope = app.Services.CreateScope())
 {
-    await FieldMark.Web.SeedData.RoleSeeder.SeedAsync(
-        scope.ServiceProvider,
-        CancellationToken.None
-    );
+    await FieldMark.Web.SeedData.RoleSeeder.SeedAsync(scope.ServiceProvider, CancellationToken.None);
+    await FieldMark.Web.SeedData.DevUsersSeeder.SeedAsync(scope.ServiceProvider, app.Environment, CancellationToken.None);
 }
 
 await app.RunAsync();
