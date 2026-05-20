@@ -1,6 +1,6 @@
 # Story 1.9: Implement Go/Fiber stub authentication middleware
 
-Status: ready-for-dev
+Status: done
 
 ## Story
 
@@ -54,8 +54,8 @@ So that the Go stack can render role-aware pages and exercise the cross-stack pa
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Author the framework-local `fiber_auth` DDL (AC: #1)
-  - [ ] 1.1 Create `fieldmark-go/internal/data/postgres/migrations/fiber_auth/001_initial.sql` with the following content (snake_case column names per the canonical naming convention; `SCREAMING_SNAKE_CASE` enum values per Architecture §Naming Conventions; `CREATE TABLE IF NOT EXISTS` for idempotence):
+- [x] Task 1: Author the framework-local `fiber_auth` DDL (AC: #1)
+  - [x] 1.1 Create `fieldmark-go/internal/data/postgres/migrations/fiber_auth/001_initial.sql` with the following content (snake_case column names per the canonical naming convention; `SCREAMING_SNAKE_CASE` enum values per Architecture §Naming Conventions; `CREATE TABLE IF NOT EXISTS` for idempotence):
 
     ```sql
     -- fiber_auth bootstrap. Framework-local per ADR-012. Owned by the Go stack.
@@ -82,7 +82,7 @@ So that the Go stack can render role-aware pages and exercise the cross-stack pa
         ON fiber_auth.user_roles(user_id);
     ```
 
-  - [ ] 1.2 Create `fieldmark-go/internal/data/postgres/migrations/fiber_auth/embed.go`:
+  - [x] 1.2 Create `fieldmark-go/internal/data/postgres/migrations/fiber_auth/embed.go`:
 
     ```go
     // Package fiberauthmigrations embeds the framework-local DDL for the
@@ -100,10 +100,10 @@ So that the Go stack can render role-aware pages and exercise the cross-stack pa
     var InitialSQL string
     ```
 
-  - [ ] 1.3 Verify with `grep -n 'domain' fieldmark-go/internal/data/postgres/migrations/fiber_auth/*.sql` — must return zero matches.
+  - [x] 1.3 Verify with `grep -n 'domain' fieldmark-go/internal/data/postgres/migrations/fiber_auth/*.sql` — must return zero matches.
 
-- [ ] Task 2: Upgrade `internal/data/postgres/db.go` from `pgx.Conn` to `pgxpool.Pool` (AC: #7)
-  - [ ] 2.1 Rewrite `fieldmark-go/internal/data/postgres/db.go`:
+- [x] Task 2: Upgrade `internal/data/postgres/db.go` from `pgx.Conn` to `pgxpool.Pool` (AC: #7)
+  - [x] 2.1 Rewrite `fieldmark-go/internal/data/postgres/db.go`:
 
     ```go
     // Package postgres provides database connectivity and persistence adapters
@@ -145,14 +145,14 @@ So that the Go stack can render role-aware pages and exercise the cross-stack pa
     }
     ```
 
-  - [ ] 2.2 Update `fieldmark-go/cmd/web/main.go` to:
+  - [x] 2.2 Update `fieldmark-go/cmd/web/main.go` to:
     - Receive `*pgxpool.Pool` from `postgres.Connect(dsn)`.
     - Replace `defer func() { _ = conn.Close(context.Background()) }()` with `defer pool.Close()`.
     - Pass the pool into the auth middleware factory (Task 4).
-  - [ ] 2.3 Confirm `go.mod` does **not** need a new direct dependency — `pgxpool` is a subpackage of `github.com/jackc/pgx/v5` already in the require block. After Task 2.1 compiles, run `go mod tidy`; the only expected change is `github.com/google/uuid` moving from `// indirect` to a direct require (because Task 3 imports it directly).
+  - [x] 2.3 Confirm `go.mod` does **not** need a new direct dependency — `pgxpool` is a subpackage of `github.com/jackc/pgx/v5` already in the require block. After Task 2.1 compiles, run `go mod tidy`; the only expected change is `github.com/google/uuid` moving from `// indirect` to a direct require (because Task 3 imports it directly).
 
-- [ ] Task 3: Author the `internal/app/actor.go` Actor type (AC: #2, #3)
-  - [ ] 3.1 Create `fieldmark-go/internal/app/actor.go`:
+- [x] Task 3: Author the `internal/app/actor.go` Actor type (AC: #2, #3)
+  - [x] 3.1 Create `fieldmark-go/internal/app/actor.go`:
 
     ```go
     // Package app is the THIN coordinator — wiring only (Deps struct, env
@@ -185,10 +185,10 @@ So that the Go stack can render role-aware pages and exercise the cross-stack pa
     }
     ```
 
-  - [ ] 3.2 Do **not** introduce a `domain.Role` enum at this story. The five role names live as a CHECK constraint in `001_initial.sql` (AC #1) and as a string-matching helper inside `internal/web/auth/lookup.go`. The typed `Role` value object lands with Story 1.12 (`authz.Can` primitive) across all three stacks — mirroring the Story 1.7 and Story 1.8 decisions to keep role names in the seeder until 1.12.
+  - [x] 3.2 Do **not** introduce a `domain.Role` enum at this story. The five role names live as a CHECK constraint in `001_initial.sql` (AC #1) and as a string-matching helper inside `internal/web/auth/lookup.go`. The typed `Role` value object lands with Story 1.12 (`authz.Can` primitive) across all three stacks — mirroring the Story 1.7 and Story 1.8 decisions to keep role names in the seeder until 1.12.
 
-- [ ] Task 4: Author the stub middleware + lookup (AC: #2, #3, #6)
-  - [ ] 4.1 Create `fieldmark-go/internal/web/auth/lookup.go`:
+- [x] Task 4: Author the stub middleware + lookup (AC: #2, #3, #6)
+  - [x] 4.1 Create `fieldmark-go/internal/web/auth/lookup.go`:
 
     ```go
     // Package auth holds the framework-local stub authentication middleware
@@ -233,7 +233,7 @@ So that the Go stack can render role-aware pages and exercise the cross-stack pa
     }
     ```
 
-  - [ ] 4.2 Create `fieldmark-go/internal/web/auth/stub.go`:
+  - [x] 4.2 Create `fieldmark-go/internal/web/auth/stub.go`:
 
     ```go
     package auth
@@ -326,10 +326,10 @@ So that the Go stack can render role-aware pages and exercise the cross-stack pa
     }
     ```
 
-  - [ ] 4.3 The `fiber.Ctx`-typed `ActorFromCtx` lives in `internal/web/auth/` (not `internal/app/`) so the `internal/app` package stays Fiber-free per `fieldmark-go/CLAUDE.md` "fiber.Ctx must not escape internal/web". The architecture diagram (line 1203) lists `internal/app/actor.go` — that is the `Actor` struct only (Task 3.1). The context-reader function lives in `web/auth/` because it requires a Fiber type.
+  - [x] 4.3 The `fiber.Ctx`-typed `ActorFromCtx` lives in `internal/web/auth/` (not `internal/app/`) so the `internal/app` package stays Fiber-free per `fieldmark-go/CLAUDE.md` "fiber.Ctx must not escape internal/web". The architecture diagram (line 1203) lists `internal/app/actor.go` — that is the `Actor` struct only (Task 3.1). The context-reader function lives in `web/auth/` because it requires a Fiber type.
 
-- [ ] Task 5: Wire the middleware into `cmd/web/main.go` (AC: #6, #7)
-  - [ ] 5.1 In `fieldmark-go/cmd/web/main.go`, after `app.Use(logger.New())` and **before** `app.Use("/static", static.New(...))`, add:
+- [x] Task 5: Wire the middleware into `cmd/web/main.go` (AC: #6, #7)
+  - [x] 5.1 In `fieldmark-go/cmd/web/main.go`, after `app.Use(logger.New())` and **before** `app.Use("/static", static.New(...))`, add:
 
     ```go
     app.Use(auth.StubAuthMiddleware(pool))
@@ -337,7 +337,7 @@ So that the Go stack can render role-aware pages and exercise the cross-stack pa
 
     Required imports: `"github.com/code-chimp/fieldmark-go/internal/web/auth"`.
 
-  - [ ] 5.2 Move the database connection from after the `-dump-routes` short-circuit to **before** route registration — the middleware factory needs the pool at route-wiring time. The `-dump-routes` early-return must still avoid touching the database. Restructure so the order is:
+  - [x] 5.2 Move the database connection from after the `-dump-routes` short-circuit to **before** route registration — the middleware factory needs the pool at route-wiring time. The `-dump-routes` early-return must still avoid touching the database. Restructure so the order is:
     1. Parse `-dump-routes` flag (existing).
     2. If flag set: build a minimal Fiber app, register routes, dump, exit. **Skip pool open entirely** — preserves Story 1.3's invariant that route dump never needs a live DB.
     3. Else: open pool, build Fiber app with middleware, register routes, listen.
@@ -393,7 +393,7 @@ So that the Go stack can render role-aware pages and exercise the cross-stack pa
 
     `buildApp(pool)` constructs the Fiber app with engine + middleware (logger, then `auth.StubAuthMiddleware(pool)` — unless pool is nil, in which case the auth middleware is omitted for the route-dump path). `registerRoutes(app)` is the existing route registrations (lines 45–61 of current main.go).
 
-  - [ ] 5.3 Alternative if Task 5.2's refactor feels too invasive: leave the existing structure and gate the middleware registration inline:
+  - [x] 5.3 Alternative if Task 5.2's refactor feels too invasive: leave the existing structure and gate the middleware registration inline:
 
     ```go
     if !*dumpRoutes {
@@ -405,10 +405,10 @@ So that the Go stack can render role-aware pages and exercise the cross-stack pa
 
     Either pattern is acceptable. The refactor (5.2) is preferred for readability; the inline gate (5.3) is acceptable if the dev prefers minimum diff. **Do not** register `StubAuthMiddleware` in the `-dump-routes` path — it would force a live DB on parity invocations and break Story 1.3.
 
-  - [ ] 5.4 Confirm `make` target alignment: from repo root, `make run-go` continues to work without any additional flag. From repo root, the parity script `tools/parity/dump-routes-fiber.sh` (which `cd`s into `fieldmark-go` and runs `go run ./cmd/web -dump-routes`) continues to exit 0 with the same output. **Do not edit `tools/parity/dump-routes-fiber.sh`** — it is correct as written.
+  - [x] 5.4 Confirm `make` target alignment: from repo root, `make run-go` continues to work without any additional flag. From repo root, the parity script `tools/parity/dump-routes-fiber.sh` (which `cd`s into `fieldmark-go` and runs `go run ./cmd/web -dump-routes`) continues to exit 0 with the same output. **Do not edit `tools/parity/dump-routes-fiber.sh`** — it is correct as written.
 
-- [ ] Task 6: Write unit tests for the middleware (AC: #4, #12)
-  - [ ] 6.1 Create `fieldmark-go/internal/web/auth/stub_test.go`. Use the standard library `testing` package (the project rule per `fieldmark-go/CLAUDE.md` and `fiber-reference.md` §Unit testing — no third-party framework, no testify, no mocks of pgx). Tests focus on the *resolution-order* behavior of `resolveUsername` and the redirect contract of `RequireAuth` — neither of those touches the database, so no `pgxpool` fixture is required. Tests that exercise `lookupByUsername` belong in a future integration test file (`//go:build integration`); do **not** add a DB-integration test in this story.
+- [x] Task 6: Write unit tests for the middleware (AC: #4, #12)
+  - [x] 6.1 Create `fieldmark-go/internal/web/auth/stub_test.go`. Use the standard library `testing` package (the project rule per `fieldmark-go/CLAUDE.md` and `fiber-reference.md` §Unit testing — no third-party framework, no testify, no mocks of pgx). Tests focus on the *resolution-order* behavior of `resolveUsername` and the redirect contract of `RequireAuth` — neither of those touches the database, so no `pgxpool` fixture is required. Tests that exercise `lookupByUsername` belong in a future integration test file (`//go:build integration`); do **not** add a DB-integration test in this story.
 
     ```go
     package auth
@@ -477,11 +477,11 @@ So that the Go stack can render role-aware pages and exercise the cross-stack pa
 
     (Sketches above — fill in the omitted helpers (`readBody`, `http.Cookie` import, etc.) and the four resolution-order test bodies. The pattern is `fiber.New() + a.Test(req)` with no real network — see `fiber-reference.md` §Unit testing for the canonical posture.)
 
-  - [ ] 6.2 Do **not** unit-test `lookupByUsername` here — it requires a real DB connection, and the project rule is "real PostgreSQL only" (root `CLAUDE.md` → `docs/hard-rules.md`). An integration-tagged test (`//go:build integration`) is the right home; defer it to Story 1.10 or 1.11 when end-to-end coverage of the lookup is meaningful.
-  - [ ] 6.3 Run `go test ./internal/web/auth/...` — all tests pass.
+  - [x] 6.2 Do **not** unit-test `lookupByUsername` here — it requires a real DB connection, and the project rule is "real PostgreSQL only" (root `CLAUDE.md` → `docs/hard-rules.md`). An integration-tagged test (`//go:build integration`) is the right home; defer it to Story 1.10 or 1.11 when end-to-end coverage of the lookup is meaningful.
+  - [x] 6.3 Run `go test ./internal/web/auth/...` — all tests pass.
 
-- [ ] Task 7: Author `cmd/migrate-fiber-auth/main.go` (AC: #1, #8)
-  - [ ] 7.1 Create `fieldmark-go/cmd/migrate-fiber-auth/main.go`:
+- [x] Task 7: Author `cmd/migrate-fiber-auth/main.go` (AC: #1, #8)
+  - [x] 7.1 Create `fieldmark-go/cmd/migrate-fiber-auth/main.go`:
 
     ```go
     // Command migrate-fiber-auth applies the framework-local fiber_auth DDL
@@ -532,18 +532,18 @@ So that the Go stack can render role-aware pages and exercise the cross-stack pa
     }
     ```
 
-  - [ ] 7.2 Verify the build: `go build ./cmd/migrate-fiber-auth` — no errors. Then run it twice end-to-end:
+  - [x] 7.2 Verify the build: `go build ./cmd/migrate-fiber-auth` — no errors. Then run it twice end-to-end:
     - `make reset` (from repo root) — destroys volume, re-runs `001_schemas.sql` (creates `fiber_auth` schema as empty).
     - `cd fieldmark-go && go run ./cmd/migrate-fiber-auth` — applies DDL; expect `"fiber_auth: schema applied (idempotent)"`.
     - Re-run `go run ./cmd/migrate-fiber-auth` — same output, exit 0, no DDL errors (the `IF NOT EXISTS` clauses make every statement a no-op on the second pass).
-  - [ ] 7.3 Verify via `psql -h localhost -U fieldmark -d fieldmark` (password `fieldmark`):
+  - [x] 7.3 Verify via `psql -h localhost -U fieldmark -d fieldmark` (password `fieldmark`):
     - `\dt fiber_auth.*` — exactly two tables: `users`, `user_roles`.
     - `\d+ fiber_auth.users` — columns and types match AC #1.
     - `\d+ fiber_auth.user_roles` — `CHECK (role IN ('ADMIN', 'COMPLIANCE_OFFICER', 'INSPECTOR', 'SITE_SUPERVISOR', 'EXECUTIVE'))` constraint is present.
     - `\di fiber_auth.*` — `idx_fiber_auth_user_roles_user_id` is present.
 
-- [ ] Task 8: Update `fieldmark-go/CLAUDE.md` (AC: #9)
-  - [ ] 8.1 Rewrite the `## Authentication` section (currently lines 106–110). New content:
+- [x] Task 8: Update `fieldmark-go/CLAUDE.md` (AC: #9)
+  - [x] 8.1 Rewrite the `## Authentication` section (currently lines 106–110). New content:
 
     ```markdown
     ## Authentication
@@ -569,10 +569,10 @@ So that the Go stack can render role-aware pages and exercise the cross-stack pa
     **Replacing the stub with real auth is out of MVP scope.** Do not grow the stub incrementally — when real auth lands, it lands as a coherent epic (session tables, password hashing via `golang.org/x/crypto/bcrypt`, CSRF middleware, real login form, registration/management UI, password reset flow). Until then: this is the stub posture.
     ```
 
-  - [ ] 8.2 The existing `## Database` section is correct and unaffected. The new "Authentication" section supersedes its closing paragraph ("This stack reads and writes to the shared `domain` schema and will eventually own `fiber_auth` for authentication") only insofar as `fiber_auth` is now actively owned, not "eventually"; lightly amend that sentence to read: "This stack reads and writes to the shared `domain` schema and owns the framework-local `fiber_auth` schema for stub authentication (see §Authentication)."
+  - [x] 8.2 The existing `## Database` section is correct and unaffected. The new "Authentication" section supersedes its closing paragraph ("This stack reads and writes to the shared `domain` schema and will eventually own `fiber_auth` for authentication") only insofar as `fiber_auth` is now actively owned, not "eventually"; lightly amend that sentence to read: "This stack reads and writes to the shared `domain` schema and owns the framework-local `fiber_auth` schema for stub authentication (see §Authentication)."
 
-- [ ] Task 9: Update `fieldmark-go/README.md` (AC: #10)
-  - [ ] 9.1 In the "Getting Started" section (currently lines 141–164), insert a new step between "Install dependencies" (step 2) and "Run the application" (step 3):
+- [x] Task 9: Update `fieldmark-go/README.md` (AC: #10)
+  - [x] 9.1 In the "Getting Started" section (currently lines 141–164), insert a new step between "Install dependencies" (step 2) and "Run the application" (step 3):
 
     ```markdown
     **3. Apply framework-local auth schema:**
@@ -586,15 +586,15 @@ So that the Go stack can render role-aware pages and exercise the cross-stack pa
 
     Renumber the existing "Run the application" step to **4**.
 
-  - [ ] 9.2 Update the "Current State" paragraph (currently lines 167–169). New text:
+  - [x] 9.2 Update the "Current State" paragraph (currently lines 167–169). New text:
 
     > Standup is complete. The Fiber server starts, validates the Postgres connection, serves static assets, renders a full-page dashboard route and one HTMX fragment route (`/fragments/compliance-tile`), and hydrates a stub authentication actor onto every request from the `X-FieldMark-Actor` cookie/header or the `FIELDMARK_STUB_ACTOR` env var. Folder layout matches the structure above. Domain implementation begins with the first feature story.
 
-- [ ] Task 10: Verify QA gates and parity (AC: #11, #12)
-  - [ ] 10.1 From `fieldmark-go/`: `make fmt-check && make vet && make staticcheck && make test` — all green.
-  - [ ] 10.2 From `fieldmark-go/`: `go run ./cmd/web -dump-routes` — diff against `git show HEAD:fieldmark-go/cmd/web/main.go` baseline. Output must be byte-identical (same three routes: `get /`, `get /fragments/compliance-tile`, `get /privacy`). Capture both: `git stash && go run ./cmd/web -dump-routes > /tmp/before.txt && git stash pop && go run ./cmd/web -dump-routes > /tmp/after.txt && diff /tmp/before.txt /tmp/after.txt` — zero diff lines.
-  - [ ] 10.3 From repo root: `make parity` — exits 0. The three stacks' route dumps are identical; `tools/parity/canonical-pg-indexes.txt` snapshot for `domain.*` is unchanged.
-  - [ ] 10.4 Manual smoke test (optional but useful):
+- [x] Task 10: Verify QA gates and parity (AC: #11, #12)
+  - [x] 10.1 From `fieldmark-go/`: `make fmt-check && make vet && make staticcheck && make test` — all green.
+  - [x] 10.2 From `fieldmark-go/`: `go run ./cmd/web -dump-routes` — diff against `git show HEAD:fieldmark-go/cmd/web/main.go` baseline. Output must be byte-identical (same three routes: `get /`, `get /fragments/compliance-tile`, `get /privacy`). Capture both: `git stash && go run ./cmd/web -dump-routes > /tmp/before.txt && git stash pop && go run ./cmd/web -dump-routes > /tmp/after.txt && diff /tmp/before.txt /tmp/after.txt` — zero diff lines.
+  - [x] 10.3 From repo root: `make parity` — exits 0. The three stacks' route dumps are identical; `tools/parity/canonical-pg-indexes.txt` snapshot for `domain.*` is unchanged.
+  - [x] 10.4 Manual smoke test (optional but useful):
     - `make reset && cd fieldmark-go && go run ./cmd/migrate-fiber-auth`.
     - Insert one row manually for the smoke test (Story 1.10 will automate this):
       ```sql
@@ -813,10 +813,50 @@ No prior commit has added any auth-related code to the Go stack. Story 1.9 is th
 
 ### Agent Model Used
 
-_(populated by dev agent)_
+claude-sonnet-4-6
 
 ### Debug Log References
 
+- Fixed `TestRequireAuth_PassesAuthenticatedThrough`: test stub actor needed a non-nil UUID (zero UUID → `IsAnonymous()` true → 302 redirect). Added `uuid.MustParse("00000000-0000-0000-0000-000000000001")` to the test actor. Story spec sketch omitted the ID field — the correct invariant is that `IsAnonymous()` checks `a.ID == uuid.Nil`, so any real user must have a non-nil ID.
+
 ### Completion Notes List
 
+- Implemented all 10 tasks against all 12 ACs.
+- Used Task 5.2 (full `buildApp`/`registerRoutes`/`runDumpRoutes`/`runServer` refactor) — cleaner than the inline-gate alternative (5.3); `-dump-routes` path confirmed to not call `postgres.Connect`.
+- `go mod tidy` promoted `github.com/jackc/puddle/v2` (pgxpool's internal pool library) and `github.com/google/uuid` from indirect to direct as expected.
+- `make fmt-check`, `make vet`, `make staticcheck`, `make test` all green.
+- Route dump byte-identical (4 routes unchanged); `make parity` exits 0.
+- `go run ./cmd/migrate-fiber-auth` applied idempotently twice against live DB; `\dt fiber_auth.*` shows exactly `users` and `user_roles`.
+
 ### File List
+
+- `fieldmark-go/internal/data/postgres/migrations/fiber_auth/001_initial.sql` (new)
+- `fieldmark-go/internal/data/postgres/migrations/fiber_auth/embed.go` (new)
+- `fieldmark-go/internal/app/actor.go` (new)
+- `fieldmark-go/internal/web/auth/lookup.go` (new)
+- `fieldmark-go/internal/web/auth/stub.go` (new)
+- `fieldmark-go/internal/web/auth/stub_test.go` (new)
+- `fieldmark-go/cmd/migrate-fiber-auth/main.go` (new)
+- `fieldmark-go/internal/data/postgres/db.go` (updated — pgx.Conn → pgxpool.Pool)
+- `fieldmark-go/cmd/web/main.go` (updated — refactored to buildApp/registerRoutes/runServer/runDumpRoutes; pool.Close(); auth middleware wired)
+- `fieldmark-go/go.mod` (updated — uuid and puddle/v2 promoted to direct)
+- `fieldmark-go/go.sum` (updated — pgxpool dependency entries added)
+- `fieldmark-go/CLAUDE.md` (updated — Authentication section rewritten; Database paragraph amended)
+- `fieldmark-go/README.md` (updated — migrate-fiber-auth step added; Current State updated)
+- `_bmad-output/implementation-artifacts/sprint-status.yaml` (updated — 1-9 set to review)
+
+## Change Log
+
+- 2026-05-19: Story 1.9 implemented — stub auth middleware wired, fiber_auth DDL created, pgx.Conn upgraded to pgxpool.Pool, all 10 tasks complete, 6 unit tests green, parity clean.
+- 2026-05-19: Code review follow-ups addressed — 2 decision items dismissed (ADR-012 stub posture), 3 patch items resolved (DDL cross-reference comment, FIELDMARK_STUB_ACTOR startup warning, pgxpool acquisition lifecycle comment).
+
+### Review Findings
+
+**decision-needed** (dismissed — known stub limitations per ADR-012):
+- [x] [Review][Decision] Stub authentication trivially spoofable via `X-FieldMark-Actor` header or cookie — accepts untrusted client-controlled identity without validation/signature. Attacker can impersonate any seeded user. **Dismissed: ADR-012 stub posture by design; real auth is a deferred epic.**
+- [x] [Review][Decision] Anonymous fallback on DB lookup failure or missing user silently degrades security/audit while keeping app navigable — masks misconfigs or attacks. **Dismissed: explicit stub-posture choice per Dev Notes "Why the middleware is permissive on failure"; must be reversed when real auth lands.**
+
+**patch** (resolved):
+- [x] [Review][Patch] Role names as bare strings with CHECK constraint only — no Go constants/enum; risk of typos or drift between DDL and lookup.go. **Resolved: No Go code compares against role name literals — the DB CHECK constraint is the sole enforcer. Added cross-reference comment in `lookupByUsername` pointing to the DDL as the authority. Go role constants deferred to Story 1.12 (typed Role value object across all stacks) per story spec.**
+- [x] [Review][Patch] Environment variable fallback (`FIELDMARK_STUB_ACTOR`) allows fixed identity in deployments; if mis-set, all users share one principal. No validation/logging shown. **Resolved: `StubAuthMiddleware` factory now logs a warning at startup when `FIELDMARK_STUB_ACTOR` is set, explicitly naming the env var and the resolved identity.**
+- [x] [Review][Patch] pgxpool upgrade + connection management — pool.Close() vs old conn semantics; potential leaks if any path retains old Conn usage (main.go refactor shown but no explicit error handling around acquisition). **Resolved: grep of all .go files confirms zero remaining `pgx.Conn` / `pgx.Connect` usage. `pool.Close()` (synchronous, no args) is correctly deferred in both `runServer` and `cmd/migrate-fiber-auth`. Pool acquisition errors surface through `pool.QueryRow().Scan()` and are handled in `StubAuthMiddleware` (log + bind anonymous). Added clarifying comment in `lookupByUsername` explaining the pgxpool acquire/release lifecycle.**

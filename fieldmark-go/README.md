@@ -154,7 +154,15 @@ This starts PostgreSQL 17, runs the schema init scripts in `docker/postgres/init
 go mod download
 ```
 
-**3. Run the application:**
+**3. Apply framework-local auth schema:**
+
+```bash
+go run ./cmd/migrate-fiber-auth
+```
+
+Creates the `fiber_auth.users` and `fiber_auth.user_roles` tables (idempotent — safe to re-run). Required once after `make reset`.
+
+**4. Run the application:**
 
 ```bash
 go run cmd/web/main.go
@@ -166,7 +174,7 @@ The server starts on [http://localhost:3000](http://localhost:3000).
 
 ## Current State
 
-Standup is complete. The Fiber server starts, validates the Postgres connection, serves static assets, and renders a full-page dashboard route and one HTMX fragment route (`/fragments/compliance-tile`). Folder layout matches the structure above. Domain implementation begins with the first feature story.
+Standup is complete. The Fiber server starts, validates the Postgres connection, serves static assets, renders a full-page dashboard route and one HTMX fragment route (`/fragments/compliance-tile`), and hydrates a stub authentication actor onto every request from the `X-FieldMark-Actor` cookie/header or the `FIELDMARK_STUB_ACTOR` env var. Folder layout matches the structure above. Domain implementation begins with the first feature story.
 
 ---
 

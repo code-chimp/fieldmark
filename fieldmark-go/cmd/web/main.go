@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"flag"
 	"fmt"
 	"log"
@@ -13,8 +12,10 @@ import (
 	"github.com/gofiber/fiber/v3/middleware/logger"
 	"github.com/gofiber/fiber/v3/middleware/static"
 	"github.com/gofiber/template/html/v2"
+	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/code-chimp/fieldmark-go/internal/data/postgres"
+	"github.com/code-chimp/fieldmark-go/internal/web/auth"
 )
 
 var (
@@ -39,10 +40,7 @@ func themeMap(c fiber.Ctx) fiber.Map {
 	}
 }
 
-func main() {
-	dumpRoutes := flag.Bool("dump-routes", false, "print normalized route inventory and exit")
-	flag.Parse()
-
+func buildApp(pool *pgxpool.Pool) *fiber.App {
 	// --- Template engine --------------------------------------------------
 	// html.New walks internal/web/templates/ and loads all *.html files.
 	// The Layout option wraps every c.Render() call in layouts/base.html
@@ -51,18 +49,26 @@ func main() {
 	engine.Layout("base")
 	engine.AddFunc("noescape", func(s string) string { return s })
 
-	// --- Application ------------------------------------------------------
 	app := fiber.New(fiber.Config{
 		Views: engine,
 	})
 
 	app.Use(logger.New())
 
+	// StubAuthMiddleware runs on every request when a pool is available.
+	// Omitted on the -dump-routes path (pool is nil) so route enumeration
+	// never requires a live database — preserving the Story 1.3 invariant.
+	if pool != nil {
+		app.Use(auth.StubAuthMiddleware(pool))
+	}
+
 	// Static assets: /static/** → internal/web/static/
 	app.Use("/static", static.New("./internal/web/static"))
 
-	// --- Routes -----------------------------------------------------------
+	return app
+}
 
+func registerRoutes(app *fiber.App) {
 	// Full page — dashboard
 	app.Get("/", func(c fiber.Ctx) error {
 		m := themeMap(c)
@@ -102,47 +108,58 @@ func main() {
 		c.Set("HX-Trigger", "theme-changed")
 		return c.SendStatus(204)
 	})
+}
 
-	// --- Dump routes and exit (parity tooling) ----------------------------
-	// Checked AFTER route registration so GetRoutes reflects the full inventory,
-	// but BEFORE database connect so no live DB is needed for a route dump.
-	if *dumpRoutes {
-		var lines []string
-		for _, r := range app.GetRoutes(true) {
-			method := strings.ToLower(r.Method)
-			path := strings.ToLower(r.Path)
-			// Exclude static asset middleware routes.
-			if strings.HasPrefix(path, "/static") {
-				continue
-			}
-			// Exclude HEAD auto-mirrors that Fiber adds for every GET.
-			if method == "head" {
-				continue
-			}
-			lines = append(lines, fmt.Sprintf("%s %s", method, path))
+func runDumpRoutes() {
+	// Build a minimal app with nil pool — middleware is skipped, no DB needed.
+	app := buildApp(nil)
+	registerRoutes(app)
+	var lines []string
+	for _, r := range app.GetRoutes(true) {
+		method := strings.ToLower(r.Method)
+		path := strings.ToLower(r.Path)
+		// Exclude static asset middleware routes.
+		if strings.HasPrefix(path, "/static") {
+			continue
 		}
-		sort.Strings(lines)
-		for _, l := range lines {
-			fmt.Println(l)
+		// Exclude HEAD auto-mirrors that Fiber adds for every GET.
+		if method == "head" {
+			continue
 		}
-		return
+		lines = append(lines, fmt.Sprintf("%s %s", method, path))
 	}
+	sort.Strings(lines)
+	for _, l := range lines {
+		fmt.Println(l)
+	}
+}
 
-	// --- Database ---------------------------------------------------------
-	// Opened after the dump-routes short-circuit so parity tooling never
-	// requires a live database connection.
+func runServer() {
 	dsn := strings.TrimSpace(os.Getenv("FIELDMARK_DATABASE_URL"))
 	if dsn == "" {
 		dsn = "postgres://fieldmark:fieldmark@localhost:5432/fieldmark"
 	}
 
-	conn, err := postgres.Connect(dsn)
+	pool, err := postgres.Connect(dsn)
 	if err != nil {
 		log.Fatalf("database connection failed: %v", err)
 	}
-	defer func() { _ = conn.Close(context.Background()) }()
+	defer pool.Close()
 	log.Println("database connection validated")
 
-	// --- Listen -----------------------------------------------------------
+	app := buildApp(pool)
+	registerRoutes(app)
 	log.Fatal(app.Listen(":3000"))
+}
+
+func main() {
+	dumpRoutes := flag.Bool("dump-routes", false, "print normalized route inventory and exit")
+	flag.Parse()
+
+	if *dumpRoutes {
+		runDumpRoutes()
+		return
+	}
+
+	runServer()
 }

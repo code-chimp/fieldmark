@@ -87,7 +87,7 @@ web → data → domain
 
 ## Database
 
-This stack reads and writes to the shared `domain` schema and will eventually own `fiber_auth` for authentication.
+This stack reads and writes to the shared `domain` schema and owns the framework-local `fiber_auth` schema for stub authentication (see §Authentication).
 
 **The `domain` schema is not created or migrated by this stack.** It is created by SQL init scripts in `docker/postgres/init/`. Stores in `internal/data/postgres/stores/` query `domain.*` tables via explicit SQL — no ORM, no auto-migration.
 
@@ -105,9 +105,25 @@ Password: fieldmark
 
 ## Authentication
 
-`fiber_auth` schema exists in the database but Fiber authentication is **deferred by design**. Do not scaffold auth middleware or user models until:
-- Domain schema is stable
-- Feature work explicitly requires it
+The Go stack uses a **stub authentication middleware** (ADR-012 explicit deferral). Real auth — sessions, password hashing, CSRF, login forms, user management UI — is an epic-sized follow-on, not MVP scope.
+
+**Where it lives:** `internal/web/auth/` (middleware + lookup). The hydrated principal type is `app.Actor` in `internal/app/actor.go`.
+
+**How identity is resolved (in order):**
+1. `X-FieldMark-Actor` cookie (set by Story 1.11's /login user-switcher).
+2. `X-FieldMark-Actor` HTTP header (for scripted tests and ad-hoc curl).
+3. `FIELDMARK_STUB_ACTOR` environment variable (deployment-fixed fallback).
+4. Otherwise: anonymous (sentinel `app.Anonymous()`).
+
+The resolved username is looked up against `fiber_auth.users` joined to `fiber_auth.user_roles`. On miss or DB error, the request binds the anonymous actor and continues — the application stays navigable while the developer investigates.
+
+**Schema ownership:** `fiber_auth.users` and `fiber_auth.user_roles` are framework-local (ADR-012), Go-owned, defined in `internal/data/postgres/migrations/fiber_auth/001_initial.sql`. Apply with `go run ./cmd/migrate-fiber-auth` after `make reset`. **Never** colocate this DDL with `domain.*` init scripts — `domain` is infrastructure-owned (ADR-014).
+
+**What lands later:**
+- Story 1.10 seeds the six dev users (`marisol`, `diego`, `aisha`, `ravi`, `kenji`, plus a no-role test user) into `fiber_auth` from the shared UUID manifest.
+- Story 1.11 introduces `/login` (user-switcher stub list rendered as Basecoat buttons) and `/logout` on all three stacks simultaneously, plus mounts `auth.RequireAuth()` on business routes.
+
+**Replacing the stub with real auth is out of MVP scope.** Do not grow the stub incrementally — when real auth lands, it lands as a coherent epic (session tables, password hashing via `golang.org/x/crypto/bcrypt`, CSRF middleware, real login form, registration/management UI, password reset flow). Until then: this is the stub posture.
 
 ## Hard Rules (Go-specific)
 
