@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Sign in{% endblock %}
+
+{% block content %}
+<h1>Sign in to FieldMark</h1>
+
+{% if errors.has_any %}
+<div role="alert" class="alert alert-danger" id="login-errors">
+  <p class="alert-title">{{ errors.field_error_count }} error{{ errors.field_error_count|pluralize }} — please correct the highlighted fields.</p>
+  <p>
+    <a href="#field-username" class="alert-link">Go to first invalid field</a>
+  </p>
+</div>
+{% endif %}
+
+<form method="post" action="/login" class="space-y-4" id="login-form" novalidate>
+  {% csrf_token %}
+  <input type="hidden" name="return_url" value="{{ next }}" />
+  <div class="form-field">
+    <label for="field-username" class="label">Username</label>
+    <input
+      type="text"
+      id="field-username"
+      name="username"
+      class="input"
+      autocomplete="username"
+      autocapitalize="off"
+      autocorrect="off"
+      spellcheck="false"
+      {% if username %}value="{{ username }}"{% endif %}
+      required
+      {% if errors.username is not none %}aria-invalid="true" aria-describedby="field-username-error"{% endif %}
+    />
+    <p id="field-username-error" class="form-error" {% if not errors.username %}hidden{% endif %}>{{ errors.username|default:"" }}</p>
+  </div>
+  <div class="form-field">
+    <label for="field-password" class="label">Password</label>
+    <input
+      type="password"
+      id="field-password"
+      name="password"
+      class="input"
+      autocomplete="current-password"
+      required
+      {% if errors.password is not none %}aria-invalid="true" aria-describedby="field-password-error"{% endif %}
+    />
+    <p id="field-password-error" class="form-error" {% if not errors.password %}hidden{% endif %}>{{ errors.password|default:"" }}</p>
+  </div>
+  <button type="submit" class="btn btn-primary w-full">Sign in</button>
+</form>
+{% endblock %}

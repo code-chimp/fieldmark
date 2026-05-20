@@ -143,3 +143,26 @@ cd fieldmark-go && go run ./cmd/server
 - All npm dependencies must use exact version pins — no `^` or `~` ranges.
 - CSS partials use underscore prefix (`_fonts.css`, `_tokens.css`, `_layout.css`, `_ag-grid.css`). They are imported into `fieldmark.css` only.
 - When editing CSS, run `pnpm run build` and commit both the source changes and the updated `dist/fieldmark.css`.
+
+## Component Examples
+
+The `components/` directory holds canonical reference HTML fragments that serve as cross-stack snapshot-test targets. These are **not** live HTML pages — they contain only the component markup, without surrounding layout chrome.
+
+| File | Purpose |
+|---|---|
+| `login-form.example.html` | Canonical login form (`<form>…</form>` block) that .NET and Django snapshot tests assert byte-identical output against |
+| `login-error-region.example.html` | Canonical inline-alert block rendered above the form on HTTP 422 |
+
+### Snapshot-test pipeline
+
+Each stack normalises the rendered `GET /login` response body before comparing:
+1. Extract the `<form id="login-form">…</form>` block (or the error-region block).
+2. Strip per-stack antiforgery noise: `<input name="__RequestVerificationToken">` (.NET) and `<input name="csrfmiddlewaretoken">` (Django).
+3. Normalise whitespace (collapse runs, trim lines) and sort attributes alphabetically.
+4. Assert byte-equal against the corresponding example file.
+
+The Go stack is **excluded** from the login-form snapshot assertion — its `/login` renders a user-switcher, not a credential form (see ADR-012).
+
+### Cross-stack change rule
+
+Any change to `login-form.example.html` or `login-error-region.example.html` **must** be applied simultaneously to the .NET Razor template (`Pages/Account/Login.cshtml`) and the Django template (`templates/_login.html`). The snapshot tests will fail if the stacks drift from the canonical reference. The Go user-switcher template is exempt.

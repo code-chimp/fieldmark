@@ -1,4 +1,5 @@
 using FieldMark.Data.Context;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
@@ -6,7 +7,13 @@ using Npgsql;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddRazorPages();
+builder.Services.AddRazorPages(options =>
+{
+    options.Conventions.AllowAnonymousToPage("/Account/Login");
+    options.Conventions.AllowAnonymousToPage("/Account/Logout");
+    // Theme toggle must be callable while unauthenticated so it works on /login.
+    options.Conventions.AllowAnonymousToFolder("/Preferences");
+});
 
 // FIELDMARK_DATABASE_URL takes precedence when non-blank/whitespace.
 // The value is trimmed before parsing so leading/trailing spaces do not cause
@@ -78,6 +85,28 @@ builder
     .AddSignInManager()
     .AddDefaultTokenProviders();
 
+builder.Services
+    .AddAuthentication(IdentityConstants.ApplicationScheme)
+    .AddCookie(IdentityConstants.ApplicationScheme, options =>
+    {
+        options.LoginPath = "/login";
+        options.LogoutPath = "/logout";
+        options.AccessDeniedPath = "/login";
+        options.ReturnUrlParameter = "return_url";
+        options.ExpireTimeSpan = TimeSpan.FromDays(14);
+        options.SlidingExpiration = true;
+        options.Cookie.SameSite = SameSiteMode.Lax;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+        options.Cookie.HttpOnly = true;
+    });
+
+builder.Services.AddAuthorization(options =>
+{
+    options.FallbackPolicy = new AuthorizationPolicyBuilder()
+        .RequireAuthenticatedUser()
+        .Build();
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -90,7 +119,11 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseStaticFiles();
+
 app.UseRouting();
+
+app.UseAuthentication();
 
 app.UseAuthorization();
 
@@ -106,6 +139,7 @@ if (args.Contains("--dump-routes"))
 if (args.Contains("--seed-dev-users"))
 {
     using var scope = app.Services.CreateScope();
+    await scope.ServiceProvider.GetRequiredService<AuthDbContext>().Database.MigrateAsync();
     await FieldMark.Web.SeedData.RoleSeeder.SeedAsync(scope.ServiceProvider, CancellationToken.None);
     await FieldMark.Web.SeedData.DevUsersSeeder.SeedAsync(scope.ServiceProvider, app.Environment, CancellationToken.None);
     Console.WriteLine("✓ Roles and dev users seeded.");
@@ -114,8 +148,12 @@ if (args.Contains("--seed-dev-users"))
 
 using (var scope = app.Services.CreateScope())
 {
+    await scope.ServiceProvider.GetRequiredService<AuthDbContext>().Database.MigrateAsync();
     await FieldMark.Web.SeedData.RoleSeeder.SeedAsync(scope.ServiceProvider, CancellationToken.None);
     await FieldMark.Web.SeedData.DevUsersSeeder.SeedAsync(scope.ServiceProvider, app.Environment, CancellationToken.None);
 }
 
 await app.RunAsync();
+
+// Expose Program to WebApplicationFactory in test projects.
+public partial class Program { }

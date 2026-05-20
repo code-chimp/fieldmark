@@ -77,7 +77,7 @@ EF Core migrations are scoped to the `dotnet_auth` schema only — ASP.NET Core 
 
 ## Authentication
 
-ASP.NET Core Identity is wired against the `dotnet_auth` schema via `AuthDbContext`. Login and logout pages are not yet added — that work lands in Story 1.11.
+ASP.NET Core Identity is wired against the `dotnet_auth` schema via `AuthDbContext`. Login (`Pages/Account/Login.cshtml`) and logout (`Pages/Account/Logout.cshtml`) Razor Pages landed in Story 1.11.
 
 ### AuthDbContext and FieldMarkDbContext are independent
 
@@ -103,7 +103,7 @@ dotnet ef database update --context AuthDbContext --project FieldMark.Data --sta
 Five conceptual roles are seeded idempotently at startup via `FieldMark.Web/SeedData/RoleSeeder.cs`:
 - `ADMIN`, `COMPLIANCE_OFFICER`, `INSPECTOR`, `SITE_SUPERVISOR`, `EXECUTIVE`
 
-The seeder is called from `Program.cs` after the `--dump-routes` early-return so route-dump invocations do not touch the database. A `Role` value object in `FieldMark.Domain` and the `authz.Can` primitive are deferred to Story 1.12.
+The seeder is called from `Program.cs` after the `--dump-routes` early-return so route-dump invocations do not touch the database. `Program.cs` runs `AuthDbContext.Database.MigrateAsync()` before the seeder at every startup (including tests). A `Role` value object in `FieldMark.Domain` and the `authz.Can` primitive are deferred to Story 1.12.
 
 ### Dev User Seeding
 
@@ -114,10 +114,17 @@ The seeder runs on every web-app startup (inside the existing `IServiceScope` bl
 
 Manifest source: `docker/postgres/init/seed-uuids/dev-users.json` — resolved relative to `env.ContentRootPath` at runtime.
 
+### Story 1.11 shipped
+
+- `app.UseAuthentication()` / `app.UseAuthorization()` pipeline wiring — in `Program.cs`
+- `Pages/Account/Login.cshtml` / `.cshtml.cs` — `[AllowAnonymous]`, 422 on bad creds
+- `Pages/Account/Logout.cshtml` / `.cshtml.cs` — `[AllowAnonymous]`, POST clears session
+- Fallback `RequireAuthenticatedUser` policy applied to all non-exempt pages
+- `FieldMark.Web/Authentication/ClaimsPrincipalExtensions.cs` — `GetActorId()`, `GetConceptualRoles()`
+- `FieldMark.Tests.Web` project — 10 integration tests with Testcontainers + `NoOpAntiforgery`
+
 ### What is still deferred
 
-- `app.UseAuthentication()` / `app.UseAuthorization()` pipeline wiring — Story 1.11
-- Login and logout Razor Pages — Story 1.11
 - `authz.Can` primitive and `ActionButton` trichotomy — Story 1.12
 
 ## Coding Standards

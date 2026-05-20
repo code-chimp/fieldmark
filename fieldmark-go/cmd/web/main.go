@@ -14,8 +14,10 @@ import (
 	"github.com/gofiber/template/html/v2"
 	"github.com/jackc/pgx/v5/pgxpool"
 
+	"github.com/code-chimp/fieldmark-go/internal/app"
 	"github.com/code-chimp/fieldmark-go/internal/data/postgres"
 	"github.com/code-chimp/fieldmark-go/internal/web/auth"
+	"github.com/code-chimp/fieldmark-go/internal/web/handlers"
 )
 
 var (
@@ -31,17 +33,23 @@ func resolveFmTheme(c fiber.Ctx) string {
 	return v
 }
 
-func themeMap(c fiber.Ctx) fiber.Map {
+// baseMap builds the common view-model fields present on every full-page render:
+// theme values and the resolved actor for layout chrome (sign in / sign out).
+func baseMap(c fiber.Ctx) fiber.Map {
 	current := resolveFmTheme(c)
+	actor := auth.ActorFromCtx(c)
+	if actor == nil {
+		actor = app.Anonymous()
+	}
 	return fiber.Map{
 		"FmTheme":         current,
 		"FmThemeNext":     fmThemeCycle[current],
 		"FmThemeResolved": current,
+		"Actor":           actor,
 	}
 }
 
 func buildApp(pool *pgxpool.Pool) *fiber.App {
-	// --- Template engine --------------------------------------------------
 	// html.New walks internal/web/templates/ and loads all *.html files.
 	// The Layout option wraps every c.Render() call in layouts/base.html
 	// unless the handler passes an empty layout string explicitly.
@@ -68,31 +76,39 @@ func buildApp(pool *pgxpool.Pool) *fiber.App {
 	return app
 }
 
-func registerRoutes(app *fiber.App) {
-	// Full page — dashboard
-	app.Get("/", func(c fiber.Ctx) error {
-		m := themeMap(c)
+func registerRoutes(app *fiber.App, pool *pgxpool.Pool) {
+	// Auth routes — no RequireAuth; these are the public entry points.
+	if pool != nil {
+		h := &handlers.LoginHandlers{Pool: pool}
+		app.Get("/login", h.GetLogin)
+		app.Post("/login", h.PostLogin)
+		app.Post("/logout", h.PostLogout)
+	} else {
+		// dump-routes path: register stub handlers so the route inventory is complete.
+		noop := func(c fiber.Ctx) error { return nil }
+		app.Get("/login", noop)
+		app.Post("/login", noop)
+		app.Post("/logout", noop)
+	}
+
+	// Business routes — protected by RequireAuth.
+	app.Get("/", auth.RequireAuth(), func(c fiber.Ctx) error {
+		m := baseMap(c)
 		m["Title"] = "Dashboard"
 		return c.Render("pages/dashboard", m)
 	})
 
-	// Full page — privacy policy
-	app.Get("/privacy", func(c fiber.Ctx) error {
-		m := themeMap(c)
+	app.Get("/privacy", auth.RequireAuth(), func(c fiber.Ctx) error {
+		m := baseMap(c)
 		m["Title"] = "Privacy"
 		return c.Render("pages/privacy", m)
 	})
 
-	// HTMX fragment — compliance tile (no layout wrapper)
-	app.Get("/fragments/compliance-tile", func(c fiber.Ctx) error {
+	app.Get("/fragments/compliance-tile", auth.RequireAuth(), func(c fiber.Ctx) error {
 		return c.Render("fragments/compliance_tile", fiber.Map{}, "")
 	})
 
-	// POST /preferences/theme — set fm_theme cookie and signal client listener.
-	// No CSRF middleware is mounted on this stack (auth is deferred; story 1-9 wires
-	// Fiber authentication). Theme preference is non-security-sensitive UI state — a
-	// CSRF attack would only flip a visitor's colour scheme. This is the intentional
-	// parallel to .NET's [IgnoreAntiforgeryToken] on the equivalent Razor Page handler.
+	// POST /preferences/theme — exempt from RequireAuth so the toggle works on /login.
 	app.Post("/preferences/theme", func(c fiber.Ctx) error {
 		value := c.FormValue("value")
 		if !fmThemeAllowed[value] {
@@ -113,7 +129,7 @@ func registerRoutes(app *fiber.App) {
 func runDumpRoutes() {
 	// Build a minimal app with nil pool — middleware is skipped, no DB needed.
 	app := buildApp(nil)
-	registerRoutes(app)
+	registerRoutes(app, nil)
 	var lines []string
 	for _, r := range app.GetRoutes(true) {
 		method := strings.ToLower(r.Method)
@@ -148,7 +164,7 @@ func runServer() {
 	log.Println("database connection validated")
 
 	app := buildApp(pool)
-	registerRoutes(app)
+	registerRoutes(app, pool)
 	log.Fatal(app.Listen(":3000"))
 }
 

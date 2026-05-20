@@ -25,6 +25,10 @@ const (
 	envVar     = "FIELDMARK_STUB_ACTOR"
 )
 
+// CookieName returns the cookie name carrying the resolved actor username.
+// Exposed for the login/logout handlers; do not use elsewhere.
+func CookieName() string { return cookieName }
+
 // StubAuthMiddleware returns a Fiber middleware that hydrates an *app.Actor
 // onto c.Locals(localsKey) for every request. Resolution order: cookie,
 // header, env var, anonymous. Lookup failure (DB error or miss) falls

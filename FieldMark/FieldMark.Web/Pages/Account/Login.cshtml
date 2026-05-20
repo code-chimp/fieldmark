@@ -1,0 +1,53 @@
+@page "/login"
+@model LoginModel
+@{
+    ViewData["Title"] = "Sign in";
+}
+
+<h1>Sign in to FieldMark</h1>
+
+@if (Model.HasErrors)
+{
+    <div role="alert" class="alert alert-danger" id="login-errors">
+        <p class="alert-title">@Model.FieldErrors.Count error@(Model.FieldErrors.Count != 1 ? "s" : "") — please correct the highlighted fields.</p>
+        <p>
+            <a href="#field-username" class="alert-link">Go to first invalid field</a>
+        </p>
+    </div>
+}
+
+<form method="post" action="/login" class="space-y-4" id="login-form" novalidate>
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="return_url" value="@(Model.ReturnUrl ?? "")" />
+    <div class="form-field">
+        <label for="field-username" class="label">Username</label>
+        <input
+            type="text"
+            id="field-username"
+            name="username"
+            class="input"
+            autocomplete="username"
+            autocapitalize="off"
+            autocorrect="off"
+            spellcheck="false"
+            @(string.IsNullOrEmpty(Model.Username) ? Html.Raw("") : Html.Raw($"value=\"{Html.Encode(Model.Username)}\""))
+            required
+            @(Model.FieldErrors.ContainsKey("field-username") ? Html.Raw("aria-invalid=\"true\" aria-describedby=\"field-username-error\"") : Html.Raw(""))
+        />
+        <p id="field-username-error" class="form-error" @(Model.FieldErrors.TryGetValue("field-username", out var usernameErr) && !string.IsNullOrEmpty(usernameErr) ? "" : "hidden")>@usernameErr</p>
+    </div>
+    <div class="form-field">
+        <label for="field-password" class="label">Password</label>
+        <input
+            type="password"
+            id="field-password"
+            name="password"
+            class="input"
+            autocomplete="current-password"
+            required
+            @(Model.FieldErrors.ContainsKey("field-password") ? Html.Raw("aria-invalid=\"true\" aria-describedby=\"field-password-error\"") : Html.Raw(""))
+        />
+        <p id="field-password-error" class="form-error" @(Model.FieldErrors.TryGetValue("field-password", out var passwordErr) && !string.IsNullOrEmpty(passwordErr) ? "" : "hidden")>@passwordErr</p>
+    </div>
+    <button type="submit" class="btn btn-primary w-full">Sign in</button>
+</form>

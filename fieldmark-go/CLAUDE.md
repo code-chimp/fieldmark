@@ -121,8 +121,11 @@ The resolved username is looked up against `fiber_auth.users` joined to `fiber_a
 
 **Dev user seeding:** `cmd/seed/main.go` populates `fiber_auth.users` and `fiber_auth.user_roles` from the shared manifest at `docker/postgres/init/seed-uuids/dev-users.json`. Run with `go run ./cmd/seed` (or `make seed-go` from the repo root). The manifest's `password` field is **intentionally not persisted** — the Go stack uses stub auth and has no password storage. This is a deliberate design choice (documented in the seeder's package comment), not an oversight. When the deferred real-auth epic lands, `fiber_auth.users` will gain a `password_hash` column and the seeder will grow to hash and persist.
 
-**What lands later:**
-- Story 1.11 introduces `/login` (user-switcher stub list rendered as Basecoat buttons) and `/logout` on all three stacks simultaneously, plus mounts `auth.RequireAuth()` on business routes.
+**Story 1.11 shipped:**
+- `/login` — user-switcher stub: lists seeded users as Basecoat buttons; sets the `X-FieldMark-Actor` cookie on submit.
+- `/logout` — clears the cookie and redirects to `/login`.
+- `auth.RequireAuth()` is mounted on all business routes; anonymous requests redirect to `/login`.
+- `auth.RequireRole(role)` is available for future role-gated routes (`internal/web/auth/authz.go`).
 
 **Replacing the stub with real auth is out of MVP scope.** Do not grow the stub incrementally — when real auth lands, it lands as a coherent epic (session tables, password hashing via `golang.org/x/crypto/bcrypt`, CSRF middleware, real login form, registration/management UI, password reset flow). Until then: this is the stub posture.
 

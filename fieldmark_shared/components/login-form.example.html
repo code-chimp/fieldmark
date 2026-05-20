@@ -1,0 +1,31 @@
+<form method="post" action="/login" class="space-y-4" id="login-form" novalidate>
+  <input type="hidden" name="return_url" value="" />
+  <div class="form-field">
+    <label for="field-username" class="label">Username</label>
+    <input
+      type="text"
+      id="field-username"
+      name="username"
+      class="input"
+      autocomplete="username"
+      autocapitalize="off"
+      autocorrect="off"
+      spellcheck="false"
+      required
+    />
+    <p id="field-username-error" class="form-error" hidden></p>
+  </div>
+  <div class="form-field">
+    <label for="field-password" class="label">Password</label>
+    <input
+      type="password"
+      id="field-password"
+      name="password"
+      class="input"
+      autocomplete="current-password"
+      required
+    />
+    <p id="field-password-error" class="form-error" hidden></p>
+  </div>
+  <button type="submit" class="btn btn-primary w-full">Sign in</button>
+</form>

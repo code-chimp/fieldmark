@@ -1,0 +1,29 @@
+{{template "base" .}}
+
+{{define "title"}}Sign in{{end}}
+
+{{define "content"}}
+<h1>Sign in to FieldMark</h1>
+
+<div class="alert alert-info" role="status">
+  <p class="alert-title">Development stub</p>
+  <p>Real Go authentication is intentionally deferred (ADR-012). Pick a user to sign in as.</p>
+</div>
+
+{{if .Error}}
+<div role="alert" class="alert alert-danger" id="login-errors">
+  <p class="alert-title">{{.Error}}</p>
+</div>
+{{end}}
+
+{{if .Users}}
+{{range .Users}}
+<form method="post" action="/login">
+  <input type="hidden" name="username" value="{{.Username}}" />
+  <button type="submit" class="btn btn-secondary">{{.DisplayName}} <span class="badge badge-secondary">{{.Role}}</span></button>
+</form>
+{{end}}
+{{else}}
+<p>No seeded users found — run <code>make seed</code> first.</p>
+{{end}}
+{{end}}

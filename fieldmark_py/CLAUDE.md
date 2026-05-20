@@ -79,7 +79,7 @@ uv run python manage.py seed_groups
 
 The command lives in `tools/management/commands/seed_groups.py` and is idempotent — safe to re-run. Do not wire it to `AppConfig.ready()` or a `post_migrate` signal.
 
-**Login and logout** views and the unauthenticated-redirect contract are Story 1.11's scope.
+**Story 1.11 shipped:** `login_view` (`GET`/`POST`, `@login_not_required`) and `logout_view` (`POST`, `@login_not_required`) are in `fieldmark/views.py`. `LoginRequiredMiddleware` enforces unauthenticated-redirect for all other views. `LOGIN_URL = "/login"`, `LOGIN_REDIRECT_URL = "/"`, `LOGOUT_REDIRECT_URL = "/login"` are set in `settings.py`.
 
 ## Authentication / User UUIDs
 

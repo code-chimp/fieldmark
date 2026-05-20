@@ -20,6 +20,14 @@ d.setAttribute('data-theme',window.matchMedia&&window.matchMedia('(prefers-color
     <nav aria-label="Main">
         <a href="/">FieldMark</a>
         {% include "_theme_toggle.html" %}
+        {% if user.is_authenticated %}
+        <form method="post" action="/logout">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-link">Sign out</button>
+        </form>
+        {% else %}
+        <a href="/login" class="btn btn-link">Sign in</a>
+        {% endif %}
     </nav>
 </header>
 

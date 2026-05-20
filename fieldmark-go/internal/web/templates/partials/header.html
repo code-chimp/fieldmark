@@ -3,6 +3,13 @@
     <nav aria-label="Main">
         <a href="/">FieldMark</a>
         {{template "theme_toggle" .}}
+        {{if and .Actor (not (.Actor.IsAnonymous))}}
+        <form method="post" action="/logout">
+            <button type="submit" class="btn btn-link">Sign out ({{.Actor.Username}})</button>
+        </form>
+        {{else}}
+        <a href="/login" class="btn btn-link">Sign in</a>
+        {{end}}
     </nav>
 </header>
 {{end}}
