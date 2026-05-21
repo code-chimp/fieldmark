@@ -156,6 +156,28 @@ func TestActionButton_DisabledVariant_HasScreenReaderReason(t *testing.T) {
 	}
 }
 
+// TestActionButtonDisabledTooltipHtmlEntitiesEscaped verifies that html/template's default
+// escaping encodes HTML entities in data-tooltip (AC2.8 / Story 1.14).
+func TestActionButtonDisabledTooltipHtmlEntitiesEscaped(t *testing.T) {
+	vm := viewmodels.ActionButtonVM{
+		ID:             "ab-entity-test",
+		Permission:     true,
+		StateAllows:    false,
+		Label:          "Approve",
+		HxPost:         "/test",
+		HxTarget:       "#target",
+		DisabledReason: "foo & bar <baz>",
+	}
+	rendered := renderActionButton(t, vm)
+
+	if !strings.Contains(rendered, "foo &amp; bar &lt;baz&gt;") {
+		t.Errorf("expected HTML-encoded tooltip; got raw or wrong encoding in: %q", rendered)
+	}
+	if strings.Contains(rendered, "foo & bar <baz>") {
+		t.Errorf("raw unescaped characters found in rendered HTML — html/template escaping must apply")
+	}
+}
+
 func attrVal(n *html.Node, key string) string {
 	for _, a := range n.Attr {
 		if a.Key == key {

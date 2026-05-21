@@ -2,7 +2,10 @@
   "name": "fieldmark_shared",
   "version": "1.0.0",
   "description": "Shared front-end assets for the FieldMark monorepo (CSS build + vendor JS)",
+  "packageManager": "pnpm@11.0.8",
   "scripts": {
+    "preinstall": "node -e \"if(!process.env.npm_execpath||!/pnpm/i.test(process.env.npm_execpath)){console.error('Use pnpm to install — see fieldmark_shared/CLAUDE.md for setup instructions');process.exit(1)}\"",
+    "prebuild": "node scripts/check-sources.mjs && node scripts/check-basecoat-classes.mjs",
     "build": "tailwindcss -i ./src/fieldmark.css -o ./dist/fieldmark.css && node scripts/optimize-css.mjs",
     "build:prod": "tailwindcss -i ./src/fieldmark.css -o ./dist/fieldmark.css --minify && node scripts/optimize-css.mjs --minify",
     "build:raw": "tailwindcss -i ./src/fieldmark.css -o ./dist/fieldmark.css",
@@ -17,6 +20,9 @@
   "devDependencies": {
     "@tailwindcss/cli": "4.2.4",
     "lightningcss": "1.32.0"
+  },
+  "engines": {
+    "node": ">=22"
   },
   "pnpm": {
     "onlyBuiltDependencies": ["@parcel/watcher"]

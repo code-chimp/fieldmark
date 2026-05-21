@@ -50,6 +50,7 @@ func (r Role) BadgeToken() string {
 	case RoleExecutive:
 		return "success"
 	default:
-		return "neutral"
+		// Caller in internal/web/viewmodels must emit slog.Warn for this path.
+		return "unknown"
 	}
 }

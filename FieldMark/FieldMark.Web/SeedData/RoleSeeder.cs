@@ -1,6 +1,5 @@
 using FieldMark.Domain.ValueObjects;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace FieldMark.Web.SeedData;
 

@@ -7,7 +7,7 @@ from django.shortcuts import redirect, render
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_http_methods, require_POST
 
-from fieldmark.roles import BADGE_TOKENS, LABELS, Role
+from fieldmark.roles import LABELS, Role, get_badge_token
 
 _ALLOWED_THEMES = {"system", "light", "dark"}
 
@@ -76,11 +76,18 @@ def logout_view(request: HttpRequest) -> HttpResponse:
 
 
 def home(request: HttpRequest) -> HttpResponse:
-    canonical = {r.value for r in Role}
-    group_names = sorted(
-        name for name in request.user.groups.values_list("name", flat=True) if name in canonical
-    )
-    role_name = group_names[0] if group_names else ""
+    # Two-key selection: prefer canonical roles over unknown ones so a user with
+    # both a canonical group (e.g. COMPLIANCE_OFFICER) and an unknown group
+    # (e.g. ANALYST) always displays the correct canonical badge. A pure lexical
+    # sort lets "ANALYST" outrank "COMPLIANCE_OFFICER" → badge-unknown regression.
+    # Within each tier (canonical / unknown), names are sorted alphabetically for
+    # stable selection. The warning branch in get_badge_token still fires when the
+    # selected role_name is unknown (i.e., the user has no canonical group at all).
+    all_names = list(request.user.groups.values_list("name", flat=True))
+    canonical_set = {r.value for r in Role}
+    canonical_sorted = sorted(n for n in all_names if n in canonical_set)
+    unknown_sorted = sorted(n for n in all_names if n not in canonical_set)
+    role_name = canonical_sorted[0] if canonical_sorted else (unknown_sorted[0] if unknown_sorted else "")
     try:
         role: Role | None = Role(role_name)
     except ValueError:
@@ -90,7 +97,7 @@ def home(request: HttpRequest) -> HttpResponse:
         "pages/home.html",
         {
             "role_label": LABELS[role] if role is not None else "",
-            "role_badge_token": BADGE_TOKENS[role] if role is not None else "neutral",
+            "role_badge_token": get_badge_token(role_name) if role_name else "unknown",
         },
     )
 

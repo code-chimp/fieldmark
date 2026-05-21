@@ -193,3 +193,5 @@ The Home page lives at `FieldMark.Web/Pages/Index.cshtml` (`IndexModel` in `Inde
 | `EXECUTIVE` | `success` | Executive |
 
 The badge `<span class="badge badge-{token}" role="status">{label}</span>` is the first cross-stack visual proof of identity. Never hard-code tokens or labels outside `Role.cs`.
+
+**Tooltip escaping:** Any Razor partial that emits a `data-tooltip` attribute must use `@Html.AttributeEncode(value)` or the Razor `@` expression (which HTML-encodes by default). Never use `@Html.Raw(...)` for tooltip values — raw entities would render as literal `&amp;` in the tooltip text.

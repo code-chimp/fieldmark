@@ -166,3 +166,37 @@ The Go stack is **excluded** from the login-form snapshot assertion — its `/lo
 ### Cross-stack change rule
 
 Any change to `login-form.example.html` or `login-error-region.example.html` **must** be applied simultaneously to the .NET Razor template (`Pages/Account/Login.cshtml`) and the Django template (`templates/_login.html`). The snapshot tests will fail if the stacks drift from the canonical reference. The Go user-switcher template is exempt.
+
+## Sidebar progressive enhancement
+
+The sidebar uses `[data-sidebar-initialized]` as a JS activation gate. **The default CSS must always render the sidebar visible and non-collapsible.** Only when `[data-sidebar-initialized]` is present on the element should collapse/slide behavior engage.
+
+This means: if the sidebar JS fails (404, CSP block, or JS disabled), the sidebar degrades gracefully to a visible, static nav — not hidden, not jumping.
+
+CSS rule (in `_components.css`):
+
+```css
+.sidebar:not([data-sidebar-initialized]) {
+  display: block !important;
+  position: static !important;
+  transform: none !important;
+}
+.sidebar:not([data-sidebar-initialized]) nav {
+  display: block !important;
+}
+```
+
+The `!important` is intentional: it overrides Basecoat's component-level mobile `display: none` that fires before `[data-sidebar-initialized]` is set. Without it, the sidebar is invisible on first paint in mobile viewports.
+
+**Testing:** `e2e/tests/shared/sidebar-no-js.spec.ts` verifies this with `javaScriptEnabled: false`.
+
+## AG Grid empty / loading states
+
+AG Grid Quartz theme overlay styles are in `src/_ag-grid.css`. They target the overlay center elements that AG Grid renders when the grid is loading or has no rows:
+
+- `.ag-overlay-loading-center` — shows a spinner-adjacent tinted background and italic "Loading…" text, visually distinct from a Basecoat empty `<table>` row.
+- `.ag-overlay-no-rows-center` — shows a muted neutral background with "No records found" text.
+
+Both states have dark-mode overrides (`.dark .ag-theme-quartz ...`).
+
+These rules are keyed on AG Grid's own class names — do not rename them. Epic 2's AG Grid feature stories will exercise these states in integration tests; the CSS is wired now so the visual contract is consistent from the first feature that uses a grid.

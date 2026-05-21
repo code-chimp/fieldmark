@@ -191,3 +191,5 @@ The Home page lives at `internal/web/templates/pages/home.html` and is served by
 | `EXECUTIVE` | `success` | Executive |
 
 The badge `<span class="badge badge-{token}" role="status">{label}</span>` is the first cross-stack visual proof of identity. Never hard-code tokens or labels outside `role.go`.
+
+**Tooltip escaping:** `html/template` escapes attribute values automatically — `{{ .TooltipText }}` in a template attribute context is safe. Never use `template.HTML(...)` conversions for tooltip values; that bypasses escaping and would render raw `&amp;` as literal text in the browser.

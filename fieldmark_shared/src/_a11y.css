@@ -39,6 +39,17 @@
   outline-offset: 2px;
 }
 
+/* ─── Reduced-motion override (UX-DR34) ───────────────────────────────────── */
+/* !important needed to override Basecoat's component-level transition values. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    transition-duration: 0.001ms !important;
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 /* ─── Touch targets on coarse pointers (UX-DR35) ──────────────────────────── */
 /* WCAG 2.5.5 target size: 44×44px minimum for primary touch devices.
    Scoped to (pointer: coarse) so dense desktop UIs aren't penalised. */

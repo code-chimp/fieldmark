@@ -139,3 +139,5 @@ The Home page template lives at `fieldmark_py/templates/pages/home.html` and is 
 | `EXECUTIVE` | `success` | Executive |
 
 The badge `<span class="badge badge-{{ role_badge_token }}" role="status">{{ role_label }}</span>` is the first cross-stack visual proof of identity. Never hard-code tokens or labels outside `roles.py`.
+
+**Tooltip escaping:** Any template that emits a `data-tooltip` attribute must pass the value through Django's auto-escaping (`{{ value }}` — do not use `{{ value|safe }}`). The Django template engine auto-escapes by default, which correctly encodes `&`, `<`, `>` into entities. `{{ value|safe }}` bypasses this and must never be used for tooltip content.
