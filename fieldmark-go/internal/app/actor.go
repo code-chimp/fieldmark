@@ -11,8 +11,9 @@ import "github.com/google/uuid"
 // (e.g., domain audit-entry helpers) can take an Actor parameter
 // without depending on web/.
 type Actor struct {
-	ID       uuid.UUID
-	Username string
+	ID          uuid.UUID
+	Username    string
+	DisplayName string
 	// Role is "" for anonymous; otherwise one of the five canonical role
 	// values enumerated in domain.AllRoles. Typed as string to avoid a
 	// refactor cascade; domain.Role* constants are the authoritative names.

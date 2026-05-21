@@ -17,3 +17,39 @@ const (
 var AllRoles = []Role{
 	RoleAdmin, RoleComplianceOfficer, RoleInspector, RoleSiteSupervisor, RoleExecutive,
 }
+
+// Label returns the title-cased display label for the role (AC #4, Story 1.13).
+func (r Role) Label() string {
+	switch r {
+	case RoleAdmin:
+		return "Admin"
+	case RoleComplianceOfficer:
+		return "Compliance Officer"
+	case RoleInspector:
+		return "Inspector"
+	case RoleSiteSupervisor:
+		return "Site Supervisor"
+	case RoleExecutive:
+		return "Executive"
+	default:
+		return ""
+	}
+}
+
+// BadgeToken returns the CSS badge modifier token for the role (AC #4, Story 1.13).
+func (r Role) BadgeToken() string {
+	switch r {
+	case RoleAdmin:
+		return "danger"
+	case RoleComplianceOfficer:
+		return "info"
+	case RoleInspector:
+		return "warning"
+	case RoleSiteSupervisor:
+		return "neutral"
+	case RoleExecutive:
+		return "success"
+	default:
+		return "neutral"
+	}
+}

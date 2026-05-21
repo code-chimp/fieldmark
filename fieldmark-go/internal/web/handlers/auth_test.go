@@ -17,9 +17,8 @@ import (
 // (relative to the project root, two levels up from this package).
 func newTestApp() *fiber.App {
 	engine := html.New("../templates", ".html")
-	engine.Layout("base")
 	engine.AddFunc("noescape", func(s string) string { return s })
-	return fiber.New(fiber.Config{Views: engine})
+	return fiber.New(fiber.Config{Views: engine, ViewsLayout: "base"})
 }
 
 func TestPostLogin_EmptyUsername_Returns422(t *testing.T) {

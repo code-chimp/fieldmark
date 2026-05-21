@@ -8,14 +8,29 @@ namespace FieldMark.Domain.ValueObjects;
 public sealed record Role
 {
     public string Name { get; }
+    public string Label { get; }
+    public string BadgeToken { get; }
 
-    private Role(string name) => Name = name;
+    private Role(string name, string label, string badgeToken)
+    {
+        Name = name;
+        Label = label;
+        BadgeToken = badgeToken;
+    }
 
-    public static readonly Role Admin = new("ADMIN");
-    public static readonly Role ComplianceOfficer = new("COMPLIANCE_OFFICER");
-    public static readonly Role Inspector = new("INSPECTOR");
-    public static readonly Role SiteSupervisor = new("SITE_SUPERVISOR");
-    public static readonly Role Executive = new("EXECUTIVE");
+    public static readonly Role Admin = new("ADMIN", "Admin", "danger");
+    public static readonly Role ComplianceOfficer = new(
+        "COMPLIANCE_OFFICER",
+        "Compliance Officer",
+        "info"
+    );
+    public static readonly Role Inspector = new("INSPECTOR", "Inspector", "warning");
+    public static readonly Role SiteSupervisor = new(
+        "SITE_SUPERVISOR",
+        "Site Supervisor",
+        "neutral"
+    );
+    public static readonly Role Executive = new("EXECUTIVE", "Executive", "success");
 
     public static IReadOnlyList<Role> All { get; } =
         new[] { Admin, ComplianceOfficer, Inspector, SiteSupervisor, Executive };

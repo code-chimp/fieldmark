@@ -1,10 +1,8 @@
 ﻿@page
-@model IndexModel
+@model FieldMark.Web.Pages.IndexModel
 @{
-    ViewData["Title"] = "Home page";
+    ViewData["Title"] = "FieldMark";
 }
-
-<div>
-    <h1>Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<h1>FieldMark</h1>
+<span class="badge badge-@Model.RoleBadgeToken" role="status">@Model.RoleLabel</span>
+<p class="text-muted">Your projects will appear here.</p>

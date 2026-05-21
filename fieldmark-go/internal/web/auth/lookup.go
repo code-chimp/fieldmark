@@ -27,11 +27,11 @@ import (
 // callers; the domain.Role* constants are the authoritative Go-side names.
 func lookupByUsername(ctx context.Context, pool *pgxpool.Pool, username string) (*app.Actor, error) {
 	const q = `
-        SELECT u.id, u.username, COALESCE(MIN(r.role), '') AS role
+        SELECT u.id, u.username, u.display_name, COALESCE(MIN(r.role), '') AS role
           FROM fiber_auth.users u
           LEFT JOIN fiber_auth.user_roles r ON r.user_id = u.id
          WHERE u.username = $1
-      GROUP BY u.id, u.username
+      GROUP BY u.id, u.username, u.display_name
     `
 	var a app.Actor
 	// pgxpool.QueryRow acquires a connection from the pool, executes the
@@ -39,7 +39,7 @@ func lookupByUsername(ctx context.Context, pool *pgxpool.Pool, username string) 
 	// management required. Pool exhaustion or network errors surface as
 	// non-nil err here and are handled by the caller (StubAuthMiddleware
 	// logs and binds anonymous rather than returning HTTP 500).
-	err := pool.QueryRow(ctx, q, username).Scan(&a.ID, &a.Username, &a.Role)
+	err := pool.QueryRow(ctx, q, username).Scan(&a.ID, &a.Username, &a.DisplayName, &a.Role)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, nil

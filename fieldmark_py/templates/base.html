@@ -18,16 +18,15 @@ d.setAttribute('data-theme',window.matchMedia&&window.matchMedia('(prefers-color
 
 <header>
     <nav aria-label="Main">
-        <a href="/">FieldMark</a>
-        {% include "_theme_toggle.html" %}
-        {% if user.is_authenticated %}
-        <form method="post" action="/logout">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-link">Sign out</button>
-        </form>
-        {% else %}
-        <a href="/login" class="btn btn-link">Sign in</a>
-        {% endif %}
+        <a href="/" class="fm-wordmark" aria-label="FieldMark home">FieldMark</a>
+        <div class="ml-auto flex items-center gap-3">
+            {% include "_theme_toggle.html" with current=fm_theme %}
+            {% if request.user.is_authenticated %}
+                {% include "_avatar_menu.html" with user=request.user %}
+            {% else %}
+                <a href="/login" class="btn btn-link">Sign in</a>
+            {% endif %}
+        </div>
     </nav>
 </header>
 

@@ -1,0 +1,13 @@
+{{define "avatar_menu"}}
+<div class="avatar-menu-wrapper relative">
+    <button class="avatar-menu" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="avatar-menu-dropdown">
+        <span class="avatar avatar-initials" aria-hidden="true">{{.Initials}}</span>
+        <span class="sr-only">User menu for {{.FullName}} ({{.RoleLabel}})</span>
+    </button>
+    <ul id="avatar-menu-dropdown" class="menu hidden" role="menu">
+        <li role="none">
+            <a role="menuitem" class="menu-item" href="/logout">Sign out</a>
+        </li>
+    </ul>
+</div>
+{{end}}

@@ -15,6 +15,12 @@ public class LogoutModel : PageModel
         _signInManager = signInManager;
     }
 
+    public async Task<IActionResult> OnGetAsync()
+    {
+        await _signInManager.SignOutAsync();
+        return LocalRedirect("/login");
+    }
+
     public async Task<IActionResult> OnPostAsync()
     {
         await _signInManager.SignOutAsync();

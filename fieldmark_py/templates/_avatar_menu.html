@@ -1,0 +1,12 @@
+{% load avatar_tags %}
+<div class="avatar-menu-wrapper relative">
+    <button class="avatar-menu" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="avatar-menu-dropdown">
+        <span class="avatar avatar-initials" aria-hidden="true">{{ user|avatar_initials }}</span>
+        <span class="sr-only">User menu for {{ user.get_full_name|default:user.get_username }} ({{ user|user_role_label }})</span>
+    </button>
+    <ul id="avatar-menu-dropdown" class="menu hidden" role="menu">
+        <li role="none">
+            <a role="menuitem" class="menu-item" href="/logout">Sign out</a>
+        </li>
+    </ul>
+</div>

@@ -80,3 +80,35 @@
     opacity: 0.8;
   }
 }
+
+/* ─── Role badge tokens — pairs with .badge from Basecoat ────────────────── */
+/* Canonical role→color mapping (AC #4 / Story 1.13). Any future role-badge  */
+/* surface (AuditRow, EntityRail, etc.) reads token from Role.BadgeToken.     */
+.badge-danger   { background: color-mix(in srgb, var(--color-danger)   15%, transparent); color: var(--color-danger); }
+.badge-info     { background: color-mix(in srgb, var(--color-info)     15%, transparent); color: var(--color-info); }
+.badge-warning  { background: color-mix(in srgb, var(--color-warning)  15%, transparent); color: var(--color-warning); }
+.badge-neutral  { background: color-mix(in srgb, var(--color-neutral)  15%, transparent); color: var(--color-neutral); }
+.badge-success  { background: color-mix(in srgb, var(--color-success)  15%, transparent); color: var(--color-success); }
+
+/* ─── Avatar (header chrome) ─────────────────────────────────────────────── */
+.avatar-menu-wrapper { position: relative; display: inline-flex; align-items: center; gap: 0.5rem; }
+.avatar-menu { width: 36px; height: 36px; padding: 0; border: 0; background: transparent; cursor: pointer; }
+.avatar { display: inline-flex; align-items: center; justify-content: center;
+          width: 36px; height: 36px; border-radius: 9999px;
+          background: var(--color-neutral); color: var(--color-background, #fff);
+          font-weight: 600; font-size: 0.75rem; letter-spacing: 0.02em; }
+
+/* Avatar dropdown: keyboard-revealable via :focus-within; no JS at this story. */
+.avatar-menu-wrapper .menu.hidden { display: none; }
+.avatar-menu-wrapper:focus-within .menu.hidden { display: block; position: absolute; right: 0; top: calc(100% + 4px);
+                                                 background: var(--color-surface, #fff);
+                                                 border: 1px solid var(--color-border, currentColor);
+                                                 border-radius: 6px; min-width: 12rem; padding: 0.25rem 0; }
+.menu-item { display: block; padding: 0.5rem 0.75rem; color: inherit; text-decoration: none; }
+.menu-item:hover, .menu-item:focus-visible { background: color-mix(in srgb, currentColor 8%, transparent); }
+
+/* ─── Wordmark ────────────────────────────────────────────────────────────── */
+.fm-wordmark { font-weight: 700; letter-spacing: 0.02em; text-decoration: none; color: inherit; }
+
+/* ─── Placeholder paragraph ──────────────────────────────────────────────── */
+.text-muted { color: var(--color-muted-foreground, color-mix(in srgb, currentColor 60%, transparent)); }

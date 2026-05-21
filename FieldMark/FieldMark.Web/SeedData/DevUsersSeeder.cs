@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Hosting;
@@ -128,6 +129,38 @@ public static class DevUsersSeeder
                     throw new InvalidOperationException(
                         $"DevUsersSeeder: AddToRoleAsync({entry.Role}) failed for {entry.Username}: "
                             + string.Join("; ", add.Errors.Select(e => e.Description))
+                    );
+            }
+
+            // Upsert the display_name claim so the avatar shows the full name.
+            const string displayNameClaimType = "display_name";
+            var existingClaims = await userManager.GetClaimsAsync(existing);
+            var existingDisplay = existingClaims.FirstOrDefault(c =>
+                c.Type == displayNameClaimType
+            );
+            if (existingDisplay is null)
+            {
+                var addClaim = await userManager.AddClaimAsync(
+                    existing,
+                    new Claim(displayNameClaimType, entry.DisplayName)
+                );
+                if (!addClaim.Succeeded)
+                    throw new InvalidOperationException(
+                        $"DevUsersSeeder: AddClaimAsync(display_name) failed for {entry.Username}: "
+                            + string.Join("; ", addClaim.Errors.Select(e => e.Description))
+                    );
+            }
+            else if (existingDisplay.Value != entry.DisplayName)
+            {
+                var replaceClaim = await userManager.ReplaceClaimAsync(
+                    existing,
+                    existingDisplay,
+                    new Claim(displayNameClaimType, entry.DisplayName)
+                );
+                if (!replaceClaim.Succeeded)
+                    throw new InvalidOperationException(
+                        $"DevUsersSeeder: ReplaceClaimAsync(display_name) failed for {entry.Username}: "
+                            + string.Join("; ", replaceClaim.Errors.Select(e => e.Description))
                     );
             }
         }

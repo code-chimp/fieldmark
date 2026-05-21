@@ -16,8 +16,10 @@ import (
 
 	"github.com/code-chimp/fieldmark-go/internal/app"
 	"github.com/code-chimp/fieldmark-go/internal/data/postgres"
+	"github.com/code-chimp/fieldmark-go/internal/domain"
 	"github.com/code-chimp/fieldmark-go/internal/web/auth"
 	"github.com/code-chimp/fieldmark-go/internal/web/handlers"
+	"github.com/code-chimp/fieldmark-go/internal/web/viewmodels"
 )
 
 var (
@@ -49,16 +51,34 @@ func baseMap(c fiber.Ctx) fiber.Map {
 	}
 }
 
+func renderHomeContext(c fiber.Ctx) fiber.Map {
+	m := baseMap(c)
+	m["Title"] = "FieldMark"
+
+	actor := auth.ActorFromCtx(c)
+	if actor == nil {
+		actor = app.Anonymous()
+	}
+
+	role := domain.Role(actor.Role)
+	m["RoleLabel"] = role.Label()
+	m["RoleBadgeToken"] = role.BadgeToken()
+	m["FullName"] = actor.DisplayName
+	m["Initials"] = viewmodels.Initials(actor.DisplayName, actor.Username)
+
+	return m
+}
+
 func buildApp(pool *pgxpool.Pool) *fiber.App {
 	// html.New walks internal/web/templates/ and loads all *.html files.
 	// The Layout option wraps every c.Render() call in layouts/base.html
 	// unless the handler passes an empty layout string explicitly.
 	engine := html.New("./internal/web/templates", ".html")
-	engine.Layout("base")
 	engine.AddFunc("noescape", func(s string) string { return s })
 
 	app := fiber.New(fiber.Config{
-		Views: engine,
+		Views:       engine,
+		ViewsLayout: "base",
 	})
 
 	app.Use(logger.New())
@@ -82,20 +102,20 @@ func registerRoutes(app *fiber.App, pool *pgxpool.Pool) {
 		h := &handlers.LoginHandlers{Pool: pool}
 		app.Get("/login", h.GetLogin)
 		app.Post("/login", h.PostLogin)
+		app.Get("/logout", h.PostLogout)
 		app.Post("/logout", h.PostLogout)
 	} else {
 		// dump-routes path: register stub handlers so the route inventory is complete.
 		noop := func(c fiber.Ctx) error { return nil }
 		app.Get("/login", noop)
 		app.Post("/login", noop)
+		app.Get("/logout", noop)
 		app.Post("/logout", noop)
 	}
 
 	// Business routes — protected by RequireAuth.
 	app.Get("/", auth.RequireAuth(), func(c fiber.Ctx) error {
-		m := baseMap(c)
-		m["Title"] = "Dashboard"
-		return c.Render("pages/dashboard", m)
+		return c.Render("pages/home", renderHomeContext(c))
 	})
 
 	app.Get("/privacy", auth.RequireAuth(), func(c fiber.Ctx) error {

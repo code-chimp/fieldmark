@@ -7,6 +7,8 @@ from django.shortcuts import redirect, render
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_http_methods, require_POST
 
+from fieldmark.roles import BADGE_TOKENS, LABELS, Role
+
 _ALLOWED_THEMES = {"system", "light", "dark"}
 
 
@@ -67,14 +69,30 @@ def login_view(request: HttpRequest) -> HttpResponse:
 
 
 @login_not_required
-@require_POST
+@require_http_methods(["GET", "POST"])
 def logout_view(request: HttpRequest) -> HttpResponse:
     logout(request)
     return redirect("/login")
 
 
-def home(request):
-    return render(request, "pages/home.html")
+def home(request: HttpRequest) -> HttpResponse:
+    canonical = {r.value for r in Role}
+    group_names = sorted(
+        name for name in request.user.groups.values_list("name", flat=True) if name in canonical
+    )
+    role_name = group_names[0] if group_names else ""
+    try:
+        role: Role | None = Role(role_name)
+    except ValueError:
+        role = None
+    return render(
+        request,
+        "pages/home.html",
+        {
+            "role_label": LABELS[role] if role is not None else "",
+            "role_badge_token": BADGE_TOKENS[role] if role is not None else "neutral",
+        },
+    )
 
 
 def privacy(request):

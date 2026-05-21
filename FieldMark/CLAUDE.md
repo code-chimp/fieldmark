@@ -172,3 +172,24 @@ Root `CLAUDE.md` covers the cross-stack rules (no CQRS/MediatR, no repositories,
 - `_bmad-output/planning-artifacts/architecture.md` — architectural source of truth (canonical request flow with .NET code stub, decisions, patterns)
 - `_bmad-output/planning-artifacts/prd/` — capability source of truth
 - Root `CLAUDE.md` — cross-stack rules and canonical inventories (audit actions, HTMX target IDs, method names)
+
+## Home page
+
+The Home page lives at `FieldMark.Web/Pages/Index.cshtml` (`IndexModel` in `Index.cshtml.cs`) and is served at `/`.
+
+**This page is intentionally empty in Epic 1.** It renders `<h1>FieldMark</h1>`, the role badge, and a placeholder paragraph only. Story 2.10 replaces it with the real Compliance Dashboard.
+
+**Chrome composition order (AC #2, Story 1.13 — all three stacks must match):**
+`<a class="fm-wordmark">` → `<div class="ml-auto flex items-center gap-3">` containing `_ThemeToggle` then `_AvatarMenu`. Any new chrome control added to any stack must be added to all three in the same commit (FR58).
+
+**Role → badge-token mapping** (locked in Story 1.13; source of truth is `FieldMark.Domain/ValueObjects/Role.cs`):
+
+| Role | Token | Label |
+|---|---|---|
+| `ADMIN` | `danger` | Admin |
+| `COMPLIANCE_OFFICER` | `info` | Compliance Officer |
+| `INSPECTOR` | `warning` | Inspector |
+| `SITE_SUPERVISOR` | `neutral` | Site Supervisor |
+| `EXECUTIVE` | `success` | Executive |
+
+The badge `<span class="badge badge-{token}" role="status">{label}</span>` is the first cross-stack visual proof of identity. Never hard-code tokens or labels outside `Role.cs`.

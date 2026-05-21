@@ -15,3 +15,22 @@ class Role(StrEnum):
     SITE_SUPERVISOR = "SITE_SUPERVISOR"
     EXECUTIVE = "EXECUTIVE"
 
+
+# Title-cased display label per role (AC #4, Story 1.13).
+LABELS: dict[Role, str] = {
+    Role.ADMIN: "Admin",
+    Role.COMPLIANCE_OFFICER: "Compliance Officer",
+    Role.INSPECTOR: "Inspector",
+    Role.SITE_SUPERVISOR: "Site Supervisor",
+    Role.EXECUTIVE: "Executive",
+}
+
+# Badge token per role — pairs with .badge from Basecoat (AC #4, Story 1.13).
+BADGE_TOKENS: dict[Role, str] = {
+    Role.ADMIN: "danger",
+    Role.COMPLIANCE_OFFICER: "info",
+    Role.INSPECTOR: "warning",
+    Role.SITE_SUPERVISOR: "neutral",
+    Role.EXECUTIVE: "success",
+}
+

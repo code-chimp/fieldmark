@@ -4,6 +4,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
+    <!-- CA1707: underscores in xUnit method names (Given_When_Then). CA1711: xUnit collection suffix. -->
+    <NoWarn>$(NoWarn);CA1707;CA1711</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

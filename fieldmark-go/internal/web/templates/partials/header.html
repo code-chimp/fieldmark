@@ -1,15 +1,11 @@
 {{define "header"}}
 <header>
     <nav aria-label="Main">
-        <a href="/">FieldMark</a>
-        {{template "theme_toggle" .}}
-        {{if and .Actor (not (.Actor.IsAnonymous))}}
-        <form method="post" action="/logout">
-            <button type="submit" class="btn btn-link">Sign out ({{.Actor.Username}})</button>
-        </form>
-        {{else}}
-        <a href="/login" class="btn btn-link">Sign in</a>
-        {{end}}
+        <a href="/" class="fm-wordmark" aria-label="FieldMark home">FieldMark</a>
+        <div class="ml-auto flex items-center gap-3">
+            {{template "theme_toggle" .}}
+            {{if and .Actor (not (.Actor.IsAnonymous))}}{{template "avatar_menu" .}}{{else}}<a href="/login" class="btn btn-link">Sign in</a>{{end}}
+        </div>
     </nav>
 </header>
 {{end}}

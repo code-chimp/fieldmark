@@ -36,7 +36,11 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-05-11
-last_updated: 2026-05-20
+last_updated: 2026-05-21
+#   (1-13 third review round complete; 2 patch items resolved; status set to review)
+#   (1-13 second review round complete; all 7 patch items resolved; status set to review)
+#   (1-13 implementation complete; all gates green; status set to review)
+#   (1-13 implementation started; status set to in-progress)
 #   (1-12 all three stack test suites green after escalated reruns; status set to done)
 #   (1-12 implementation complete; status set to review)
 #   (1-12 implementation started; status set to in-progress)
@@ -102,7 +106,7 @@ development_status:
   1-10-author-shared-uuid-dev-user-manifest-and-per-stack-idempotent-seed-runners: done
   1-11-login-logout-and-unauthenticated-redirect-across-all-three-stacks: done
   1-12-implement-authz-can-primitive-and-actionbutton-trichotomy-helper-per-stack: done
-  1-13-render-empty-role-aware-home-page-identically-across-all-three-stacks: ready-for-dev
+  1-13-render-empty-role-aware-home-page-identically-across-all-three-stacks: done
   epic-1-retrospective: optional
 
   # ===== Epic 2: Project Lifecycle & Compliance Dashboard =====

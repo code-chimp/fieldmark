@@ -28,3 +28,5 @@ Desktop.ini
 
 # fieldmark_style build artifacts
 fieldmark_style/node_modules/
+
+/private/

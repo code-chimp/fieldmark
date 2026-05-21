@@ -6,6 +6,8 @@ import re
 
 _COMMENT_RE = re.compile(r"<!--.*?-->", re.DOTALL)
 _WHITESPACE_RE = re.compile(r"\s+")
+# strips <input type="hidden" ...> so CSRF tokens don't break cross-stack parity diffs
+_HIDDEN_INPUT_RE = re.compile(r'<input[^>]+type="hidden"[^>]*>', re.IGNORECASE)
 
 
 def normalise_component(html: str) -> str:
@@ -13,6 +15,13 @@ def normalise_component(html: str) -> str:
     html = _COMMENT_RE.sub("", html)
     html = _WHITESPACE_RE.sub(" ", html).strip()
     return html
+
+
+def normalise_for_parity(html: str) -> str:
+    """Like normalise_component but also strips hidden inputs so CSRF tokens
+    do not break cross-stack snapshot comparisons."""
+    html = _HIDDEN_INPUT_RE.sub("", html)
+    return normalise_component(html)
 
 
 def extract_variant(example_content: str, variant_name: str) -> str:

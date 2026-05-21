@@ -1,6 +1,7 @@
 {% extends "base.html" %}
-{% block title %}Dashboard{% endblock %}
+{% block title %}FieldMark{% endblock %}
 {% block content %}
-<h1 class="text-2xl font-semibold mb-4">Dashboard</h1>
-<p>Dashboard content will be added in a future story.</p>
+  <h1>FieldMark</h1>
+  <span class="badge badge-{{ role_badge_token }}" role="status">{{ role_label }}</span>
+  <p class="text-muted">Your projects will appear here.</p>
 {% endblock %}

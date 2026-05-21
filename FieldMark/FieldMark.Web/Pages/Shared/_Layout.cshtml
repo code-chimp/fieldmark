@@ -21,19 +21,18 @@ d.setAttribute('data-theme',window.matchMedia&&window.matchMedia('(prefers-color
 
 <header>
     <nav aria-label="Main">
-        <a asp-area="" asp-page="/Index">FieldMark</a>
-        <partial name="_ThemeToggle" model="@fmTheme" />
-        @if (User.Identity?.IsAuthenticated == true)
-        {
-            <form method="post" action="/logout">
-                @Html.AntiForgeryToken()
-                <button type="submit" class="btn btn-link">Sign out</button>
-            </form>
-        }
-        else
-        {
-            <a href="/login" class="btn btn-link">Sign in</a>
-        }
+        <a href="/" class="fm-wordmark" aria-label="FieldMark home">FieldMark</a>
+        <div class="ml-auto flex items-center gap-3">
+            <partial name="_ThemeToggle" model="@fmTheme" />
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <partial name="_AvatarMenu" model="@(new FieldMark.Web.ViewModels.AvatarMenuVm(User))" />
+            }
+            else
+            {
+                <a href="/login" class="btn btn-link">Sign in</a>
+            }
+        </div>
     </nav>
 </header>
 
