@@ -4,7 +4,7 @@
 
 FieldMark is a reference implementation of an enterprise-grade Construction Compliance & Inspection Management System (CCIMS), built to demonstrate that server-driven web architecture can deliver SPA-equivalent interactivity without the cognitive and architectural overhead of a single-page application.
 
-The system is implemented across three stacks — .NET (Razor Pages + HTMX), Django (Django Templates + HTMX), and Go (Fiber + HTMX) — against a shared PostgreSQL database, with strict architectural symmetry enforced at every story boundary. AG Grid is integrated as a JavaScript island for data-dense views, but no client-side state stores, no duplicated business rules, and no frontend routing exist in any stack.
+The system is implemented across three stacks — .NET (Razor Pages + HTMX), Django (Django Templates + HTMX), and Go (Fiber + HTMX) — against a shared PostgreSQL database, with strict architectural symmetry enforced at every story boundary. AG Grid is the planned JavaScript island for data-dense views, but no client-side state stores, no duplicated business rules, and no frontend routing exist in any stack.
 
 FieldMark is a teaching artifact for an upcoming talk on HTMX. It is not a product seeking market fit.
 
@@ -28,31 +28,55 @@ FieldMark models the lifecycle of construction compliance: project managers over
 
 ```
 fieldmark/
+├── Makefile                Source of truth for local orchestration
 ├── FieldMark/              .NET solution (Razor Pages + HTMX)
 │   ├── FieldMark.Domain/     Domain entities and behavior
-│   ├── FieldMark.Data/       EF Core persistence
-│   ├── FieldMark.Web/        Razor Pages composition root
-│   ├── FieldMark.Tests.Domain/       xUnit domain unit tests
-│   └── FieldMark.Tests.Integration/  xUnit integration tests (Testcontainers)
+│   ├── FieldMark.Data/       EF Core contexts and dotnet_auth migrations
+│   ├── FieldMark.Web/        Razor Pages app, auth, seeders, route dump tooling
+│   ├── FieldMark.Tests.Domain/       xUnit domain tests
+│   ├── FieldMark.Tests.Integration/  xUnit PostgreSQL integration tests
+│   └── FieldMark.Tests.Web/          xUnit web/rendering tests
 ├── fieldmark_py/           Django project (Templates + HTMX)
-│   └── fieldmark/            Django project package
+│   ├── fieldmark/            Project settings, auth/authz helpers, URLs, tests
+│   ├── templates/            Shared layouts, fragments, and page templates
+│   ├── static/               Symlinks to shared CSS/vendor assets
+│   ├── projects/             Project app and dev-user seeding
+│   ├── tools/                Stack-local management tooling
+│   └── audit/, compliance/, grid/, inspections/, reference/, violations/
 ├── fieldmark-go/           Go project (Fiber + HTMX)
-│   ├── cmd/web/              Entry point
-│   └── internal/             Domain, app, data, and web layers
-├── fieldmark_shared/       Shared CSS source and vendor JS (Tailwind v4, HTMX, AG Grid)
-├── e2e/                    Shared Playwright browser tests (all three backends)
+│   ├── cmd/web/              Web entry point
+│   ├── cmd/migrate-fiber-auth/  fiber_auth DDL migrator
+│   ├── cmd/seed/             Go auth/dev-user seeder
+│   ├── internal/             App, data, domain, web handlers/templates/auth
+│   └── tools/                Go tool pinning
+├── fieldmark_shared/       Shared Tailwind/Basecoat CSS, examples, and vendor JS
+│   ├── src/                  CSS source and partials
+│   ├── dist/                 Committed compiled CSS
+│   ├── components/           Canonical HTML examples used by stack tests
+│   ├── scripts/              CSS build optimization
+│   └── vendor/               Vendored HTMX and theme-toggle assets
+├── fieldmark-landing/      Static project landing page
+│   ├── index.html            Self-contained landing page
+│   └── static/               Landing page fonts, images, and icons
+├── docs/                   Canonical project docs (overview, architecture, rules)
+├── e2e/                    Playwright browser tests and fixtures
+├── tools/                  Domain verification, parity scripts, git-hook samples
+│   └── parity/               Cross-stack route/index dump and diff scripts
 ├── docker/
 │   └── postgres/
-│       └── init/             Schema init SQL — runs on first Postgres startup
+│       └── init/             Schema init SQL and shared seed UUID manifest
 ├── docker-compose.yml      PostgreSQL 17 for local development
 └── README.md               This file
 ```
 
-Each stack has its own README with setup instructions:
+Each stack and shared package has its own README with focused setup instructions:
 
 - [**.NET README**](FieldMark/README.md)
 - [**Django README**](fieldmark_py/README.md)
 - [**Go README**](fieldmark-go/README.md)
+- [**Shared assets README**](fieldmark_shared/README.md)
+- [**Landing page README**](fieldmark-landing/README.md)
+- [**Documentation index**](docs/README.md)
 
 ## Tech Stack
 
@@ -62,10 +86,11 @@ Each stack has its own README with setup instructions:
 | Web framework | ASP.NET Core Razor Pages | Django 6.x | Fiber v3 |
 | ORM / data access | EF Core 10 | Django ORM | Explicit SQL via stores |
 | Database | PostgreSQL 17 | PostgreSQL 17 | PostgreSQL 17 |
-| Interactivity | HTMX 4.x | HTMX 4.x | HTMX 4.x |
-| Data grids | AG Grid Community 35.x | AG Grid Community 35.x | AG Grid Community 35.x |
+| Interactivity | HTMX 4.0.0-beta2 | HTMX 4.0.0-beta2 | HTMX 4.0.0-beta2 |
+| Shared CSS | Tailwind CSS 4.2.4 + Basecoat 0.3.11 | Tailwind CSS 4.2.4 + Basecoat 0.3.11 | Tailwind CSS 4.2.4 + Basecoat 0.3.11 |
+| Data grids | AG Grid Community 35.x contract | AG Grid Community 35.x contract | AG Grid Community 35.x contract |
 
-HTMX and AG Grid versions must match across all stacks. A version mismatch is a build-blocking defect.
+Shared browser assets are owned by `fieldmark_shared/` and consumed by the stacks through symlinks. HTMX is currently vendored there; AG Grid server-side-row-model contracts are part of the architecture and must stay identical when grid endpoints are implemented.
 
 ## Database Architecture
 
@@ -102,6 +127,12 @@ These are non-negotiable across all three stacks:
 - `psql` — PostgreSQL client for the verification script. On macOS: `brew install libpq && brew link --force libpq`
 
 ## Getting Started
+
+Start with the Makefile; it is the executable source of truth for local development:
+
+```bash
+make help
+```
 
 **1. Start PostgreSQL:**
 
@@ -161,12 +192,10 @@ After `make up` or `make reset`, verify the canonical schema:
 Expected output:
 
 ```
-OK domain schema verified (5 schemas, 12 tables, N reference rows)
+OK domain schema verified (5 schemas, 12 tables, N trade types, N violation categories, 4 compliance rules)
 ```
 
 Non-zero exit = schema drift. Investigate before running any stack.
-
-<!-- TODO: link from Story 1.3 -->
 
 ### Per-stack setup
 
@@ -182,7 +211,7 @@ See [CLAUDE.md](CLAUDE.md) for the cross-stack architectural rules enforced at e
 
 ## Status
 
-Pre-kickoff planning is complete. Project structure, domain model, architectural decisions, and stack scaffolding are established. Feature implementation is in progress across all three stacks.
+Core scaffolding, shared PostgreSQL schema, design-system foundation, cross-stack base layout, theme toggle, auth schemas, login/logout, authorization primitives, dev-user seeding, and parity tooling are in place. Feature implementation is continuing across all three stacks.
 
 ## License
 
