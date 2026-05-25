@@ -22,9 +22,9 @@ If volume issues: `docker compose down -v && docker compose up -d`.
 
 See each stack's `CLAUDE.md` for build/run/test commands:
 
-- [.NET / FieldMark/CLAUDE.md](../FieldMark/CLAUDE.md)
-- [Django / fieldmark_py/CLAUDE.md](../fieldmark_py/CLAUDE.md)
-- [Go / fieldmark-go/CLAUDE.md](../fieldmark-go/CLAUDE.md)
+- [.NET / FieldMark/CLAUDE.md](../../FieldMark/CLAUDE.md)
+- [Django / fieldmark_py/CLAUDE.md](../../fieldmark_py/CLAUDE.md)
+- [Go / fieldmark-go/CLAUDE.md](../../fieldmark-go/CLAUDE.md)
 
 ## Shared Assets
 
@@ -63,7 +63,7 @@ Two scripts run automatically before every `pnpm run build`:
 
 ### Basecoat upgrade procedure
 
-See [docs/basecoat-upgrade-checklist.md](basecoat-upgrade-checklist.md) for the step-by-step procedure and the rationale for the pinned class smoke test.
+See [docs/how-to/basecoat-upgrade-checklist.md](../how-to/basecoat-upgrade-checklist.md) for the step-by-step procedure and the rationale for the pinned class smoke test.
 
 ### `optimize-css.mjs` failure modes
 
@@ -75,6 +75,6 @@ See [docs/basecoat-upgrade-checklist.md](basecoat-upgrade-checklist.md) for the 
 
 ## Next Steps
 
-- Review [Architecture](architecture.md)
-- Read root [CLAUDE.md](../CLAUDE.md) for agent rules
-- Read [fieldmark_shared/CLAUDE.md](../fieldmark_shared/CLAUDE.md) for full CSS pipeline, symlink topology, and pinned dependency table
+- Review [Architecture](../explanation/architecture.md)
+- Read root [CLAUDE.md](../../CLAUDE.md) for agent rules
+- Read [fieldmark_shared/CLAUDE.md](../../fieldmark_shared/CLAUDE.md) for full CSS pipeline, symlink topology, and pinned dependency table

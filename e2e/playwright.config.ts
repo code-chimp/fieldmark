@@ -9,7 +9,7 @@ import { defineConfig, devices } from '@playwright/test';
  * Mode A: run one backend only, e.g. `pnpm exec playwright test --project=fiber`.
  */
 
-const dotnetURL = process.env.DOTNET_URL ?? 'http://localhost:5000';
+const dotnetURL = process.env.DOTNET_URL ?? 'http://localhost:4000';
 const djangoURL = process.env.DJANGO_URL ?? 'http://localhost:8000';
 const fiberURL = process.env.FIBER_URL ?? 'http://localhost:3000';
 

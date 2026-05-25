@@ -180,7 +180,7 @@ The Home page lives at `FieldMark.Web/Pages/Index.cshtml` (`IndexModel` in `Inde
 **This page is intentionally empty in Epic 1.** It renders `<h1>FieldMark</h1>`, the role badge, and a placeholder paragraph only. Story 2.10 replaces it with the real Compliance Dashboard.
 
 **Chrome composition order (AC #2, Story 1.13 — all three stacks must match):**
-`<a class="fm-wordmark">` → `<div class="ml-auto flex items-center gap-3">` containing `_ThemeToggle` then `_AvatarMenu`. Any new chrome control added to any stack must be added to all three in the same commit (FR58).
+`<a class="fm-brand-lockup">` → `<div class="ml-auto flex items-center gap-3">` containing `_ThemeToggle` (3-button pill) then `_AvatarMenu`. Any new chrome control added to any stack must be added to all three in the same commit (FR58).
 
 **Role → badge-token mapping** (locked in Story 1.13; source of truth is `FieldMark.Domain/ValueObjects/Role.cs`):
 

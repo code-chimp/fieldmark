@@ -20,7 +20,7 @@ fieldmark_shared/
 │   ├── fieldmark.css       Main entry point — imports Tailwind, Basecoat, and all partials
 │   ├── _fonts.css          @font-face declarations for Inter and JetBrains Mono
 │   ├── _tokens.css         Semantic color tokens, status-badge vocabulary, score-band mapping
-│   ├── _components.css     Shared UI component styles (ThemeToggle, etc.)
+│   ├── _components.css     Shared UI component styles (ThemeToggle pill, brand mark, etc.)
 │   ├── _layout.css         Container, gutter collapse, body text-size defaults
 │   └── _ag-grid.css        AG Grid Quartz theme overrides
 ├── dist/
@@ -32,12 +32,18 @@ fieldmark_shared/
 │   ├── htmx/
 │   │   └── htmx.min.js
 │   ├── theme-toggle/
-│   │   └── theme-toggle.js                    Client-side theme listener (≤20 LOC; story 1-6)
-│   └── fonts/
-│       ├── inter/
-│       │   └── InterVariable.woff2            Inter v4.1 variable font
-│       └── jetbrains-mono/
-│           └── JetBrainsMono[wght].woff2      JetBrains Mono v2.304 variable font
+│   │   └── theme-toggle.js                    Client-side theme listener; syncs aria-pressed on 3-button pill
+│   ├── fonts/
+│   │   ├── inter/
+│   │   │   └── InterVariable.woff2            Inter v4.1 variable font
+│   │   └── jetbrains-mono/
+│   │       └── JetBrainsMono[wght].woff2      JetBrains Mono v2.304 variable font
+│   └── img/                                   Brand images — favicon suite and OG image
+│       ├── favicon.svg
+│       ├── favicon-16.png, favicon-32.png
+│       ├── apple-touch-icon.png
+│       ├── icon-192.png, icon-512.png
+│       └── fieldmark-og.png
 ├── package.json
 └── node_modules/            gitignored
 ```
@@ -109,11 +115,11 @@ Commit `dist/fieldmark.css`. Fresh checkouts need the compiled file to exist bef
 
 Each stack symlinks vendor directories (not individual files) into its own static tree:
 
-| Stack | ag-grid symlink | htmx symlink | theme-toggle symlink |
-|---|---|---|---|
-| .NET | `wwwroot/vendor/ag-grid` → `../../../../fieldmark_shared/vendor/ag-grid` | `wwwroot/vendor/htmx` → `../../../../fieldmark_shared/vendor/htmx` | `wwwroot/vendor/theme-toggle` → `../../../../fieldmark_shared/vendor/theme-toggle` |
-| Django | `static/vendor/ag-grid` → `../../../fieldmark_shared/vendor/ag-grid` | `static/vendor/htmx` → `../../../fieldmark_shared/vendor/htmx` | `static/vendor/theme-toggle` → `../../../fieldmark_shared/vendor/theme-toggle` |
-| Go/Fiber | `internal/web/static/vendor/ag-grid` → `../../../../../fieldmark_shared/vendor/ag-grid` | `internal/web/static/vendor/htmx` → `../../../../../fieldmark_shared/vendor/htmx` | `internal/web/static/vendor/theme-toggle` → `../../../../../fieldmark_shared/vendor/theme-toggle` |
+| Stack | ag-grid symlink | htmx symlink | theme-toggle symlink | img symlink |
+|---|---|---|---|---|
+| .NET | `wwwroot/vendor/ag-grid` → `../../../../fieldmark_shared/vendor/ag-grid` | `wwwroot/vendor/htmx` → `../../../../fieldmark_shared/vendor/htmx` | `wwwroot/vendor/theme-toggle` → `../../../../fieldmark_shared/vendor/theme-toggle` | `wwwroot/vendor/img` → `../../../../fieldmark_shared/vendor/img` |
+| Django | `static/vendor/ag-grid` → `../../../fieldmark_shared/vendor/ag-grid` | `static/vendor/htmx` → `../../../fieldmark_shared/vendor/htmx` | `static/vendor/theme-toggle` → `../../../fieldmark_shared/vendor/theme-toggle` | `static/vendor/img` → `../../../fieldmark_shared/vendor/img` |
+| Go/Fiber | `internal/web/static/vendor/ag-grid` → `../../../../../fieldmark_shared/vendor/ag-grid` | `internal/web/static/vendor/htmx` → `../../../../../fieldmark_shared/vendor/htmx` | `internal/web/static/vendor/theme-toggle` → `../../../../../fieldmark_shared/vendor/theme-toggle` | `internal/web/static/vendor/img` → `../../../../../fieldmark_shared/vendor/img` |
 
 All paths are relative so the repo works regardless of where it is cloned.
 

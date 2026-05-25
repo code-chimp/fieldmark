@@ -1,15 +1,13 @@
 # FieldMark Documentation Index
 
-Welcome to the FieldMark project documentation. This folder contains the canonical, published documentation for developers, contributors, and operators.
+This folder contains the canonical, published documentation for developers, contributors, and operators. It is organized by the **[Diátaxis](https://diataxis.fr/)** framework — four quadrants matched to four kinds of user need.
 
-## Documentation Structure
-
-- [Overview](overview.md) — Friendly introduction for new developers and post-presentation readers.
-- [Getting Started](getting-started.md) — Quick start, prerequisites, running the application, and development setup.
-- [Architecture](architecture.md) — System overview, three-stack design, canonical patterns, domain model, request flow, and invariants.
-- [Domain Model](domain-model.md) — Aggregates, state machines, relationships (with Mermaid diagrams).
-- [Request Flow](request-flow.md) — Canonical mutating request lifecycle (with sequence diagram).
-- [Hard Rules](hard-rules.md) — Non-negotiable constraints across all stacks (backend authority, schema ownership, no fat services, etc.).
+| Quadrant | When to read | What's here |
+|----------|--------------|-------------|
+| **[Tutorials](tutorials/)** — learning-oriented | You are new and want to get something running | [getting-started.md](tutorials/getting-started.md) |
+| **[How-to guides](how-to/)** — problem-oriented | You know the system and need to accomplish a specific task | [basecoat-upgrade-checklist.md](how-to/basecoat-upgrade-checklist.md) |
+| **[Reference](reference/)** — information-oriented | You need precise, lookup-style facts | [hard-rules.md](reference/hard-rules.md), [domain-model.md](reference/domain-model.md), [persistence-schema.md](reference/persistence-schema.md) |
+| **[Explanation](explanation/)** — understanding-oriented | You want background, rationale, and the bigger picture | [overview.md](explanation/overview.md), [architecture.md](explanation/architecture.md), [request-flow.md](explanation/request-flow.md) |
 
 ## Related References
 
@@ -17,4 +15,6 @@ Welcome to the FieldMark project documentation. This folder contains the canonic
 - Stack-specific CLAUDE.md files in `FieldMark/`, `fieldmark_py/`, and `fieldmark-go/`.
 - `_bmad-output/planning-artifacts/` — Historical planning artifacts (not maintained post-kickoff).
 
-Use the docs here for day-to-day reference. They are designed for progressive disclosure: high-level summaries stay in CLAUDE.md; deep details live here.
+## Notes on the four quadrants
+
+The four kinds of doc are kept in separate folders so each can stay true to its purpose. Tutorials minimize explanation; how-to guides assume basic knowledge; reference avoids instruction; explanation avoids step-by-step. When adding a new document, pick the quadrant first — if a draft mixes two, split it.

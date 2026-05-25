@@ -997,7 +997,7 @@ fieldmark/                                          # repo root
 │   │   ├── seed-data.ts                            # reads dev-users.json + seeds domain rows for tests
 │   │   └── auth-helpers.ts                         # logs in as a given role per-stack
 │   ├── helpers/
-│   │   ├── stack-config.ts                         # base URLs per project (.NET :5000, Django :8000, Fiber :3000)
+│   │   ├── stack-config.ts                         # base URLs per project (.NET :4000, Django :8000, Fiber :3000)
 │   │   ├── htmx-helpers.ts                         # waitForSwap, expectTargetSwapped
 │   │   └── a11y.ts                                 # axe-core wrapper invoked in every test
 │   ├── tests/
@@ -1367,7 +1367,7 @@ The "three things update in one round trip" anchor demo (PRD Journey 1) correspo
 
 **Development server structure:**
 - `make up` — start Postgres (one container, init scripts run on first volume creation).
-- `make run-net` / `make run-django` / `make run-go` — start one stack on its native port (.NET :5000, Django :8000, Fiber :3000).
+- `make run-net` / `make run-django` / `make run-go` — start one stack on its native port (.NET :4000, Django :8000, Fiber :3000).
 - All three can run simultaneously; they share the same Postgres database (different `*_auth` schemas isolate identity).
 
 **Build process structure:**

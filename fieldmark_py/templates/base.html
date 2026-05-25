@@ -6,9 +6,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script>
 (function(){var d=document.documentElement,t=d.getAttribute('data-theme');
-if(t!=='system')return;
-d.setAttribute('data-theme',window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');})();
+if(t==='system'){t=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';d.setAttribute('data-theme',t);}
+d.classList.toggle('dark',t==='dark');})();
     </script>
+    <link rel="icon" href="{% static 'vendor/img/favicon.svg' %}" type="image/svg+xml" />
+    <link rel="icon" href="{% static 'vendor/img/favicon-16.png' %}" sizes="16x16" type="image/png" />
+    <link rel="icon" href="{% static 'vendor/img/favicon-32.png' %}" sizes="32x32" type="image/png" />
+    <link rel="apple-touch-icon" href="{% static 'vendor/img/apple-touch-icon.png' %}" />
+    <link rel="manifest" href="{% static 'site.webmanifest' %}" />
+    <meta name="theme-color" content="#fafafa" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)" />
+    <meta name="description" content="FieldMark · Django + HTMX inspection management reference" />
+    <meta property="og:title" content="FieldMark" />
+    <meta property="og:description" content="Server-authoritative HTMX architecture — three stacks, one domain." />
+    <meta property="og:image" content="{% static 'vendor/img/fieldmark-og.png' %}" />
+    <meta name="twitter:card" content="summary_large_image" />
     <title>{% block title %}FieldMark{% endblock %} — FieldMark</title>
     <link rel="stylesheet" href="{% static 'vendor/fieldmark.css' %}">
     {% block extra_css %}{% endblock %}
@@ -18,13 +30,22 @@ d.setAttribute('data-theme',window.matchMedia&&window.matchMedia('(prefers-color
 
 <header>
     <nav aria-label="Main">
-        <a href="/" class="fm-wordmark" aria-label="FieldMark home">FieldMark</a>
+        <a href="/" class="fm-brand-lockup" aria-label="FieldMark home">
+            <span class="fm-brand-mark" aria-hidden="true">
+                <svg viewBox="0 0 32 32" fill="none">
+                    <path d="M16 3 29 16 16 29 3 16 16 3Z" fill="currentColor" fill-opacity="0.08" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                    <path d="M16 3v26M3 16h26" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-opacity="0.28"/>
+                    <path d="m11 17.2 4 4L22.4 12" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </span>
+            <span>FieldMark</span>
+        </a>
         <div class="ml-auto flex items-center gap-3">
             {% include "_theme_toggle.html" with current=fm_theme %}
             {% if request.user.is_authenticated %}
                 {% include "_avatar_menu.html" with user=request.user %}
             {% else %}
-                <a href="/login" class="btn btn-link">Sign in</a>
+                <a href="/login" class="btn-link">Sign in</a>
             {% endif %}
         </div>
     </nav>
@@ -42,6 +63,7 @@ d.setAttribute('data-theme',window.matchMedia&&window.matchMedia('(prefers-color
 {# AG Grid must be loaded before any page script that initializes a grid #}
 <script src="{% static 'vendor/ag-grid/35.2.1/ag-grid-community.min.js' %}"></script>
 <script src="{% static 'vendor/htmx/htmx.min.js' %}"></script>
+<script>htmx.config.implicitInheritance = true;</script>
 <script src="{% static 'vendor/theme-toggle/theme-toggle.js' %}"></script>
 {% block extra_scripts %}{% endblock %}
 </body>

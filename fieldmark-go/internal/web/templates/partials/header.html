@@ -1,10 +1,19 @@
 {{define "header"}}
 <header>
     <nav aria-label="Main">
-        <a href="/" class="fm-wordmark" aria-label="FieldMark home">FieldMark</a>
+        <a href="/" class="fm-brand-lockup" aria-label="FieldMark home">
+            <span class="fm-brand-mark" aria-hidden="true">
+                <svg viewBox="0 0 32 32" fill="none">
+                    <path d="M16 3 29 16 16 29 3 16 16 3Z" fill="currentColor" fill-opacity="0.08" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                    <path d="M16 3v26M3 16h26" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-opacity="0.28"/>
+                    <path d="m11 17.2 4 4L22.4 12" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </span>
+            <span>FieldMark</span>
+        </a>
         <div class="ml-auto flex items-center gap-3">
             {{template "theme_toggle" .}}
-            {{if and .Actor (not (.Actor.IsAnonymous))}}{{template "avatar_menu" .}}{{else}}<a href="/login" class="btn btn-link">Sign in</a>{{end}}
+            {{if and .Actor (not (.Actor.IsAnonymous))}}{{template "avatar_menu" .}}{{else}}<a href="/login" class="btn-link">Sign in</a>{{end}}
         </div>
     </nav>
 </header>

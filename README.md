@@ -166,7 +166,7 @@ make seed
 **3. Run the stacks** (each in its own terminal):
 
 ```bash
-make run-net       # .NET Razor Pages  →  http://localhost:5000
+make run-net       # .NET Razor Pages  →  http://localhost:4000
 make run-django    # Django Templates  →  http://localhost:8000
 make run-go        # Go Fiber          →  http://localhost:3000
 ```

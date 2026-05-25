@@ -129,7 +129,7 @@ erDiagram
 ## Related Documentation
 
 - [Domain Model](domain-model.md) — State machines and business invariants
-- [Architecture](architecture.md) — Request flow and schema ownership rules
+- [Architecture](../explanation/architecture.md) — Request flow and schema ownership rules
 - [Hard Rules](hard-rules.md) — Non-negotiable persistence constraints
 
 See the init scripts in `docker/postgres/init/` for the authoritative DDL.

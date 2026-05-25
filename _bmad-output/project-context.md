@@ -101,7 +101,7 @@ _This file contains critical rules and patterns that AI agents must follow when 
 **Daily Commands:**
 - `make up` to start Postgres (inits schemas on first run).
 - `make reset` to destroy volume + re-init after any `docker/postgres/init/` changes.
-- Run stacks in separate terminals: `make run-net` (:5000), `make run-django` (:8000), `make run-go` (:3000).
+- Run stacks in separate terminals: `make run-net` (:4000), `make run-django` (:8000), `make run-go` (:3000).
 
 **Verification:**
 - `./tools/verify-domain-schema.sh` (requires psql) to confirm domain.* tables.

@@ -97,6 +97,14 @@ func buildApp(pool *pgxpool.Pool) *fiber.App {
 		app.Use(auth.StubAuthMiddleware(pool))
 	}
 
+	// Root-level static files served before the /static prefix mount.
+	app.Get("/robots.txt", func(c fiber.Ctx) error {
+		return c.SendFile("./internal/web/static/robots.txt")
+	})
+	app.Get("/.well-known/security.txt", func(c fiber.Ctx) error {
+		return c.SendFile("./internal/web/static/.well-known/security.txt")
+	})
+
 	// Static assets: /static/** → internal/web/static/
 	app.Use("/static", static.New("./internal/web/static"))
 

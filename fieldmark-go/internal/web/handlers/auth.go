@@ -19,6 +19,16 @@ type seededUser struct {
 	Role        string
 }
 
+var fmThemeCycle = map[string]string{"system": "light", "light": "dark", "dark": "system"}
+
+func themeEntries(c fiber.Ctx) (theme, next string) {
+	v := c.Cookies("fm_theme", "system")
+	if v != "system" && v != "light" && v != "dark" {
+		v = "system"
+	}
+	return v, fmThemeCycle[v]
+}
+
 // LoginHandlers holds the DB pool for auth-related route handlers.
 type LoginHandlers struct {
 	Pool *pgxpool.Pool
@@ -29,19 +39,24 @@ func (h *LoginHandlers) GetLogin(c fiber.Ctx) error {
 		return c.Redirect().Status(fiber.StatusFound).To("/")
 	}
 	users, err := h.listSeededUsers(c.Context())
+	theme, next := themeEntries(c)
 	if err != nil {
 		log.Printf("login: list users: %v", err)
 		return c.Render("pages/login", fiber.Map{
-			"Title":   "Sign in",
-			"Users":   nil,
-			"Error":   "Unable to list users — check the database connection.",
-			"FmTheme": c.Cookies("fm_theme", "system"),
+			"Title":           "Sign in",
+			"Users":           nil,
+			"Error":           "Unable to list users — check the database connection.",
+			"FmTheme":         theme,
+			"FmThemeNext":     next,
+			"FmThemeResolved": theme,
 		})
 	}
 	return c.Render("pages/login", fiber.Map{
-		"Title":   "Sign in",
-		"Users":   users,
-		"FmTheme": c.Cookies("fm_theme", "system"),
+		"Title":           "Sign in",
+		"Users":           users,
+		"FmTheme":         theme,
+		"FmThemeNext":     next,
+		"FmThemeResolved": theme,
 	})
 }
 
@@ -82,12 +97,15 @@ func (h *LoginHandlers) PostLogout(c fiber.Ctx) error {
 
 func (h *LoginHandlers) renderInvalid(c fiber.Ctx, message string) error {
 	users, _ := h.listSeededUsers(c.Context()) // best-effort
+	theme, next := themeEntries(c)
 	c.Status(fiber.StatusUnprocessableEntity)
 	return c.Render("pages/login", fiber.Map{
-		"Title":   "Sign in",
-		"Users":   users,
-		"Error":   message,
-		"FmTheme": c.Cookies("fm_theme", "system"),
+		"Title":           "Sign in",
+		"Users":           users,
+		"Error":           message,
+		"FmTheme":         theme,
+		"FmThemeNext":     next,
+		"FmThemeResolved": theme,
 	})
 }
 

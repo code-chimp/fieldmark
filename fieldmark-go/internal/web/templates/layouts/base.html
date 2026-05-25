@@ -6,9 +6,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script>
 (function(){var d=document.documentElement,t=d.getAttribute('data-theme');
-if(t!=='system')return;
-d.setAttribute('data-theme',window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');})();
+if(t==='system'){t=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';d.setAttribute('data-theme',t);}
+d.classList.toggle('dark',t==='dark');})();
     </script>
+    <link rel="icon" href="/static/vendor/img/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/static/vendor/img/favicon-16.png" sizes="16x16" type="image/png" />
+    <link rel="icon" href="/static/vendor/img/favicon-32.png" sizes="32x32" type="image/png" />
+    <link rel="apple-touch-icon" href="/static/vendor/img/apple-touch-icon.png" />
+    <link rel="manifest" href="/static/site.webmanifest" />
+    <meta name="theme-color" content="#fafafa" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)" />
+    <meta name="description" content="FieldMark · Go/Fiber + HTMX inspection management reference" />
+    <meta property="og:title" content="FieldMark" />
+    <meta property="og:description" content="Server-authoritative HTMX architecture — three stacks, one domain." />
+    <meta property="og:image" content="/static/vendor/img/fieldmark-og.png" />
+    <meta name="twitter:card" content="summary_large_image" />
     <title>{{.Title}} — FieldMark</title>
     <link rel="stylesheet" href="/static/vendor/fieldmark.css">
 </head>
@@ -28,6 +40,7 @@ d.setAttribute('data-theme',window.matchMedia&&window.matchMedia('(prefers-color
      fragments can reference the agGrid global immediately. */}}
 <script src="/static/vendor/ag-grid/35.2.1/ag-grid-community.min.js"></script>
 <script src="/static/vendor/htmx/htmx.min.js"></script>
+<script>htmx.config.implicitInheritance = true;</script>
 <script src="/static/vendor/theme-toggle/theme-toggle.js"></script>
 
 </body>

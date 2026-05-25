@@ -6,7 +6,7 @@ Shared browser tests for **.NET**, **Django**, and **Fiber** stacks. Same specs 
 
 - Node.js and **pnpm** (or npm) in `e2e/`
 - At least one FieldMark backend running locally:
-  - **dotnet** — default `http://localhost:5000`
+  - **dotnet** — default `http://localhost:4000`
   - **django** — default `http://localhost:8000`
   - **fiber** — default `http://localhost:3000`
 - **PostgreSQL** when the stack under test requires it (see root `CLAUDE.md`)

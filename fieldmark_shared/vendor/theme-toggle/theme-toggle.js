@@ -12,18 +12,16 @@
     return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   }
 
-  // Loaded at bottom of <body>; document.body is available when this executes.
+  function apply(pref) {
+    var resolved = resolve(pref);
+    document.documentElement.setAttribute('data-theme', pref);
+    document.documentElement.classList.toggle('dark', resolved === 'dark');
+    document.querySelectorAll('[data-theme-choice]').forEach(function (btn) {
+      btn.setAttribute('aria-pressed', btn.dataset.themeChoice === pref ? 'true' : 'false');
+    });
+  }
+
   document.body.addEventListener('theme-changed', function () {
-    try {
-      var pref = readCookie();
-      var resolved = resolve(pref);
-      var next = ORDER[(ORDER.indexOf(pref) + 1) % ORDER.length];
-      document.documentElement.setAttribute('data-theme', pref);
-      var btn = document.querySelector('[data-theme-toggle]');
-      if (!btn) return;
-      btn.setAttribute('aria-label', 'Theme: ' + pref + '; activate to cycle (next: ' + next + ')');
-      btn.dataset.themeResolved = resolved;
-      btn.setAttribute('hx-vals', JSON.stringify({ value: next }));
-    } catch (e) {}
+    try { apply(readCookie()); } catch (e) {}
   });
 })();

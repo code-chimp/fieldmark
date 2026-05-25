@@ -162,7 +162,7 @@ func TestHomeAuthenticatedPassesAxeCore(t *testing.T) {
 }
 
 // TestHomeTabOrderMatchesContract verifies that the focusable elements required by AC #7
-// appear in the correct DOM order: skip-link → wordmark → theme-toggle → avatar button → sign-out.
+// appear in the correct DOM order: skip-link → brand lockup → theme-toggle pill → avatar button → sign-out.
 // DOM order is the primary determinant of tab order when no tabindex attributes override it.
 // Full runtime tab-order (CSS display, tabindex) still requires chromedp/Playwright (Epic 7 Story 7.1).
 // Manual recipe: open http://localhost:3000/, Tab 5 times, verify sequence above.
@@ -184,8 +184,8 @@ func TestHomeTabOrderMatchesContract(t *testing.T) {
 		text string
 	}{
 		{"skip-link", `class="skip-link"`},
-		{"fm-wordmark", `class="fm-wordmark"`},
-		{"theme-toggle", `class="theme-toggle"`},
+		{"fm-brand-lockup", `class="fm-brand-lockup"`},
+		{"theme-toggle-pill", `class="theme-toggle-pill"`},
 		{"avatar-menu button", `class="avatar-menu"`},
 		{"sign-out anchor", `href="/logout"`},
 	}
@@ -207,7 +207,7 @@ func TestHomeTabOrderMatchesContract(t *testing.T) {
 	}
 }
 
-func TestHomeAuthenticatedRendersWordmark(t *testing.T) {
+func TestHomeAuthenticatedRendersBrandLockup(t *testing.T) {
 	actor := &app.Actor{ID: uuid.New(), Username: "aisha", DisplayName: "Aisha Patel", Role: string(domain.RoleAdmin)}
 	a := buildHomeApp(actor)
 
@@ -221,11 +221,11 @@ func TestHomeAuthenticatedRendersWordmark(t *testing.T) {
 	body, _ := io.ReadAll(resp.Body)
 	html := string(body)
 
-	if !strings.Contains(html, `class="fm-wordmark"`) {
-		t.Error("expected fm-wordmark class")
+	if !strings.Contains(html, `class="fm-brand-lockup"`) {
+		t.Error("expected fm-brand-lockup class")
 	}
 	if !strings.Contains(html, `aria-label="FieldMark home"`) {
-		t.Error("expected aria-label on wordmark")
+		t.Error("expected aria-label on brand lockup")
 	}
 }
 

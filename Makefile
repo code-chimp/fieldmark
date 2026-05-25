@@ -12,7 +12,7 @@ down: ## Stop PostgreSQL and remove containers
 reset: ## Destroy the DB volume and restart — re-runs all init scripts
 	docker compose down -v && docker compose up -d
 
-run-net: ## Run the .NET stack on :5000
+run-net: ## Run the .NET stack on :4000
 	cd FieldMark && dotnet run --project FieldMark.Web
 
 run-django: ## Run the Django stack on :8000

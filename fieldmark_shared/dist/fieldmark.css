@@ -4219,6 +4219,58 @@
   }
 }
 
+header {
+  background: var(--color-background);
+  border-bottom: 1px solid var(--color-border);
+}
+
+header nav {
+  align-items: center;
+  width: 100%;
+  max-width: 1536px;
+  height: 3.5rem;
+  margin-inline: auto;
+  padding-inline: 1.5rem;
+  display: flex;
+}
+
+@media (width <= 640px) {
+  header nav {
+    padding-inline: 1rem;
+  }
+}
+
+main {
+  width: 100%;
+  max-width: 1536px;
+  margin-inline: auto;
+  padding-block: 1.5rem;
+  padding-inline: 1.5rem;
+}
+
+@media (width <= 640px) {
+  main {
+    padding-inline: 1rem;
+  }
+}
+
+footer {
+  border-top: 1px solid var(--color-border);
+  width: 100%;
+  max-width: 1536px;
+  font-size: var(--text-xs);
+  color: var(--color-muted-foreground);
+  margin-inline: auto;
+  padding-block: 1rem;
+  padding-inline: 1.5rem;
+}
+
+@media (width <= 640px) {
+  footer {
+    padding-inline: 1rem;
+  }
+}
+
 body {
   font-size: .875rem;
   line-height: 1.375;
@@ -4270,23 +4322,37 @@ body {
   }
 }
 
-.theme-toggle {
-  justify-content: center;
-  align-items: center;
-  width: 36px;
-  height: 36px;
-  display: inline-flex;
-  position: relative;
+.theme-toggle-pill {
+  border: 1px solid var(--color-border);
+  background: var(--color-card);
+  border-radius: 9999px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px;
+  padding: 2px;
+  display: inline-grid;
 }
 
-.theme-toggle__icon {
-  width: 20px;
-  height: 20px;
-  display: none;
+.theme-toggle-pill button {
+  color: var(--color-muted-foreground);
+  cursor: pointer;
+  background: none;
+  border: 0;
+  border-radius: 9999px;
+  place-items: center;
+  min-width: 32px;
+  min-height: 28px;
+  transition: background .15s, color .15s;
+  display: grid;
 }
 
-.theme-toggle[data-theme-resolved="system"] .theme-toggle__icon--system, .theme-toggle[data-theme-resolved="light"] .theme-toggle__icon--light, .theme-toggle[data-theme-resolved="dark"] .theme-toggle__icon--dark {
-  display: block;
+.theme-toggle-pill button[aria-pressed="true"] {
+  color: var(--color-background);
+  background: var(--color-foreground);
+}
+
+.theme-toggle-pill button svg {
+  width: 16px;
+  height: 16px;
 }
 
 .form-field {
@@ -4505,6 +4571,33 @@ body {
   color: inherit;
   font-weight: 700;
   text-decoration: none;
+}
+
+.fm-brand-lockup {
+  letter-spacing: -.01em;
+  color: inherit;
+  align-items: center;
+  gap: .5rem;
+  font-weight: 700;
+  text-decoration: none;
+  display: inline-flex;
+}
+
+.fm-brand-mark {
+  border: 1px solid var(--color-border);
+  background: var(--color-card);
+  width: 32px;
+  height: 32px;
+  color: var(--color-foreground);
+  border-radius: 8px;
+  flex-shrink: 0;
+  place-items: center;
+  display: grid;
+}
+
+.fm-brand-mark svg {
+  width: 20px;
+  height: 20px;
 }
 
 .text-muted {

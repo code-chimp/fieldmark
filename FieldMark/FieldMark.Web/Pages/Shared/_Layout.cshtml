@@ -9,9 +9,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <script>
 (function(){var d=document.documentElement,t=d.getAttribute('data-theme');
-if(t!=='system')return;
-d.setAttribute('data-theme',window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');})();
+if(t==='system'){t=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';d.setAttribute('data-theme',t);}
+d.classList.toggle('dark',t==='dark');})();
     </script>
+    <link rel="icon" href="~/vendor/img/favicon.svg" type="image/svg+xml" asp-append-version="true"/>
+    <link rel="alternate icon" href="~/favicon.ico" sizes="16x16 32x32"/>
+    <link rel="icon" href="~/vendor/img/favicon-16.png" sizes="16x16" type="image/png" asp-append-version="true"/>
+    <link rel="icon" href="~/vendor/img/favicon-32.png" sizes="32x32" type="image/png" asp-append-version="true"/>
+    <link rel="apple-touch-icon" href="~/vendor/img/apple-touch-icon.png" asp-append-version="true"/>
+    <link rel="manifest" href="~/site.webmanifest"/>
+    <meta name="theme-color" content="#fafafa" media="(prefers-color-scheme: light)"/>
+    <meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)"/>
+    <meta name="description" content="FieldMark · ASP.NET Core + HTMX inspection management reference"/>
+    <meta property="og:title" content="FieldMark"/>
+    <meta property="og:description" content="Server-authoritative HTMX architecture — three stacks, one domain."/>
+    <meta property="og:image" content="~/vendor/img/fieldmark-og.png"/>
+    <meta name="twitter:card" content="summary_large_image"/>
     <title>@ViewData["Title"] - FieldMark</title>
     <link rel="stylesheet" href="~/vendor/fieldmark.css" asp-append-version="true"/>
     <script src="~/vendor/ag-grid/35.2.1/ag-grid-community.min.js"></script>
@@ -21,7 +34,16 @@ d.setAttribute('data-theme',window.matchMedia&&window.matchMedia('(prefers-color
 
 <header>
     <nav aria-label="Main">
-        <a href="/" class="fm-wordmark" aria-label="FieldMark home">FieldMark</a>
+        <a href="/" class="fm-brand-lockup" aria-label="FieldMark home">
+            <span class="fm-brand-mark" aria-hidden="true">
+                <svg viewBox="0 0 32 32" fill="none">
+                    <path d="M16 3 29 16 16 29 3 16 16 3Z" fill="currentColor" fill-opacity="0.08" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                    <path d="M16 3v26M3 16h26" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-opacity="0.28"/>
+                    <path d="m11 17.2 4 4L22.4 12" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </span>
+            <span>FieldMark</span>
+        </a>
         <div class="ml-auto flex items-center gap-3">
             <partial name="_ThemeToggle" model="@fmTheme" />
             @if (User.Identity?.IsAuthenticated == true)
@@ -30,7 +52,7 @@ d.setAttribute('data-theme',window.matchMedia&&window.matchMedia('(prefers-color
             }
             else
             {
-                <a href="/login" class="btn btn-link">Sign in</a>
+                <a href="/login" class="btn-link">Sign in</a>
             }
         </div>
     </nav>
@@ -46,6 +68,7 @@ d.setAttribute('data-theme',window.matchMedia&&window.matchMedia('(prefers-color
 </footer>
 
 <script src="~/vendor/htmx/htmx.min.js"></script>
+<script>htmx.config.implicitInheritance = true;</script>
 <script src="~/vendor/theme-toggle/theme-toggle.js"></script>
 <script src="~/js/site.js" asp-append-version="true"></script>
 

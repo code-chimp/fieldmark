@@ -59,7 +59,7 @@ def test_home_authenticated_renders_avatar_menu():
 
 
 @pytest.mark.django_db
-def test_home_authenticated_renders_wordmark_in_nav():
+def test_home_authenticated_renders_brand_lockup_in_nav():
     user = User.objects.create_user(username="test_wordmark_home", password="pass")
 
     client = Client()
@@ -68,7 +68,7 @@ def test_home_authenticated_renders_wordmark_in_nav():
 
     assert resp.status_code == 200
     content = resp.content.decode()
-    assert 'class="fm-wordmark"' in content
+    assert 'class="fm-brand-lockup"' in content
     assert 'aria-label="FieldMark home"' in content
 
 
@@ -103,7 +103,7 @@ def test_home_authenticated_passes_axe_core():
 def test_home_tab_order_matches_contract():
     """AC #7: DOM-order check for the required focus sequence.
 
-    Verifies skip-link → wordmark → theme-toggle → avatar button → sign-out appear in DOM order.
+    Verifies skip-link → brand lockup → theme-toggle pill → avatar button → sign-out appear in DOM order.
     DOM order is the primary determinant of tab order when no tabindex attributes override it.
     Full runtime focus-order verification (CSS, tabindex) still requires pytest-playwright (Epic 7).
     Manual recipe: open http://localhost:8000/, Tab 5 times, verify sequence above.
@@ -120,8 +120,8 @@ def test_home_tab_order_matches_contract():
 
     markers = [
         ("skip-link", 'class="skip-link"'),
-        ("fm-wordmark", 'class="fm-wordmark"'),
-        ("theme-toggle", 'class="theme-toggle"'),
+        ("fm-brand-lockup", 'class="fm-brand-lockup"'),
+        ("theme-toggle-pill", 'class="theme-toggle-pill"'),
         ("avatar-menu button", 'class="avatar-menu"'),
         ("sign-out anchor", 'href="/logout"'),
     ]

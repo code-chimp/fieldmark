@@ -1,26 +1,37 @@
-/* ─── ThemeToggle component (UX-DR15) ────────────────────────────────────── */
-/* 36×36 icon button; displayed in the header strip beside the avatar slot.   */
+/* ─── ThemeToggle pill — 3-button explicit-select (UX-DR15) ─────────────── */
+/* Pill group in the header strip; each button directly selects a preference. */
 
-.theme-toggle {
-  width: 36px;
-  height: 36px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
+.theme-toggle-pill {
+  display: inline-grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--color-border);
+  border-radius: 9999px;
+  background: var(--color-card);
 }
 
-.theme-toggle__icon {
-  width: 20px;
-  height: 20px;
-  display: none;
+.theme-toggle-pill button {
+  border: 0;
+  color: var(--color-muted-foreground);
+  background: transparent;
+  border-radius: 9999px;
+  min-width: 32px;
+  min-height: 28px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: background 150ms, color 150ms;
 }
 
-/* Show only the icon whose key matches the resolved theme on the button. */
-.theme-toggle[data-theme-resolved="system"] .theme-toggle__icon--system,
-.theme-toggle[data-theme-resolved="light"]  .theme-toggle__icon--light,
-.theme-toggle[data-theme-resolved="dark"]   .theme-toggle__icon--dark {
-  display: block;
+.theme-toggle-pill button[aria-pressed="true"] {
+  color: var(--color-background);
+  background: var(--color-foreground);
+}
+
+.theme-toggle-pill button svg {
+  width: 16px;
+  height: 16px;
 }
 
 /* ─── Login form components ──────────────────────────────────────────────── */
@@ -170,8 +181,32 @@
 .menu-item { display: block; padding: 0.5rem 0.75rem; color: inherit; text-decoration: none; }
 .menu-item:hover, .menu-item:focus-visible { background: color-mix(in srgb, currentColor 8%, transparent); }
 
-/* ─── Wordmark ────────────────────────────────────────────────────────────── */
+/* ─── Wordmark & brand lockup ────────────────────────────────────────────── */
 .fm-wordmark { font-weight: 700; letter-spacing: 0.02em; text-decoration: none; color: inherit; }
+
+.fm-brand-lockup {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  text-decoration: none;
+  color: inherit;
+}
+
+.fm-brand-mark {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-card);
+  color: var(--color-foreground);
+  flex-shrink: 0;
+}
+
+.fm-brand-mark svg { width: 20px; height: 20px; }
 
 /* ─── Placeholder paragraph ──────────────────────────────────────────────── */
 .text-muted { color: var(--color-muted-foreground, color-mix(in srgb, currentColor 60%, transparent)); }

@@ -94,7 +94,7 @@ This seeds the five conceptual roles and the six dev users (from the shared `doc
 dotnet run --project FieldMark.Web
 ```
 
-The app will be available at `http://localhost:5000`.
+The app will be available at `http://localhost:4000`.
 
 ### Creating Migrations
 

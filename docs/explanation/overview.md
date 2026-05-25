@@ -65,10 +65,10 @@ flowchart TB
 
 | Document | Purpose |
 |----------|---------|
-| [Getting Started](getting-started.md) | Run the app in 5 minutes |
+| [Getting Started](../tutorials/getting-started.md) | Run the app in 5 minutes |
 | [Architecture](architecture.md) | Deep technical details and invariants |
-| [Domain Model](domain-model.md) | Aggregates, state machines, relationships |
+| [Domain Model](../reference/domain-model.md) | Aggregates, state machines, relationships |
 | [Request Flow](request-flow.md) | Canonical mutating request lifecycle |
-| [Hard Rules](hard-rules.md) | Non-negotiable constraints |
+| [Hard Rules](../reference/hard-rules.md) | Non-negotiable constraints |
 
-Start with [Getting Started](getting-started.md) to run the system, then explore the domain and flows.
+Start with [Getting Started](../tutorials/getting-started.md) to run the system, then explore the domain and flows.

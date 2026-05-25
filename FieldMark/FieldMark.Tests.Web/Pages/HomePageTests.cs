@@ -124,7 +124,7 @@ public sealed class HomePageTests(PostgresFixture pg)
 
     /// <summary>
     /// AC #7: DOM-order check for the required focus sequence:
-    /// skip-link → wordmark → theme-toggle → avatar button → sign-out link.
+    /// skip-link → brand lockup → theme-toggle pill → avatar button → sign-out link.
     /// DOM order is the primary determinant of tab order when no tabindex attributes are present.
     /// Full runtime focus-order verification (CSS, tabindex overrides) still requires Playwright;
     /// wire it in Epic 7 (Story 7.1). Manual recipe: open app, Tab 5 times, verify sequence.
@@ -138,21 +138,21 @@ public sealed class HomePageTests(PostgresFixture pg)
         var html = await resp.Content.ReadAsStringAsync();
 
         var idxSkipLink = html.IndexOf("class=\"skip-link\"", StringComparison.Ordinal);
-        var idxWordmark = html.IndexOf("class=\"fm-wordmark\"", StringComparison.Ordinal);
-        var idxThemeToggle = html.IndexOf("class=\"theme-toggle\"", StringComparison.Ordinal);
+        var idxWordmark = html.IndexOf("class=\"fm-brand-lockup\"", StringComparison.Ordinal);
+        var idxThemeToggle = html.IndexOf("class=\"theme-toggle-pill\"", StringComparison.Ordinal);
         var idxAvatarBtn = html.IndexOf("class=\"avatar-menu\"", StringComparison.Ordinal);
         var idxSignOut = html.IndexOf("href=\"/logout\"", StringComparison.Ordinal);
 
         idxSkipLink.Should().BeGreaterThan(-1, "skip-link must be present");
-        idxWordmark.Should().BeGreaterThan(-1, "fm-wordmark must be present");
-        idxThemeToggle.Should().BeGreaterThan(-1, "theme-toggle must be present");
+        idxWordmark.Should().BeGreaterThan(-1, "fm-brand-lockup must be present");
+        idxThemeToggle.Should().BeGreaterThan(-1, "theme-toggle-pill must be present");
         idxAvatarBtn.Should().BeGreaterThan(-1, "avatar-menu button must be present");
         idxSignOut.Should().BeGreaterThan(-1, "sign-out anchor must be present");
 
-        idxSkipLink.Should().BeLessThan(idxWordmark, "skip-link must precede wordmark in DOM");
+        idxSkipLink.Should().BeLessThan(idxWordmark, "skip-link must precede brand lockup in DOM");
         idxWordmark
             .Should()
-            .BeLessThan(idxThemeToggle, "wordmark must precede theme-toggle in DOM");
+            .BeLessThan(idxThemeToggle, "brand lockup must precede theme-toggle in DOM");
         idxThemeToggle
             .Should()
             .BeLessThan(idxAvatarBtn, "theme-toggle must precede avatar button in DOM");
@@ -249,7 +249,7 @@ public sealed class HomePageTests(PostgresFixture pg)
     }
 
     [Fact]
-    public async Task Home_AuthenticatedAdmin_RendersWordmarkInNav()
+    public async Task Home_AuthenticatedAdmin_RendersBrandLockupInNav()
     {
         var client = await CreateAuthenticatedClientAsync("aisha");
         var resp = await client.GetAsync("/");
@@ -257,7 +257,7 @@ public sealed class HomePageTests(PostgresFixture pg)
         resp.StatusCode.Should().Be(HttpStatusCode.OK);
         var html = await resp.Content.ReadAsStringAsync();
 
-        html.Should().Contain("class=\"fm-wordmark\"");
+        html.Should().Contain("class=\"fm-brand-lockup\"");
         html.Should().Contain("aria-label=\"FieldMark home\"");
     }
 }
