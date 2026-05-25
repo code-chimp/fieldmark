@@ -150,4 +150,26 @@ public sealed class ActionButtonRenderingTests(PostgresFixture pg)
         srSpan!.GetAttributeValue("class", "").Should().Contain("sr-only");
         srSpan.InnerText.Trim().Should().Be("Awaiting review");
     }
+
+    /// <summary>
+    /// AC2.8: data-tooltip with HTML entities must be rendered entity-encoded in the HTML
+    /// attribute — Razor's @Model binding HTML-escapes by default (AC2.8 / Story 1.14).
+    /// </summary>
+    [Fact]
+    public async Task ActionButton_Disabled_TooltipWithHtmlEntities_IsEscapedInAttribute()
+    {
+        var vm = FixtureDisabled with { DisabledReason = "foo & bar <baz>" };
+        var html = await RenderPartial(vm);
+
+        html.Should()
+            .Contain(
+                "foo &amp; bar &lt;baz&gt;",
+                because: "Razor must HTML-escape the data-tooltip attribute value"
+            );
+        html.Should()
+            .NotContain(
+                "foo & bar <baz>",
+                because: "raw unescaped characters in HTML attributes are a security defect"
+            );
+    }
 }

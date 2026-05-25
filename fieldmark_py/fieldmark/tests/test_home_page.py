@@ -179,7 +179,32 @@ def test_home_chrome_matches_parity_snapshot():
 
 
 @pytest.mark.django_db
-def test_home_authenticated_no_role_renders_neutral_badge():
+def test_home_mixed_canonical_and_unknown_role_prefers_canonical():
+    """AC2.4 / Story 1.14 regression guard: when a user belongs to a canonical group
+    (COMPLIANCE_OFFICER) and an unknown group (ANALYST), the canonical badge token must
+    win even though 'ANALYST' sorts before 'COMPLIANCE_OFFICER' lexically. A pure sort
+    would pick ANALYST → badge-unknown (the regression)."""
+    canonical_group, _ = Group.objects.get_or_create(name="COMPLIANCE_OFFICER")
+    # "ANALYST" sorts before "COMPLIANCE_OFFICER" in alphabetical order.
+    unknown_group, _ = Group.objects.get_or_create(name="ANALYST")
+    user = User.objects.create_user(username="test_mixed_role_home", password="pass")
+    user.groups.set([unknown_group, canonical_group])
+
+    client = Client()
+    client.force_login(user)
+    resp = client.get("/")
+
+    assert resp.status_code == 200
+    content = resp.content.decode()
+    assert "badge-info" in content, (
+        "COMPLIANCE_OFFICER (canonical) badge must be selected over unknown ANALYST"
+    )
+    assert "badge-unknown" not in content
+
+
+@pytest.mark.django_db
+def test_home_authenticated_no_role_renders_unknown_badge():
+    """No role → badge-unknown fallback (AC2.4 / Story 1.14); no longer silently neutral."""
     user = User.objects.create_user(username="test_norole_home", password="pass")
 
     client = Client()
@@ -188,5 +213,5 @@ def test_home_authenticated_no_role_renders_neutral_badge():
 
     assert resp.status_code == 200
     content = resp.content.decode()
-    # No role → badge token defaults to neutral; badge span present but empty label
-    assert "badge-neutral" in content
+    assert "badge-unknown" in content
+    assert "badge-neutral" not in content

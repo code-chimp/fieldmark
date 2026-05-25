@@ -28,9 +28,10 @@ def current_actor(request: HttpRequest) -> CurrentActor:
     user = request.user
     if not user.is_authenticated:
         return ANONYMOUS
-    # dev_uuid is the related_name on DevUserUuid (Story 1.10, tools app).
+    # dev_uuid is the related_name on DevUserUuid (tools.models). django-stubs
+    # cannot resolve OneToOneField reverse accessors on get_user_model() targets.
     try:
-        uuid_value = user.dev_uuid.uuid
+        uuid_value = user.dev_uuid.uuid  # type: ignore[attr-defined]
     except AttributeError as exc:
         raise RuntimeError(
             f"Authenticated user {user.username!r} has no DevUserUuid row. "

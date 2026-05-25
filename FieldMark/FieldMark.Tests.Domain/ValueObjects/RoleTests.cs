@@ -34,4 +34,12 @@ public class RoleTests
         var act = () => Role.Parse("UNKNOWN_ROLE");
         act.Should().Throw<ArgumentException>();
     }
+
+    [Fact]
+    public void Role_All_FirstOrDefault_UnknownName_ReturnsNull()
+    {
+        // IndexModel uses FirstOrDefault (not Parse) so unknown roles return null rather than throwing.
+        var role = Role.All.FirstOrDefault(r => r.Name == "UNKNOWN_ROLE");
+        role.Should().BeNull();
+    }
 }

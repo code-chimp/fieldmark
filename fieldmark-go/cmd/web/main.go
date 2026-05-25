@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"log/slog"
 	"os"
 	"sort"
 	"strings"
@@ -62,7 +63,13 @@ func renderHomeContext(c fiber.Ctx) fiber.Map {
 
 	role := domain.Role(actor.Role)
 	m["RoleLabel"] = role.Label()
-	m["RoleBadgeToken"] = role.BadgeToken()
+	badgeToken := role.BadgeToken()
+	// Only warn when a non-empty role string is unrecognised. An empty actor.Role
+	// (anonymous user or user with no role assigned) is expected and must not log.
+	if badgeToken == "unknown" && actor.Role != "" {
+		slog.Warn("unknown role badge token", "role", actor.Role)
+	}
+	m["RoleBadgeToken"] = badgeToken
 	m["FullName"] = actor.DisplayName
 	m["Initials"] = viewmodels.Initials(actor.DisplayName, actor.Username)
 

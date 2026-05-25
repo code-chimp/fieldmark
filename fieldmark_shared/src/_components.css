@@ -90,6 +90,69 @@
 .badge-neutral  { background: color-mix(in srgb, var(--color-neutral)  15%, transparent); color: var(--color-neutral); }
 .badge-success  { background: color-mix(in srgb, var(--color-success)  15%, transparent); color: var(--color-success); }
 
+/* Unknown-token fallback: render neutral surface so text remains legible (AC2.4 / Story 1.14). */
+/* Server emits badge-unknown when role is unrecognised; per-stack log warns at that point.     */
+.badge:not([class*="badge-"]),
+.badge-unknown {
+  background: color-mix(in srgb, currentColor 10%, transparent);
+  color: inherit;
+}
+
+/* Unknown data-score-band fallback: neutral surface + visible text (AC2.4 / Story 1.14). */
+[data-score-band]:not([data-score-band="healthy"]):not([data-score-band="watch"]):not([data-score-band="concern"]):not([data-score-band="critical"]) {
+  background: color-mix(in srgb, currentColor 10%, transparent);
+  color: inherit;
+}
+
+/* ─── Forced-colors mode (Windows High Contrast) ─────────────────────────── */
+/* Ensure badge and score-band meaning is conveyed by text, not color alone.  */
+/* Text content is already the legibility surface — no aria-hidden on labels. */
+@media (forced-colors: active) {
+  .badge-danger, .badge-info, .badge-warning, .badge-neutral, .badge-success,
+  .badge-unknown, .badge:not([class*="badge-"]) {
+    forced-color-adjust: auto;
+    border: 1px solid ButtonText;
+  }
+  [data-score-band] {
+    forced-color-adjust: auto;
+    border: 1px solid ButtonText;
+  }
+}
+
+/* ─── Sidebar progressive-enhancement default (AC2.5 / Story 1.14) ─────────── */
+/* Without JS (data-sidebar-initialized absent), render sidebar visible and     */
+/* non-collapsible. Basecoat's compiled rule hides .sidebar at mobile widths    */
+/* when the attribute is absent — we override to always show the degraded state. */
+.sidebar:not([data-sidebar-initialized]) {
+  display: block !important;
+  position: static !important;
+  transform: none !important;
+}
+.sidebar:not([data-sidebar-initialized]) nav {
+  position: static !important;
+  transform: none !important;
+  width: auto !important;
+}
+
+/* ─── Toaster overflow cap (AC2.7 / Story 1.14) ─────────────────────────── */
+/* Caps visible toasts at ~5; region scrolls rather than growing unbounded.   */
+/* --toast-height and spacing vars documented here; tune in Epic 2 if needed. */
+.toaster {
+  max-height: calc(5 * (var(--toast-height, 4rem) + var(--spacing, 0.25rem) * 2));
+  overflow-y: auto;
+}
+
+/* ─── Tooltip safety (AC2.8 / Story 1.14) ──────────────────────────────── */
+/* Basecoat emits white-space:nowrap which clips long text silently.          */
+/* Override: wrap text and constrain width so overflow is visible, not clipped.*/
+[data-tooltip]::before {
+  max-width: var(--container-xs, 20rem);
+  white-space: normal;
+  word-break: break-word;
+  text-overflow: ellipsis;
+  overflow: visible;
+}
+
 /* ─── Avatar (header chrome) ─────────────────────────────────────────────── */
 .avatar-menu-wrapper { position: relative; display: inline-flex; align-items: center; gap: 0.5rem; }
 .avatar-menu { width: 36px; height: 36px; padding: 0; border: 0; background: transparent; cursor: pointer; }

@@ -111,7 +111,8 @@ public sealed class HomePageTests(PostgresFixture pg)
                 }
             )!;
             await proc.WaitForExitAsync();
-            var output = await proc.StandardOutput.ReadToEndAsync()
+            var output =
+                await proc.StandardOutput.ReadToEndAsync()
                 + await proc.StandardError.ReadToEndAsync();
             proc.ExitCode.Should().Be(0, $"axe-core found WCAG 2.1 AA violations:\n{output}");
         }
@@ -149,9 +150,86 @@ public sealed class HomePageTests(PostgresFixture pg)
         idxSignOut.Should().BeGreaterThan(-1, "sign-out anchor must be present");
 
         idxSkipLink.Should().BeLessThan(idxWordmark, "skip-link must precede wordmark in DOM");
-        idxWordmark.Should().BeLessThan(idxThemeToggle, "wordmark must precede theme-toggle in DOM");
-        idxThemeToggle.Should().BeLessThan(idxAvatarBtn, "theme-toggle must precede avatar button in DOM");
-        idxAvatarBtn.Should().BeLessThan(idxSignOut, "avatar button must precede sign-out link in DOM");
+        idxWordmark
+            .Should()
+            .BeLessThan(idxThemeToggle, "wordmark must precede theme-toggle in DOM");
+        idxThemeToggle
+            .Should()
+            .BeLessThan(idxAvatarBtn, "theme-toggle must precede avatar button in DOM");
+        idxAvatarBtn
+            .Should()
+            .BeLessThan(idxSignOut, "avatar button must precede sign-out link in DOM");
+    }
+
+    /// <summary>
+    /// AC2.4: IndexModel defaults RoleBadgeToken to "unknown" when the user has no canonical role.
+    /// Uses Microsoft.Extensions.Logging.Abstractions so no real DI infrastructure is needed.
+    /// </summary>
+    [Fact]
+    public void IndexModel_NoRole_DefaultBadgeTokenIsUnknown()
+    {
+        var logger = Microsoft
+            .Extensions
+            .Logging
+            .Abstractions
+            .NullLogger<FieldMark.Web.Pages.IndexModel>
+            .Instance;
+        var model = new FieldMark.Web.Pages.IndexModel(logger);
+
+        model
+            .RoleBadgeToken.Should()
+            .Be(
+                "unknown",
+                "IndexModel must default to 'unknown' so the CSS fallback renders for users with no role"
+            );
+    }
+
+    /// <summary>
+    /// AC2.4 / Story 1.14 regression guard: when a ClaimsPrincipal carries both a
+    /// canonical role (COMPLIANCE_OFFICER) and an unknown role (ANALYST), the
+    /// canonical badge token must be selected even though "ANALYST" sorts before
+    /// "COMPLIANCE_OFFICER" in ordinal order. A pure lexical sort would pick ANALYST
+    /// and render badge-unknown incorrectly.
+    /// </summary>
+    [Fact]
+    public void IndexModel_MixedCanonicalAndUnknownRole_PrefersCanonicalBadgeToken()
+    {
+        var logger = Microsoft
+            .Extensions
+            .Logging
+            .Abstractions
+            .NullLogger<FieldMark.Web.Pages.IndexModel>
+            .Instance;
+        var model = new FieldMark.Web.Pages.IndexModel(logger);
+
+        // "ANALYST" (unknown) sorts before "COMPLIANCE_OFFICER" (canonical) in ordinal
+        // order — a pure lexical sort would pick ANALYST → badge-unknown (the regression).
+        var claims = new[]
+        {
+            new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Role, "ANALYST"),
+            new System.Security.Claims.Claim(
+                System.Security.Claims.ClaimTypes.Role,
+                "COMPLIANCE_OFFICER"
+            ),
+        };
+        var identity = new System.Security.Claims.ClaimsIdentity(claims, "Test");
+        var principal = new System.Security.Claims.ClaimsPrincipal(identity);
+
+        var httpContext = new Microsoft.AspNetCore.Http.DefaultHttpContext { User = principal };
+        model.PageContext = new Microsoft.AspNetCore.Mvc.RazorPages.PageContext
+        {
+            HttpContext = httpContext,
+        };
+
+        model.OnGet();
+
+        model
+            .RoleBadgeToken.Should()
+            .Be(
+                "info",
+                "COMPLIANCE_OFFICER is canonical and must be preferred over the lexically-earlier unknown role ANALYST"
+            );
+        model.RoleLabel.Should().Be("Compliance Officer");
     }
 
     private static string? FindOnPath(string executable)

@@ -36,7 +36,11 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-05-11
-last_updated: 2026-05-21
+last_updated: 2026-05-24
+#   (1-14 fifth review round complete; 1 patch item resolved; status set to review)
+#   (1-14 fourth review round complete; 6 patch items resolved; status set to review)
+#   (1-14 story created by create-story workflow; status set to ready-for-dev)
+#   (1-14 added to Epic 1 as hardening story for deferred-work items; status: backlog)
 #   (1-13 third review round complete; 2 patch items resolved; status set to review)
 #   (1-13 second review round complete; all 7 patch items resolved; status set to review)
 #   (1-13 implementation complete; all gates green; status set to review)
@@ -107,6 +111,7 @@ development_status:
   1-11-login-logout-and-unauthenticated-redirect-across-all-three-stacks: done
   1-12-implement-authz-can-primitive-and-actionbutton-trichotomy-helper-per-stack: done
   1-13-render-empty-role-aware-home-page-identically-across-all-three-stacks: done
+  1-14-harden-design-system-foundation-and-build-tooling-against-known-edge-cases: done
   epic-1-retrospective: optional
 
   # ===== Epic 2: Project Lifecycle & Compliance Dashboard =====

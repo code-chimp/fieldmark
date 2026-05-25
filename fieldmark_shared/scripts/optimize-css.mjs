@@ -134,10 +134,23 @@ try {
     errorRecovery: true,
   });
 
+  let hasFatalWarning = false;
   if (result.warnings?.length) {
     for (const w of result.warnings) {
       process.stderr.write(`optimize-css warning [${w.type}]: ${w.message}\n`);
+      // Treat error-class and unsupported warnings as build failures so CI is not
+      // silently green while the output CSS is semantically wrong.
+      if (w.type === 'error' || w.type === 'unsupported') {
+        hasFatalWarning = true;
+      }
     }
+  }
+  if (hasFatalWarning) {
+    process.stderr.write(
+      'optimize-css: one or more LightningCSS warnings of type "error" or "unsupported" were emitted.\n' +
+      '  The CSS output may be incorrect. Fix the issues above before committing.\n'
+    );
+    process.exit(1);
   }
 
   // Normalize to LF before string operations to handle mixed or CRLF line endings.

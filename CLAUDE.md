@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 FieldMark is a construction compliance and inspection management system implemented **across three parallel stacks** — .NET (Razor Pages + HTMX), Django (Templates + HTMX), and Go (Fiber + HTMX) — against a shared PostgreSQL 17 database. It is a teaching artifact demonstrating server-authoritative architecture as an alternative to SPAs. A story is never done until all three stacks pass it.
 
-See [docs/getting-started.md](docs/getting-started.md) for infrastructure, quick start, and setup. See [docs/architecture.md](docs/architecture.md) for full architecture, patterns, and domain details.
+See [docs/getting-started.md](docs/getting-started.md) for infrastructure, quick start, and setup. See [docs/architecture.md](docs/architecture.md) for full architecture, patterns, and domain details. CSS pipeline (two-step build, pre-build checks, pnpm guard, Basecoat upgrade procedure): [fieldmark_shared/CLAUDE.md](fieldmark_shared/CLAUDE.md) and [docs/getting-started.md#css-pipeline](docs/getting-started.md).
 
 ## Hard Rules (all stacks)
 

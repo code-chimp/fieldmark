@@ -72,3 +72,13 @@ def test_action_button_disabled_variant_has_screen_reader_reason():
     assert sr_span is not None, "sr-only reason span must exist in the DOM"
     assert "sr-only" in sr_span.get("class", [])
     assert sr_span.get_text(strip=True) == "Awaiting review"
+
+
+def test_action_button_disabled_tooltip_html_entities_are_escaped():
+    """AC2.8: Django auto-escaping must entity-encode HTML in data-tooltip (Story 1.14)."""
+    html = render_to_string(
+        "components/_action_button.html",
+        {**_FIXTURE, "disabled_reason": "foo & bar <baz>", "permission": True, "state_allows": False},
+    )
+    assert "foo &amp; bar &lt;baz&gt;" in html, "HTML entities must be encoded in the attribute"
+    assert "foo & bar <baz>" not in html, "raw unescaped characters must not appear in attribute"

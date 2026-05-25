@@ -47,3 +47,11 @@ func TestRoleBadgeToken(t *testing.T) {
 		}
 	}
 }
+
+// TestRoleBadgeTokenUnknown verifies the unknown-token fallback (AC2.4 / Story 1.14).
+// The caller (renderHomeContext in cmd/web/main.go) emits slog.Warn when this returns "unknown".
+func TestRoleBadgeTokenUnknown(t *testing.T) {
+	if got := domain.Role("NOT_A_REAL_ROLE").BadgeToken(); got != "unknown" {
+		t.Errorf("Role(NOT_A_REAL_ROLE).BadgeToken() = %q, want %q", got, "unknown")
+	}
+}
