@@ -6,12 +6,12 @@ FieldMark is a construction compliance and inspection management system implemen
 
 | Tool | Version | Required for | Notes |
 |------|---------|-------------|-------|
-| [Docker Desktop](https://www.docker.com/products/docker-desktop/) | — | All stacks | Runs PostgreSQL 17 locally |
-| [GNU Make](https://www.gnu.org/software/make/) | — | All stacks | Orchestrates dev commands (`make up`, `make seed`, etc.) |
-| [.NET SDK](https://dotnet.microsoft.com/en-us/download) | 8.0+ | .NET stack | `dotnet --version` to check |
-| [Python 3.12+](https://www.python.org/downloads/) | 3.12+ | Django stack | |
+| [Docker Desktop](https://www.docker.com/products/docker-desktop/) | — | All stacks | Runs PostgreSQL 17 locally. Commercial use may require a paid license; [Docker Engine](https://docs.docker.com/engine/install/) on WSL2/Ubuntu or [Rancher Desktop](https://rancherdesktop.io/) are free alternatives. |
+| [GNU Make](https://www.gnu.org/software/make/) | — | All stacks | Orchestrates dev commands (`make up`, `make seed`, etc.). **Optional** — every `make` command below has its raw equivalent listed alongside. |
+| [.NET SDK](https://dotnet.microsoft.com/en-us/download) | 10.0+ | .NET stack | `dotnet --version` to check |
+| [Python 3.14+](https://www.python.org/downloads/) | 3.14+ | Django stack | |
 | [uv](https://docs.astral.sh/uv/) | — | Django stack | Python package manager (`pip install uv` or standalone) |
-| [Go](https://go.dev/dl/) | 1.22+ | Go stack | `go version` to check |
+| [Go](https://go.dev/dl/) | 1.26+ | Go stack | `go version` to check |
 | [Node.js 20+](https://nodejs.org/) | 20+ | CSS builds only | Tailwind's Oxide engine requires Node ≥ 20 |
 | [pnpm](https://pnpm.io/) | 11.x | CSS builds only | `npm install -g pnpm` |
 
@@ -44,6 +44,12 @@ After fixing symlinks, verify with `ls -la` — the vendor entries should show a
 make up
 ```
 
+Or without Make:
+
+```bash
+docker compose up -d
+```
+
 This starts PostgreSQL 17 inside Docker on `localhost:5432` (user: `fieldmark`, password: `fieldmark`). The init scripts in `docker/postgres/init/` run automatically on first start, creating five schemas (`domain`, `django_auth`, `dotnet_auth`, `fiber_auth`, `infra`) and populating the domain reference data (trade types, violation categories, compliance rules).
 
 Verify everything landed correctly:
@@ -54,7 +60,7 @@ Verify everything landed correctly:
 
 You should see: `OK domain schema verified (5 schemas, 12 tables, ...)`.
 
-If you need to reset the database later (e.g. after changing init scripts), run `make reset` — this destroys the volume and re-runs init.
+If you need to reset the database later (e.g. after changing init scripts), run `make reset` — this destroys the volume and re-runs init. Without Make: `docker compose down -v && docker compose up -d`.
 
 ---
 
@@ -93,6 +99,12 @@ To seed without starting the full web server:
 make seed-net
 ```
 
+Or without Make:
+
+```bash
+cd FieldMark && dotnet run --project FieldMark.Web -- --seed-dev-users
+```
+
 ### Django (Templates + HTMX) — port :8000
 
 ```bash
@@ -114,7 +126,7 @@ Then visit `http://localhost:8000/login`.
 Shortcut from the repo root:
 
 ```bash
-make seed-django   # runs seed_dev_users (requires migrate + seed_groups first)
+make seed-django   # runs migrate, seed_groups, then seed_dev_users (idempotent)
 make run-django    # starts the dev server
 ```
 
@@ -136,7 +148,7 @@ Then visit `http://localhost:3000/login`.
 Shortcut from the repo root:
 
 ```bash
-make seed-go       # runs go run ./cmd/seed
+make seed-go       # runs migrate-fiber-auth then seed (idempotent)
 make run-go        # starts the dev server
 ```
 
@@ -146,7 +158,20 @@ make run-go        # starts the dev server
 make seed          # seeds all three stacks
 ```
 
-This runs `seed-net && seed-django && seed-go`. You must have created auth tables for each stack first (migrations for .NET/Django, `migrate-fiber-auth` for Go).
+Without Make, run each stack's seeding commands individually:
+
+```bash
+# .NET (also runs EF migrations)
+cd FieldMark && dotnet run --project FieldMark.Web -- --seed-dev-users
+
+# Django (also runs migrate and seed_groups)
+cd fieldmark_py && uv run python manage.py migrate && uv run python manage.py seed_groups && uv run python manage.py seed_dev_users
+
+# Go (also runs migrate-fiber-auth first)
+cd fieldmark-go && go run ./cmd/migrate-fiber-auth && go run ./cmd/seed
+```
+
+All seeders are idempotent — re-running is safe.
 
 ---
 

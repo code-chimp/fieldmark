@@ -121,6 +121,7 @@ These are non-negotiable across all three stacks:
 ## Prerequisites
 
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) or [Docker Engine](https://docs.docker.com/engine/install/) — for PostgreSQL
+- [GNU Make](https://www.gnu.org/software/make/) — orchestrates dev commands; see the [getting-started guide](docs/tutorials/getting-started.md) for non-Make alternatives
 - [.NET 10 SDK](https://dotnet.microsoft.com/download) — for the .NET stack
 - [Python 3.14+](https://www.python.org/) with [uv](https://docs.astral.sh/uv/) — for the Django stack
 - [Go 1.26+](https://go.dev/dl/) — for the Go stack
@@ -130,12 +131,19 @@ These are non-negotiable across all three stacks:
 ## Quick Start
 
 ```bash
-make up            # Start PostgreSQL
-make seed          # Create auth tables + seed dev users for all stacks
-make run-net       # .NET on :4000  (or make run-django / make run-go / make run-landing)
+# 1. Start PostgreSQL (all stacks)
+make up
+
+# 2. Seed dev users (all three stacks, idempotent)
+make seed
+
+# 3. Pick ONE stack to run:
+make run-net       # .NET (Razor Pages)    → :4000
+make run-django    # Django (Templates)    → :8000
+make run-go        # Go/Fiber (Templates)  → :3000
 ```
 
-`make up` starts PostgreSQL and creates the shared `domain` schema. `make seed` handles auth table creation and dev user seeding for all three stacks. See the [full getting-started guide](docs/tutorials/getting-started.md) for prerequisites, per-stack breakdown, Windows/WSL symlink setup, dev account credentials, and troubleshooting.
+`make up` starts PostgreSQL and creates the shared `domain` schema. `make seed` seeds dev users into all three stacks (migrations run automatically for all stacks). See the [full getting-started guide](docs/tutorials/getting-started.md) for prerequisites, per-stack breakdown, Windows/WSL symlink setup, dev account credentials, and troubleshooting.
 
 Verify the database after `make up`:
 

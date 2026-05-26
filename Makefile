@@ -76,7 +76,7 @@ css: ## Build shared Tailwind CSS (skips if fieldmark_shared/ deps not installed
 		echo "(skip) fieldmark_shared deps not installed — run: cd fieldmark_shared && pnpm install"; \
 	fi
 
-.PHONY: seed seed-net seed-django seed-go
+.PHONY: seed seed-net seed-django seed-django-groups seed-go migrate-go migrate-django
 
 seed: seed-net seed-django seed-go ## Seed dev users into all three stacks' auth schemas
 	@echo "✓ All three stacks seeded from docker/postgres/init/seed-uuids/dev-users.json"
@@ -84,8 +84,17 @@ seed: seed-net seed-django seed-go ## Seed dev users into all three stacks' auth
 seed-net: ## Seed dev users into dotnet_auth (runs roles seeder then users seeder)
 	cd FieldMark && dotnet run --project FieldMark.Web -- --seed-dev-users
 
-seed-django: ## Seed dev users into django_auth
+seed-django: seed-django-groups ## Seed dev users into django_auth
 	cd fieldmark_py && uv run python manage.py seed_dev_users
 
-seed-go: ## Seed dev users into fiber_auth
+seed-django-groups: migrate-django ## Seed Django Groups (idempotent; prerequisite for seed-django)
+	cd fieldmark_py && uv run python manage.py seed_groups
+
+migrate-django: ## Run Django migrations (idempotent; prerequisite for seed-django-groups)
+	cd fieldmark_py && uv run python manage.py migrate
+
+seed-go: migrate-go ## Seed dev users into fiber_auth
 	cd fieldmark-go && go run ./cmd/seed
+
+migrate-go: ## Create fiber_auth tables (idempotent; prerequisite for seed-go)
+	cd fieldmark-go && go run ./cmd/migrate-fiber-auth
