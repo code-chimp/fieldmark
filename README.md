@@ -76,7 +76,8 @@ Each stack and shared package has its own README with focused setup instructions
 - [**Go README**](fieldmark-go/README.md)
 - [**Shared assets README**](fieldmark_shared/README.md)
 - [**Landing page README**](fieldmark-landing/README.md)
-- [**Documentation index**](docs/README.md)
+
+**New here?** Start with the [Getting Started guide](docs/tutorials/getting-started.md) — prerequisites, step-by-step setup, dev account credentials, and troubleshooting. The [Documentation index](docs/README.md) covers all docs.
 
 ## Tech Stack
 
@@ -126,76 +127,22 @@ These are non-negotiable across all three stacks:
 - [Node.js 20+](https://nodejs.org/) with [pnpm](https://pnpm.io/installation) — for CSS builds (`fieldmark_shared`) and e2e tests (later stories); Tailwind's Oxide engine requires Node ≥ 20
 - `psql` — PostgreSQL client for the verification script. On macOS: `brew install libpq && brew link --force libpq`
 
-## Getting Started
-
-Start with the Makefile; it is the executable source of truth for local development:
+## Quick Start
 
 ```bash
-make help
+make up            # Start PostgreSQL
+make seed          # Create auth tables + seed dev users for all stacks
+make run-net       # .NET on :4000  (or make run-django / make run-go / make run-landing)
 ```
 
-**1. Start PostgreSQL:**
+`make up` starts PostgreSQL and creates the shared `domain` schema. `make seed` handles auth table creation and dev user seeding for all three stacks. See the [full getting-started guide](docs/tutorials/getting-started.md) for prerequisites, per-stack breakdown, Windows/WSL symlink setup, dev account credentials, and troubleshooting.
 
-```bash
-make up
-```
-
-This starts PostgreSQL 17 on `localhost:5432` and runs the schema init scripts on first volume creation. Credentials: `fieldmark / fieldmark / fieldmark`.
-
-**2. Apply auth migrations and seed dev users:**
-
-Each stack manages its own auth schema. After starting Postgres, apply migrations then seed:
-
-```bash
-# .NET — applies dotnet_auth migrations and seeds roles + users
-cd FieldMark && dotnet ef database update --context AuthDbContext --project FieldMark.Data --startup-project FieldMark.Web
-
-# Django — applies django_auth migrations
-cd fieldmark_py && uv run python manage.py migrate
-uv run python manage.py seed_groups
-
-# Go — applies fiber_auth DDL
-cd fieldmark-go && go run ./cmd/migrate-fiber-auth
-
-# Seed all three stacks at once (requires auth schemas to exist first)
-make seed
-```
-
-`make seed` reads `docker/postgres/init/seed-uuids/dev-users.json` and writes the six dev users into all three stacks' auth schemas with identical UUIDs. It is idempotent — re-running is safe.
-
-**3. Run the stacks** (each in its own terminal):
-
-```bash
-make run-net       # .NET Razor Pages  →  http://localhost:4000
-make run-django    # Django Templates  →  http://localhost:8000
-make run-go        # Go Fiber          →  http://localhost:3000
-```
-
-All three stacks connect to the same Postgres instance and can run simultaneously.
-
-**4. Reset the database** (destroy volume and re-run init scripts):
-
-```bash
-make reset
-```
-
-Run `make help` for the full list of available targets.
-
-### Verifying the database
-
-After `make up` or `make reset`, verify the canonical schema:
+Verify the database after `make up`:
 
 ```bash
 ./tools/verify-domain-schema.sh
+# Expected: OK domain schema verified (5 schemas, 12 tables, ...)
 ```
-
-Expected output:
-
-```
-OK domain schema verified (5 schemas, 12 tables, N trade types, N violation categories, 4 compliance rules)
-```
-
-Non-zero exit = schema drift. Investigate before running any stack.
 
 ### Per-stack setup
 

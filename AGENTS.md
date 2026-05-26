@@ -16,7 +16,7 @@ make reset         # destroy volume + re-init (after schema changes)
 Run stacks (separate terminals):
 
 ```bash
-make run-net       # :5000
+make run-net       # :4000
 make run-django    # :8000
 make run-go        # :3000
 ```

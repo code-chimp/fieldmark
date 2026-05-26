@@ -1,80 +1,190 @@
 # Getting Started with FieldMark
 
-FieldMark is a construction compliance and inspection management system with three parallel HTMX stacks against shared PostgreSQL.
+FieldMark is a construction compliance and inspection management system implemented across three parallel stacks (.NET, Django, Go) against a shared PostgreSQL database. Each stack is independent — you can work in one without touching the others.
 
 ## Prerequisites
 
-- Docker Desktop (for PostgreSQL 17)
-- .NET SDK, Python/Django, Go toolchain (for respective stacks)
-- Node.js (for shared Tailwind build if modifying CSS)
+| Tool | Version | Required for | Notes |
+|------|---------|-------------|-------|
+| [Docker Desktop](https://www.docker.com/products/docker-desktop/) | — | All stacks | Runs PostgreSQL 17 locally |
+| [GNU Make](https://www.gnu.org/software/make/) | — | All stacks | Orchestrates dev commands (`make up`, `make seed`, etc.) |
+| [.NET SDK](https://dotnet.microsoft.com/en-us/download) | 8.0+ | .NET stack | `dotnet --version` to check |
+| [Python 3.12+](https://www.python.org/downloads/) | 3.12+ | Django stack | |
+| [uv](https://docs.astral.sh/uv/) | — | Django stack | Python package manager (`pip install uv` or standalone) |
+| [Go](https://go.dev/dl/) | 1.22+ | Go stack | `go version` to check |
+| [Node.js 20+](https://nodejs.org/) | 20+ | CSS builds only | Tailwind's Oxide engine requires Node ≥ 20 |
+| [pnpm](https://pnpm.io/) | 11.x | CSS builds only | `npm install -g pnpm` |
 
-## Quick Start
+You do not need every language toolchain installed — pick the stack you want to work on.
+
+### Windows / WSL notes
+
+This project uses **symlinks** to share front-end assets across stacks. When cloning on Windows or WSL:
+
+- **WSL (recommended):** Clone into WSL's native ext4 filesystem (`~/projects/fieldmark`), not `/mnt/c/`. Symlinks work natively there. Then enable them in Git:
+
+  ```bash
+  git config core.symlinks true
+  git checkout -- FieldMark/FieldMark.Web/wwwroot/vendor/
+  git checkout -- fieldmark_py/static/vendor/
+  git checkout -- fieldmark-go/internal/web/static/vendor/
+  ```
+
+- **Native Windows:** Enable [Developer Mode](https://learn.microsoft.com/en-us/windows/apps/get-started/enable-your-device-for-development) (Settings → Privacy & Security → For Developers), then set `git config core.symlinks true` before cloning.
+
+  If Developer Mode is not available, the symlinks will materialize as broken plain-text files. In that case you will need a workaround such as a post-clone script that copies the vendor directories.
+
+After fixing symlinks, verify with `ls -la` — the vendor entries should show arrow targets like `vendor/htmx -> ../../../../fieldmark_shared/vendor/htmx`.
+
+---
+
+## 1. Start the Database
 
 ```bash
-docker compose up -d    # Starts PostgreSQL 17 on localhost:5432 (user: fieldmark)
+make up
 ```
 
-Postgres init scripts in `docker/postgres/init/` create schemas: `domain`, `django_auth`, `dotnet_auth`, `fiber_auth`, `infra`.
+This starts PostgreSQL 17 inside Docker on `localhost:5432` (user: `fieldmark`, password: `fieldmark`). The init scripts in `docker/postgres/init/` run automatically on first start, creating five schemas (`domain`, `django_auth`, `dotnet_auth`, `fiber_auth`, `infra`) and populating the domain reference data (trade types, violation categories, compliance rules).
 
-If volume issues: `docker compose down -v && docker compose up -d`.
+Verify everything landed correctly:
 
-## Stack-Specific Setup
+```bash
+./tools/verify-domain-schema.sh
+```
 
-See each stack's `CLAUDE.md` for build/run/test commands:
+You should see: `OK domain schema verified (5 schemas, 12 tables, ...)`.
 
-- [.NET / FieldMark/CLAUDE.md](../../FieldMark/CLAUDE.md)
-- [Django / fieldmark_py/CLAUDE.md](../../fieldmark_py/CLAUDE.md)
-- [Go / fieldmark-go/CLAUDE.md](../../fieldmark-go/CLAUDE.md)
+If you need to reset the database later (e.g. after changing init scripts), run `make reset` — this destroys the volume and re-runs init.
 
-## Shared Assets
+---
 
-CSS and vendor libs (AG Grid, HTMX) live in `fieldmark_shared/` and are symlinked into each stack's static/vendor.
+## 2. Build Shared CSS (optional)
 
-## CSS Pipeline
-
-Shared CSS lives in `fieldmark_shared/`. All `pnpm` commands run from that directory.
+The compiled CSS (`dist/fieldmark.css`) is committed to the repo, so you can skip this step. Build it only if you are modifying styles:
 
 ```bash
 cd fieldmark_shared
-pnpm install           # first-time setup (pnpm only — npm/yarn are blocked)
-pnpm run build         # compile + optimize (development)
-pnpm run build:prod    # compile, minify, optimize (production)
-pnpm run build:raw     # Tailwind compile only — skips optimize-css; use when debugging the pipeline itself
-pnpm run watch         # watch mode; run alongside app dev servers
+pnpm install        # first time only
+pnpm run build
 ```
 
-### Two-step build
+To watch for changes during development, run `pnpm run watch` alongside your dev server.
 
-1. **Tailwind** compiles `src/fieldmark.css` (with `@source` directives scanning all three stacks) → `dist/fieldmark.css`.
-2. **`scripts/optimize-css.mjs`** runs LightningCSS over the output to merge duplicate selectors emitted by Tailwind v4 + Basecoat, then removes consecutive `content: var(--tw-content)` duplicates. Result is lower byte count. The script writes to a `.tmp` file then atomically renames to avoid partial writes.
+---
 
-`build:raw` skips step 2 — useful when you suspect `optimize-css.mjs` is causing a problem and want the raw Tailwind output.
+## 3. Set Up Your Stack
 
-### Pre-build sanity checks (`prebuild`)
+Each stack creates its own **auth tables** (user accounts, roles) in a dedicated schema and then **seeds** six dev users with known credentials. The auth tables are *not* created by the database init scripts — each framework does it on its own.
 
-Two scripts run automatically before every `pnpm run build`:
+Pick the stack (or stacks) you want to run.
 
-- **`scripts/check-sources.mjs`** — resolves each `@source "..."` glob in `src/fieldmark.css` and exits non-zero if any glob matches zero files. This catches silent failures when a stack directory is renamed.
-- **`scripts/check-basecoat-classes.mjs`** — greps `node_modules/basecoat-css/dist/basecoat.css` for the pinned class names (`.btn`, `.badge`, `.alert`, `.field`, `.toaster`, `.toast`, `.sidebar`). Exits non-zero listing missing classes. Catches Basecoat class renames on version bumps.
+### .NET (Razor Pages + HTMX) — port :4000
 
-### pnpm-only guard
+```bash
+# Create auth tables + seed dev users (one command — runs on every startup)
+make run-net
+```
 
-`fieldmark_shared/package.json` includes `"packageManager": "pnpm@11.0.8"` and a `preinstall` script that exits non-zero with a clear message if run with npm or yarn. Running `npm install` in that directory will fail fast with `Use pnpm`.
+This runs EF Core migrations (creates `dotnet_auth.users`, `dotnet_auth.roles`, etc.), then seeds roles and dev users. Once the server starts, you can log in at `http://localhost:4000/login`.
 
-### Basecoat upgrade procedure
+To seed without starting the full web server:
 
-See [docs/how-to/basecoat-upgrade-checklist.md](../how-to/basecoat-upgrade-checklist.md) for the step-by-step procedure and the rationale for the pinned class smoke test.
+```bash
+make seed-net
+```
 
-### `optimize-css.mjs` failure modes
+### Django (Templates + HTMX) — port :8000
 
-- **Missing input** → exits 1, message to stderr: `cannot read input`
-- **Directory as input** → exits 1: `not a regular file`
-- **Empty input** → exits 1: `empty` / `0 bytes`
-- **LightningCSS warning of type `error` or `unsupported`** → prints all warnings to stderr, then exits 1
-- **Write failure** → `.tmp` file is cleaned up; original output is not overwritten
+```bash
+# Create auth tables (Django migrations)
+cd fieldmark_py && uv run python manage.py migrate
 
-## Next Steps
+# Seed groups (conceptual roles)
+uv run python manage.py seed_groups
 
-- Review [Architecture](../explanation/architecture.md)
-- Read root [CLAUDE.md](../../CLAUDE.md) for agent rules
-- Read [fieldmark_shared/CLAUDE.md](../../fieldmark_shared/CLAUDE.md) for full CSS pipeline, symlink topology, and pinned dependency table
+# Seed dev users
+uv run python manage.py seed_dev_users
+
+# Start the dev server
+uv run python manage.py runserver
+```
+
+Then visit `http://localhost:8000/login`.
+
+Shortcut from the repo root:
+
+```bash
+make seed-django   # runs seed_dev_users (requires migrate + seed_groups first)
+make run-django    # starts the dev server
+```
+
+### Go / Fiber (Templates + HTMX) — port :3000
+
+```bash
+# Create auth tables (fiber_auth.users, fiber_auth.user_roles)
+cd fieldmark-go && go run ./cmd/migrate-fiber-auth
+
+# Seed dev users
+go run ./cmd/seed
+
+# Start the dev server
+go run ./cmd/web
+```
+
+Then visit `http://localhost:3000/login`.
+
+Shortcut from the repo root:
+
+```bash
+make seed-go       # runs go run ./cmd/seed
+make run-go        # starts the dev server
+```
+
+### All at once
+
+```bash
+make seed          # seeds all three stacks
+```
+
+This runs `seed-net && seed-django && seed-go`. You must have created auth tables for each stack first (migrations for .NET/Django, `migrate-fiber-auth` for Go).
+
+---
+
+## 4. Dev Accounts
+
+All stacks use the same shared manifest (`docker/postgres/init/seed-uuids/dev-users.json`). Every account uses password `FieldMark!2026`.
+
+| Username | Display Name | Role | Notes |
+|----------|-------------|------|-------|
+| `aisha` | Aisha Patel | **Admin** | Full system access |
+| `marisol` | Marisol Vega | Compliance Officer | Manage compliance rules and scoring |
+| `ravi` | Ravi Kumar | Inspector | Perform inspections and file violations |
+| `pat` | Pat Smith | Site Supervisor | Oversee site work and resolve violations |
+| `kenji` | Kenji Tanaka | Executive | Read-only dashboard and reporting |
+| `testuser` | Test User | *(none)* | No assigned role; useful for testing authorization gates |
+
+---
+
+## 5. Verify Authentication
+
+Open a browser to your chosen stack's login page. Sign in with any of the accounts above. After login you should see the home page with your name, role badge, and the application chrome (sidebar, theme toggle, avatar menu).
+
+---
+
+## Troubleshooting
+
+**"404 Not Found" on vendor assets (CSS, JS, fonts):** Your symlinks are broken. See the Windows/WSL notes in [Prerequisites](#prerequisites). Run `ls -la` on your stack's vendor directory — if entries show as regular files instead of `->` symlink arrows, re-checkout or fix your symlink configuration.
+
+**"Cannot connect to database":** Ensure PostgreSQL is running (`make up`) and the container is healthy (`docker ps` should show `fieldmark-local` up). On first start, init scripts take a few seconds.
+
+**"psql: command not found":** The verify script requires `psql`. macOS: `brew install libpq && brew link --force libpq`. Linux: install `postgresql-client`. WSL: `sudo apt install postgresql-client`.
+
+**"Role already exists" or "user already exists":** The seeders are idempotent — re-running them is safe. If you get errors, the table creation step (migrations or `migrate-fiber-auth`) may not have run first.
+
+**Go: "relation fiber_auth.users does not exist":** You skipped `go run ./cmd/migrate-fiber-auth`. Run it before the seed or web server.
+
+**Django: "no such table: auth_user":** You skipped `uv run python manage.py migrate`. Run it before `seed_groups` or `runserver`.
+
+**".NET: Cannot find the fallback endpoint" or port conflicts:** Ensure nothing else is running on :4000. Use `dotnet run --project FieldMark.Web --urls "http://localhost:4001"` to pick a different port.
+
+**CSS changes not showing:** Run `cd fieldmark_shared && pnpm run build` and hard-refresh the browser. If you changed `@source` paths in `src/fieldmark.css`, restart the build.

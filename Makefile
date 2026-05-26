@@ -1,4 +1,4 @@
-.PHONY: help up down reset run-net run-django run-go test-net test-django test-go test-integration test-net-integration test-django-integration test-go-integration e2e parity css
+.PHONY: help up down reset run-net run-django run-go run-landing test-net test-django test-go test-integration test-net-integration test-django-integration test-go-integration e2e parity css
 
 help: ## Show available targets and descriptions
 	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n  make <target>\n\nTargets:\n"} /^[a-zA-Z0-9_-]+:.*##/ { printf "  %-12s %s\n", $$1, $$2 }' Makefile
@@ -20,6 +20,9 @@ run-django: ## Run the Django stack on :8000
 
 run-go: ## Run the Go/Fiber stack on :3000
 	cd fieldmark-go && go run ./cmd/web
+
+run-landing: ## Serve the landing page on :8080
+	cd fieldmark-landing && python3 -m http.server 8080
 
 test-net: ## Run .NET tests (xUnit)
 	cd FieldMark && dotnet test
