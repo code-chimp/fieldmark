@@ -51,3 +51,7 @@ All 2026-05-17 entries are accounted for below.
 - Conflicting source-of-truth guidance points to stale planning artifacts (`CLAUDE.md` vs `docs/README.md` vs stale statements in planning artifacts). Deferred as pre-existing documentation governance debt.
 - AGENTS pre-kickoff note is stale versus current parity/e2e scaffolding and can suppress verification behavior. Deferred as pre-existing docs debt.
 - Stack CLAUDE files repeat stale planning-artifacts authority language, reintroducing drift risk. Deferred as pre-existing docs debt.
+
+## Deferred from: Story 2.1 (2026-05-26)
+
+- `make parity` routes diff is failing pre-existing Story 2.1 — Django and Fiber expose `/robots.txt` and `/.well-known/security.txt` but the .NET stack does not. Verified pre-existing by stashing 2.1 changes and re-running. Story 2.1 introduces zero new routes (AC4) so this is out of scope, but the routes-parity gate is currently red and needs a dedicated story to either land the two endpoints on .NET or formally exempt them from the diff.

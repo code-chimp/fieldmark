@@ -36,7 +36,14 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-05-11
-last_updated: 2026-05-25
+last_updated: 2026-05-27
+#   (2-1 rerun review clean after 2 patch items resolved; status set to done)
+#   (2-1 rerun review items resolved: 2 patch items closed; status set to review)
+#   (2-1 rerun review found 2 patch items; status set to in-progress)
+#   (2-1 round 1 review items resolved: 5 patch items closed; status set to review)
+#   (2-1 code review found 5 patch items; status set to in-progress)
+#   (2-1 implementation complete; all three stacks green; status set to review)
+#   (2-1 implementation started; status set to in-progress)
 #   (2-2 story created by create-story workflow; status set to ready-for-dev)
 #   (2-1 story created by create-story workflow; status set to ready-for-dev; epic-2 set to in-progress)
 #   (epic-1-retrospective completed; status set to done; retro saved at epic-1-retro-2026-05-25.md)
@@ -119,7 +126,7 @@ development_status:
 
   # ===== Epic 2: Project Lifecycle & Compliance Dashboard =====
   epic-2: in-progress
-  2-1-map-domain-project-and-supporting-tables-into-each-stacks-data-layer: ready-for-dev
+  2-1-map-domain-project-and-supporting-tables-into-each-stacks-data-layer: done
   2-2-map-domain-audit-entry-and-provide-a-per-stack-append-audit-entry-helper: ready-for-dev
   2-3-map-reference-data-tables-and-expose-a-read-api-per-stack: backlog
   2-4-implement-phase-2-markup-only-components-statusbadge-inlinealert-auditrow-dashboardtile: backlog

@@ -27,9 +27,13 @@ public sealed class DomainRollbackSmokeTests
 
         await using (var tx = await conn.BeginTransactionAsync())
         {
-            await using (var insert = new NpgsqlCommand(
-                "INSERT INTO domain.trade_type (id, code, name) VALUES (@id, @code, @name)",
-                conn, tx))
+            await using (
+                var insert = new NpgsqlCommand(
+                    "INSERT INTO domain.trade_type (id, code, name) VALUES (@id, @code, @name)",
+                    conn,
+                    tx
+                )
+            )
             {
                 insert.Parameters.AddWithValue("id", id);
                 insert.Parameters.AddWithValue("code", code);
@@ -39,7 +43,10 @@ public sealed class DomainRollbackSmokeTests
 
             // Visible inside the open transaction.
             await using var checkInside = new NpgsqlCommand(
-                "SELECT count(*) FROM domain.trade_type WHERE code = @code", conn, tx);
+                "SELECT count(*) FROM domain.trade_type WHERE code = @code",
+                conn,
+                tx
+            );
             checkInside.Parameters.AddWithValue("code", code);
             var insideCount = (long)(await checkInside.ExecuteScalarAsync() ?? 0L);
             insideCount.Should().Be(1);
@@ -48,7 +55,9 @@ public sealed class DomainRollbackSmokeTests
         }
 
         await using var checkAfter = new NpgsqlCommand(
-            "SELECT count(*) FROM domain.trade_type WHERE code = @code", conn);
+            "SELECT count(*) FROM domain.trade_type WHERE code = @code",
+            conn
+        );
         checkAfter.Parameters.AddWithValue("code", code);
         var afterCount = (long)(await checkAfter.ExecuteScalarAsync() ?? 0L);
         afterCount.Should().Be(0, "rollback must not persist the row");
@@ -61,7 +70,9 @@ public sealed class DomainRollbackSmokeTests
         await conn.OpenAsync();
 
         await using var cmd = new NpgsqlCommand(
-            "SELECT count(*) FROM domain.trade_type WHERE active", conn);
+            "SELECT count(*) FROM domain.trade_type WHERE active",
+            conn
+        );
         var count = (long)(await cmd.ExecuteScalarAsync() ?? 0L);
         count.Should().BeGreaterThan(0, "init scripts should have populated reference data");
     }

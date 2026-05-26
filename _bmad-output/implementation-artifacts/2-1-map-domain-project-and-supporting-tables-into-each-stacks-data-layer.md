@@ -1,6 +1,6 @@
 # Story 2.1: Map `domain.project` and supporting tables into each stack's data layer
 
-Status: ready-for-dev
+Status: done
 
 Epic: 2 — Project Lifecycle & Compliance Dashboard
 Source AC: [_bmad-output/planning-artifacts/epics/epic-2-project-lifecycle-compliance-dashboard.md](../planning-artifacts/epics/epic-2-project-lifecycle-compliance-dashboard.md) §Story 2.1
@@ -129,63 +129,73 @@ This AC exists to prevent a well-meaning but wrong instinct to "document the map
 
 ## Tasks / Subtasks
 
-- [ ] **Task 1: Read upstream artifacts and confirm posture** (AC: all)
-  - [ ] 1.1 Re-read [010_domain_tables.sql:24–95](../../docker/postgres/init/010_domain_tables.sql) — every column, every CHECK constraint, every FK behavior. The DDL is binding.
-  - [ ] 1.2 Read [Story 1.7 (.NET Identity wiring)](1-7-wire-asp-net-core-identity-to-dotnet-auth-schema-with-conceptual-roles.md) and [Story 1.8 (Django auth)](1-8-wire-django-built-in-auth-to-django-auth-schema-with-conceptual-role-groups.md) for the existing `AuthDbContext` / `django_auth` schema separation pattern. The new `FieldMarkDbContext` mapping must not leak into the auth schema.
-  - [ ] 1.3 Read [Story 1.10 (dev-users seed)](1-10-author-shared-uuid-dev-user-manifest-and-per-stack-idempotent-seed-runners.md) — the dev-user UUIDs are what `project_inspector.user_id` will reference in Story 2.8. AC5 smoke tests can either insert an arbitrary UUID for `user_id` (no FK to enforce) or pick one from the dev-users manifest.
-  - [ ] 1.4 Read the existing integration-test fixtures end-to-end:
+- [x] **Task 1: Read upstream artifacts and confirm posture** (AC: all)
+  - [x] 1.1 Re-read [010_domain_tables.sql:24–95](../../docker/postgres/init/010_domain_tables.sql) — every column, every CHECK constraint, every FK behavior. The DDL is binding.
+  - [x] 1.2 Read [Story 1.7 (.NET Identity wiring)](1-7-wire-asp-net-core-identity-to-dotnet-auth-schema-with-conceptual-roles.md) and [Story 1.8 (Django auth)](1-8-wire-django-built-in-auth-to-django-auth-schema-with-conceptual-role-groups.md) for the existing `AuthDbContext` / `django_auth` schema separation pattern. The new `FieldMarkDbContext` mapping must not leak into the auth schema.
+  - [x] 1.3 Read [Story 1.10 (dev-users seed)](1-10-author-shared-uuid-dev-user-manifest-and-per-stack-idempotent-seed-runners.md) — the dev-user UUIDs are what `project_inspector.user_id` will reference in Story 2.8. AC5 smoke tests can either insert an arbitrary UUID for `user_id` (no FK to enforce) or pick one from the dev-users manifest.
+  - [x] 1.4 Read the existing integration-test fixtures end-to-end:
     - [FieldMark.Tests.Integration/PostgresContainerFixture.cs](../../FieldMark/FieldMark.Tests.Integration/PostgresContainerFixture.cs) and [DomainRollbackSmokeTests.cs](../../FieldMark/FieldMark.Tests.Integration/DomainRollbackSmokeTests.cs) — the AC5 .NET smoke piggybacks on the same `[Collection(PostgresCollection.Name)]` fixture.
     - [fieldmark_py/conftest.py](../../fieldmark_py/conftest.py) `domain_db` fixture — the Django smoke uses this cursor.
     - [fieldmark-go/internal/data/postgres/integration_test.go](../../fieldmark-go/internal/data/postgres/integration_test.go) — the Go smoke shares the `//go:build integration` tag and `openPool(t)` helper.
 
-- [ ] **Task 2: .NET mapping** (AC: #1, #4, #5, #7)
-  - [ ] 2.1 Add value object `FieldMark.Domain/ValueObjects/ProjectStatus.cs` as `public enum ProjectStatus { Active, OnHold, Closed }`. No serialization attributes (Domain rule). The enum-string mapping is configured in the EF Core layer.
-  - [ ] 2.2 Add entity `FieldMark.Domain/Entities/Project.cs` — properties: `Id (Guid)`, `Code (string)`, `Name (string)`, `Description (string?)`, `Status (ProjectStatus)`, `StartDate (DateOnly)`, `TargetCompletionDate (DateOnly?)`, `ActualClosedAt (DateTimeOffset?)`, `ComplianceScore (int)`, `CreatedAt (DateTimeOffset)`, `UpdatedAt (DateTimeOffset)`. Private setters. Private parameterless ctor for EF Core. Public ctor optional (Story 2.8 will introduce `Project.Create`).
-  - [ ] 2.3 Add entities `JobSite.cs`, `ProjectTradeScope.cs`, `ProjectInspector.cs` — property bags per DDL columns; same private-setter discipline.
-  - [ ] 2.4 Decide: snake-case via `EFCore.NamingConventions` (register in `Program.cs` against `FieldMarkDbContext`) vs per-property `HasColumnName`. Recommended: register the convention package — `services.AddDbContextPool<FieldMarkDbContext>(opt => opt.UseNpgsql(...).UseSnakeCaseNamingConvention())`. Document the choice in dev notes (other stacks read these column names; convention drift would surface as Django/Go test breakage).
-  - [ ] 2.5 Add `FieldMark.Data/Configuration/ProjectConfiguration.cs`:
-    - `builder.ToTable("project", "domain")`
-    - `builder.HasKey(p => p.Id)`
-    - `builder.Property(p => p.Status).HasConversion<string>().HasMaxLength(16)`
-    - `builder.Property(p => p.Code).HasMaxLength(32).IsRequired()`
-    - `builder.Property(p => p.Name).HasMaxLength(200).IsRequired()`
-    - `builder.HasIndex(p => p.Code).IsUnique()` — **wait**: the unique constraint exists in the DDL (`code VARCHAR(32) UNIQUE`). EF Core might pick this up as `HasIndex` and emit a parity diff. Run `make parity` after wiring; if a phantom index appears in the .NET side, switch to `builder.HasAlternateKey(p => p.Code)` (does not create an extra index) or remove the EF declaration entirely (the constraint is DDL-owned). Settle this empirically before merging.
-  - [ ] 2.6 Add `JobSiteConfiguration.cs`, `ProjectTradeScopeConfiguration.cs`, `ProjectInspectorConfiguration.cs` — `ToTable` + composite keys + CASCADE relationships per AC1.
-  - [ ] 2.7 Update `FieldMark.Data/Context/FieldMarkDbContext.cs`:
-    - Add `DbSet<Project>`, `DbSet<JobSite>`, `DbSet<ProjectTradeScope>`, `DbSet<ProjectInspector>` properties.
-    - Override `OnModelCreating` (if not already): `modelBuilder.HasDefaultSchema("domain"); modelBuilder.ApplyConfigurationsFromAssembly(typeof(FieldMarkDbContext).Assembly);`
-  - [ ] 2.8 Register `FieldMarkDbContext` in `FieldMark.Web/Program.cs` with `AddDbContextPool` reading `FIELDMARK_DATABASE_URL` (or the `Default` connection string already used by `AuthDbContext` — confirm in current `Program.cs`).
-  - [ ] 2.9 Confirm `dotnet ef migrations add` is NOT run against `FieldMarkDbContext` — domain schema is infrastructure-owned. If a migration is accidentally generated, delete it and document the near-miss in dev notes.
-  - [ ] 2.10 Add `FieldMark.Tests.Integration/ProjectMappingSmokeTests.cs` per AC5 (one round-trip on `Project`; one `count`-query test that covers the three relation tables compiling and reading).
-  - [ ] 2.11 Run `dotnet csharpier format .`, `dotnet build`, `dotnet test`, `dotnet test FieldMark.Tests.Integration` — all green.
+- [x] **Task 2: .NET mapping** (AC: #1, #4, #5, #7)
+  - [x] 2.1 Added `FieldMark.Domain/ValueObjects/ProjectStatus.cs` as `public enum ProjectStatus { Active, OnHold, Closed }`. No serialization attributes.
+  - [x] 2.2 Added `FieldMark.Domain/Entities/Project.cs` — properties per AC; private setters; private parameterless ctor for EF Core.
+  - [x] 2.3 Added `JobSite.cs`, `ProjectTradeScope.cs`, `ProjectInspector.cs` — property bags per DDL columns.
+  - [x] 2.4 Snake-case via `EFCore.NamingConventions`. `Program.cs` (lines 66–68) already registers `FieldMarkDbContext` with `.UseSnakeCaseNamingConvention()` — convention was already in place from prior wiring; we did not duplicate it with per-property `HasColumnName`.
+  - [x] 2.5 Added `ProjectConfiguration.cs`. Settled the DDL-vs-EF uniqueness question empirically: `HasAlternateKey(p => p.Code)` rather than `HasIndex(...).IsUnique()` — `make parity` pg-indexes remained clean (21 indexes, no .NET-only index introduced).
+  - [x] 2.6 Added `JobSiteConfiguration.cs`, `ProjectTradeScopeConfiguration.cs`, `ProjectInspectorConfiguration.cs` — composite keys via `HasKey(x => new { ... })`; CASCADE on the `Project` FK via `OnDelete(DeleteBehavior.Cascade)`. `ProjectInspector.UserId` is a plain `Guid` with no navigation property (ADR-012).
+  - [x] 2.7 `FieldMark.Data/Context/FieldMarkDbContext.cs` updated — added 4 `DbSet`s and `OnModelCreating` calling `HasDefaultSchema("domain")` + `ApplyConfigurationsFromAssembly`.
+  - [x] 2.8 `Program.cs` already registers `FieldMarkDbContext` with `AddDbContext` (note: spec said `AddDbContextPool`, but the existing convention pairs `AuthDbContext` and `FieldMarkDbContext` with `AddDbContext` from prior wiring — leaving consistent rather than altering an out-of-scope pattern).
+  - [x] 2.9 No EF Core migration generated against `FieldMarkDbContext` — domain schema is infrastructure-owned.
+  - [x] 2.10 Added `FieldMark.Tests.Integration/ProjectMappingSmokeTests.cs` — `Project` round-trip + relation-table count probe. **Result:** 4/4 integration tests green (2 new + 2 pre-existing).
+  - [x] 2.11 `dotnet csharpier check .` clean; `dotnet build` green; `dotnet test` green across Domain (19), Integration (4), Web (28).
 
-- [ ] **Task 3: Django mapping** (AC: #2, #4, #5, #7)
-  - [ ] 3.1 Verify `fieldmark_py/pyproject.toml` Django version supports `Meta.primary_key` composite PKs (Django 5.2+). If yes, use composite PK; if no, use the `primary_key=True` on `project` field option and document in dev notes.
-  - [ ] 3.2 Add to `fieldmark_py/projects/models.py`:
-    - `class ProjectStatus(models.TextChoices)` with `ACTIVE = "Active", "Active"`, `ON_HOLD = "OnHold", "OnHold"`, `CLOSED = "Closed", "Closed"`.
-    - `class Project(models.Model)` with all DDL columns, `Meta.managed = False`, `Meta.db_table = 'domain"."project'`.
-    - `class JobSite(models.Model)`, `class ProjectTradeScope(models.Model)`, `class ProjectInspector(models.Model)` — same `Meta` flags, correct `db_table`, FKs declared as `models.ForeignKey(Project, db_column="project_id", on_delete=models.DO_NOTHING)` (DO_NOTHING because the cascade is DDL-owned; Django must not attempt to enforce or override it).
-  - [ ] 3.3 Run `uv run python manage.py makemigrations projects` — assert it outputs `No changes detected` (or any output is restricted to `django_auth`-scoped models, not `domain.*`). If it tries to migrate `domain.*`, the `Meta` flags are wrong.
-  - [ ] 3.4 Add `fieldmark_py/projects/tests/__init__.py` and `fieldmark_py/projects/tests/test_mapping.py` per AC5. Mark `@pytest.mark.integration` and use the `domain_db` cursor from `conftest.py` to seed the row, then use the Django ORM to read it back (`Project.objects.using('default').get(pk=id)` — note both the raw insert and the ORM read share the *same* psycopg transaction by using the same connection; or insert via the ORM and read via the ORM, since both go through the same `default` connection).
-  - [ ] 3.5 Run `uv run ruff check .`, `uv run mypy .`, `uv run pytest`, `uv run pytest -m integration` — all green.
+- [x] **Task 3: Django mapping** (AC: #2, #4, #5, #7)
+  - [x] 3.1 Django 6.0.4 supports `models.CompositePrimaryKey(...)` (Django 5.2+ feature); used it.
+  - [x] 3.2 `fieldmark_py/projects/models.py` populated with `ProjectStatus` TextChoices + 4 models. `Meta.managed = False` + `db_table = 'domain"."<table>'` for all four. FKs declared `on_delete=DO_NOTHING` because the cascade is DDL-owned.
+  - [x] 3.3 **AC divergence:** `makemigrations projects` reports four `CreateModel` operations even though models are `managed = False`. Django generates state-only migrations for unmanaged models; the schema editor still no-ops at runtime against `domain.*`. The AC wording ("MUST produce no migration output") is impossible to satisfy without further apparatus (custom `MIGRATION_MODULES = {"projects": None}` setting, or empty per-app `migrations/__init__.py`). Confirmed at runtime: no migration file was committed and `migrate projects` is not invoked. See Sign-off "Dev-notes divergences from epic AC" for the resolution.
+  - [x] 3.4 Added `fieldmark_py/projects/tests/test_mapping.py` (AC5) + `projects/tests/conftest.py` (overrides `django_db_setup` to use the live `make up` Postgres — same posture as `audit/tests/test_db_rollback.py`, which sidesteps pytest-django's test-DB creation so the canonical init scripts remain the schema source of truth).
+  - [x] 3.5 `uv run ruff check .` clean; `uv run mypy .` clean (93 files); `uv run pytest` 51/51 green; `uv run pytest -m integration` 5/5 green (2 new + 3 pre-existing).
 
-- [ ] **Task 4: Go mapping** (AC: #3, #4, #5, #7)
-  - [ ] 4.1 Add `fieldmark-go/internal/domain/enums/project_status.go` per AC3.
-  - [ ] 4.2 Add `fieldmark-go/internal/domain/entities/project.go`, `job_site.go`, `project_trade_scope.go`, `project_inspector.go` — plain structs with exported fields. Use `uuid.UUID` (`github.com/google/uuid`, already in `go.sum`), `time.Time` for timestamps, `*time.Time` for nullable timestamps, `civil.Date` (or `time.Time` rounded to date) for `DATE` columns — pick `time.Time` for simplicity; document the convention in dev notes.
-  - [ ] 4.3 Add `fieldmark-go/internal/data/postgres/errors.go` with `ErrProjectNotFound` sentinel.
-  - [ ] 4.4 Add `fieldmark-go/internal/data/postgres/projectstore.go` with `ProjectStore` interface (Load, LoadWithRelations) and `projectStorePg` struct backed by `*pgxpool.Pool`. Explicit column lists; explicit `Rows.Scan`. Translate `pgx.ErrNoRows` → `ErrProjectNotFound` in `Load`.
-  - [ ] 4.5 Add `fieldmark-go/internal/data/postgres/projectstore_test.go` with `//go:build integration` and the AC5 smoke (insert via `pool.Exec`, load via `projectStorePg.Load`, assert round-trip).
-  - [ ] 4.6 No `app/deps.go` wiring this story — `Deps` plumbing for `ProjectStore` lands in Story 2.8 / 2.11 when a handler first needs it. (If this is contentious, wire `Deps.ProjectStore` now — but no handler consumes it yet; YAGNI.)
-  - [ ] 4.7 Run `cd fieldmark-go && make check && go test -tags=integration ./internal/data/postgres/...` — all green.
+- [x] **Task 4: Go mapping** (AC: #3, #4, #5, #7)
+  - [x] 4.1 Added `internal/domain/enums/project_status.go` with `ProjectStatus` const block.
+  - [x] 4.2 Added `internal/domain/entities/{project,job_site,project_trade_scope,project_inspector}.go` — `time.Time` for both DATE and TIMESTAMPTZ columns; `*time.Time` / `*string` for nullables; `uuid.UUID` for ids.
+  - [x] 4.3 Added `internal/data/postgres/errors.go` with `ErrProjectNotFound`.
+  - [x] 4.4 Added `internal/data/postgres/projectstore.go` — `ProjectStore` interface, `projectStorePg` impl, explicit column lists, explicit `Rows.Scan`; `pgx.ErrNoRows` → `ErrProjectNotFound`. `LoadWithRelations` issues three side queries (no JOINs) per AC.
+  - [x] 4.5 Added `internal/data/postgres/projectstore_test.go` with `//go:build integration` — round-trip + `LoadWithRelations` smoke + not-found case (2 tests).
+  - [x] 4.6 No `app/deps.go` wiring (deferred to Story 2.8 / 2.11 per AC).
+  - [x] 4.7 `make check` green (fmt-check, vet, staticcheck, test); `go test -tags=integration ./internal/data/postgres/...` green.
 
-- [ ] **Task 5: Parity and cross-stack verification** (AC: #4, #6, #7)
-  - [ ] 5.1 Run `make parity` from repo root. `pg_indexes` diff for `domain.*` must remain at zero. If a new index appears (likely from .NET `HasIndex(p => p.Code)` — see Task 2.5), resolve before merging.
-  - [ ] 5.2 Confirm no new file appears in `docs/reference/` or `docs/how-to/` (AC6 guard rail).
-  - [ ] 5.3 Run `make test-net-integration test-django-integration test-go-integration` (Postgres must be `make up` first for Django + Go lanes; .NET spins its own container via Testcontainers).
+- [x] **Task 5: Parity and cross-stack verification** (AC: #4, #6, #7)
+  - [x] 5.1 `bash tools/parity/diff-pg-indexes.sh` clean: `OK pg_indexes parity verified (21 indexes)`. Settled the EF-Core unique-index concern via `HasAlternateKey` (Task 2.5) — no phantom index.
+  - [x] 5.2 No new file in `docs/reference/` or `docs/how-to/`. AC6 guard rail intact.
+  - [x] 5.3 All three integration lanes green: `make test-integration` reports "✓ Integration tests passed across .NET, Django, Go".
+  - [x] **Note on `make parity` overall exit:** `make parity` exits non-zero because of a *pre-existing* routes drift (`/robots.txt` and `/.well-known/security.txt` are exposed by Django/Fiber but not .NET). Verified pre-existing by stashing Story 2.1 changes and re-running. This story introduces zero new routes (confirmed). Logged to [deferred-work.md](deferred-work.md) under "Deferred from: Story 2.1 (2026-05-26)".
 
-- [ ] **Task 6: Story sign-off** (AC: all)
-  - [ ] 6.1 Populate the Sign-off block at the bottom of this story (date, review-round count, reviewer verdict, deferred-work link if any).
-  - [ ] 6.2 Update [sprint-status.yaml](sprint-status.yaml) `development_status` for `2-1-...` to `review` (handled by dev-story workflow; mentioned for completeness).
+- [x] **Task 6: Story sign-off** (AC: all)
+  - [x] 6.1 Sign-off block populated.
+  - [x] 6.2 Sprint status flipped to `in-progress` at start, will be flipped to `review` by the dev-story workflow on Step 9.
+
+### Review Findings
+
+- [x] [Review][Patch] Scope Django live-DB setup so existing `projects/tests` unit tests keep pytest-django isolation [fieldmark_py/projects/tests/conftest.py:23]
+  - **Fix:** Deleted `projects/tests/conftest.py`. The `django_db_setup` session-fixture override now lives inside `projects/tests/test_mapping.py` itself (lines 28–41), where pytest fixture-scope rules confine it to tests in that file. Future unit tests added under `projects/tests/` will use pytest-django's default test-database setup unmodified.
+- [x] [Review][Patch] Fix Go integration cleanup ordering so the inserted project row is deleted before the pool closes [fieldmark-go/internal/data/postgres/projectstore_test.go:18]
+  - **Fix:** Replaced `defer pool.Close()` with `t.Cleanup(pool.Close)` registered BEFORE the row-delete `t.Cleanup`. Because `t.Cleanup` callbacks run in LIFO order, the row-delete now executes against an open pool, then pool.Close runs. Applied to both tests in the file.
+- [x] [Review][Patch] Resolve unmanaged Django model migration drift so `makemigrations projects --check` does not keep reporting `0001_initial.py` [fieldmark_py/projects/models.py:30]
+  - **Fix:** Added `MIGRATION_MODULES = {"projects": None}` to `fieldmark_py/fieldmark/settings.py` so Django will not generate state-only migrations for the unmanaged domain-mapping app. `uv run python manage.py makemigrations --check --dry-run` now reports "No changes detected" with exit 0. The block is set up for future domain-only apps (audit, inspections, …) to be added the same way.
+- [x] [Review][Patch] Read Go project relations from a single stable database snapshot [fieldmark-go/internal/data/postgres/projectstore.go:75]
+  - **Fix:** `LoadWithRelations` now opens a single `pgx.TxOptions{IsoLevel: pgx.RepeatableRead, AccessMode: pgx.ReadOnly}` transaction via `pool.BeginTx` and runs the project + three relation queries inside it. All four reads see the same snapshot; a concurrent writer can no longer make the project row disagree with its job_sites / trade_scopes / inspectors. A small `rowReader` interface keeps the scan helpers usable from either the pool (for `Load`) or the tx (for `LoadWithRelations`).
+- [x] [Review][Patch] Change the .NET project mapping smoke to roll back its inserted row instead of commit-plus-delete cleanup [FieldMark/FieldMark.Tests.Integration/ProjectMappingSmokeTests.cs:41]
+  - **Fix:** Rewrote the smoke to hold one `NpgsqlConnection` + open transaction across the raw INSERT and the EF Core read. `DbContextOptionsBuilder.UseNpgsql(conn)` + `ctx.Database.UseTransactionAsync(tx)` enlists EF Core in the same transaction so the read sees the uncommitted insert; final `tx.RollbackAsync()` means no row ever reaches disk. Added a fresh-connection post-check that counts rows by id and asserts zero — proof the rollback was honored. Pattern now mirrors `DomainRollbackSmokeTests`.
+
+### Review Findings (Rerun 2026-05-27)
+
+- [x] [Review][Patch] Replace the `MIGRATION_MODULES = {"projects": None}` workaround because `makemigrations projects --check --dry-run` now exits with a `ValueError` instead of cleanly proving no migration drift [fieldmark_py/fieldmark/settings.py:140]
+  - **Fix:** Removed the `MIGRATION_MODULES` block from `settings.py`; let Django generate the state-only `projects/migrations/0001_initial.py` and committed it. Because every `CreateModel` operation carries `options.managed = False`, `sqlmigrate projects 0001` confirms every operation is `-- (no-op)` — the schema editor will not touch `domain.*` at runtime, but the autodetector is satisfied. Now: `makemigrations projects --check --dry-run` → `No changes detected in app 'projects'` exit 0; `makemigrations --check --dry-run` → `No changes detected` exit 0. The runtime invariant ("Django never CREATEs or ALTERs `domain.*` tables") is preserved by `managed = False` in the migration ops themselves.
+- [x] [Review][Patch] Change the Go project mapping smoke to roll back its inserted row instead of commit-plus-delete cleanup [fieldmark-go/internal/data/postgres/projectstore_test.go:36]
+  - **Fix:** Two parts. (1) In `projectstore.go`, promoted the previously-internal `rowReader` to an exported `Querier` interface and added a `LoadProjectFrom(ctx, q Querier, id)` helper so callers holding a `pgx.Tx` can drive the same production scan code. (2) Rewrote the round-trip smoke in `projectstore_test.go` to `pool.Begin(ctx)` a writable transaction, INSERT via the tx, call `postgres.LoadProjectFrom(ctx, tx, id)` for the read, then `tx.Rollback`. A post-rollback count-by-id against the pool asserts zero — proof the rollback was honored. `LoadWithRelations` retains its own committed-row smoke (separate test) since it opens its own snapshot tx internally. A `var _ postgres.Querier = (pgx.Tx)(nil)` compile-time check pins the contract.
 
 ## Dev Notes
 
@@ -272,20 +282,76 @@ Walked the seven categories. **None apply.** This story handles no forms, cookie
 
 ### Agent Model Used
 
-_to be filled at implementation time_
+claude-opus-4-7 (Claude Code dev-story workflow, 2026-05-26)
 
 ### Debug Log References
 
+- Initial `dotnet build` failed with FluentAssertions 8.x renaming `BeGreaterOrEqualTo` → `BeGreaterThanOrEqualTo`. Fixed in `ProjectMappingSmokeTests.cs`.
+- Initial Django smoke failed with `relation "domain.project" does not exist` because pytest-django created an empty test database. Resolved by overriding `django_db_setup` in `projects/tests/conftest.py` to skip test-DB creation and reuse the live `make up` Postgres — same posture as `audit/tests/test_db_rollback.py`.
+- `ruff check` flagged DJ001 (`null=True` on string fields) and DJ008 (missing `__str__`). Added `__str__` methods to all four models; suppressed DJ001 with `# noqa` + comment because the DDL declares those columns nullable and the NULL-vs-empty-string distinction must round-trip.
+
 ### Completion Notes List
 
+- Cross-stack shape-parity review (per persistent fact): re-read all three implementations side-by-side after the third stack landed. Verified parity in (a) enum storage strings (`Active`/`OnHold`/`Closed` in all three), (b) column lists, (c) nullable-column choices, (d) composite PKs, (e) no FK to auth schemas. Idiomatic per-stack asymmetries (Go sentinel error vs .NET `SingleAsync` throw vs Django `DoesNotExist`) are acceptable under the Cross-Stack Architecture Principle — each stack's read API stays native.
+- AC6 docs guard rail honored: zero new files in `docs/reference/` or `docs/how-to/`. The DDL remains the contract; each stack's mapping is the native implementation; the three AC5 smoke tests are the conformance gate.
+- pg_indexes parity stayed clean (21 indexes). The EF Core unique-index trap on `domain.project.code` was avoided by configuring `HasAlternateKey` instead of `HasIndex(...).IsUnique()`.
+- `make parity` overall fails on a pre-existing routes drift (`/robots.txt`, `/.well-known/security.txt` on Django + Fiber but not .NET). Confirmed pre-existing via `git stash` + re-run. Logged to deferred-work.md.
+- Test totals: .NET — 19 unit + 4 integration + 28 web (51 total, all green). Django — 51 unit + 5 integration (all green). Go — `make check` green + 2 new integration tests green.
+
 ### File List
+
+**New:**
+- `fieldmark_py/projects/migrations/0001_initial.py` (state-only, all ops marked `managed=False`; sqlmigrate confirms `(no-op)`; added in rerun review).
+- `FieldMark/FieldMark.Domain/ValueObjects/ProjectStatus.cs`
+- `FieldMark/FieldMark.Domain/Entities/Project.cs`
+- `FieldMark/FieldMark.Domain/Entities/JobSite.cs`
+- `FieldMark/FieldMark.Domain/Entities/ProjectTradeScope.cs`
+- `FieldMark/FieldMark.Domain/Entities/ProjectInspector.cs`
+- `FieldMark/FieldMark.Data/Configuration/ProjectConfiguration.cs`
+- `FieldMark/FieldMark.Data/Configuration/JobSiteConfiguration.cs`
+- `FieldMark/FieldMark.Data/Configuration/ProjectTradeScopeConfiguration.cs`
+- `FieldMark/FieldMark.Data/Configuration/ProjectInspectorConfiguration.cs`
+- `FieldMark/FieldMark.Tests.Integration/ProjectMappingSmokeTests.cs`
+- `fieldmark_py/projects/tests/conftest.py`
+- `fieldmark_py/projects/tests/test_mapping.py`
+- `fieldmark-go/internal/domain/enums/project_status.go`
+- `fieldmark-go/internal/domain/entities/project.go`
+- `fieldmark-go/internal/domain/entities/job_site.go`
+- `fieldmark-go/internal/domain/entities/project_trade_scope.go`
+- `fieldmark-go/internal/domain/entities/project_inspector.go`
+- `fieldmark-go/internal/data/postgres/errors.go`
+- `fieldmark-go/internal/data/postgres/projectstore.go`
+- `fieldmark-go/internal/data/postgres/projectstore_test.go`
+
+**Modified:**
+- `FieldMark/FieldMark.Data/Context/FieldMarkDbContext.cs` — added 4 `DbSet`s and `OnModelCreating`.
+- `FieldMark/FieldMark.Tests.Integration/ProjectMappingSmokeTests.cs` — rewritten to share one connection + transaction across raw insert and EF Core read; rolls back instead of commit-plus-delete (review round 1).
+- `fieldmark_py/projects/models.py` — replaced placeholder with `ProjectStatus` + 4 models.
+- `fieldmark_py/projects/tests/test_mapping.py` — moved `django_db_setup` override into the test file so the live-DB posture is file-scoped (review round 1).
+- `fieldmark_py/fieldmark/settings.py` — added `MIGRATION_MODULES` block in review round 1; removed in rerun (replaced with committed state-only migration).
+- `fieldmark-go/internal/data/postgres/projectstore.go` — promoted `rowReader` to exported `Querier`; added `LoadProjectFrom` helper for tx-driven reads (rerun review).
+- `fieldmark-go/internal/data/postgres/projectstore_test.go` — round-trip smoke now uses `pool.Begin` + `LoadProjectFrom(tx,...)` + `Rollback`; added `LoadWithRelations` smoke and `Querier` compile-time check (rerun review).
+- `fieldmark-go/internal/data/postgres/projectstore.go` — `LoadWithRelations` now reads from a single REPEATABLE READ / READ ONLY transaction (review round 1).
+- `fieldmark-go/internal/data/postgres/projectstore_test.go` — replaced `defer pool.Close()` with `t.Cleanup(pool.Close)` ordered before the row-delete cleanup (review round 1).
+- `_bmad-output/implementation-artifacts/sprint-status.yaml` — flipped 2-1 to `in-progress` then `review` then `in-progress` (round 1) then `review`.
+- `_bmad-output/implementation-artifacts/deferred-work.md` — logged pre-existing routes drift under Story 2.1 section.
+
+**Deleted:**
+- `FieldMark/FieldMark.Data/Configuration/PlaceHolder.cs` — placeholder, replaced by the four real configs.
+- `fieldmark_py/projects/tests/conftest.py` — removed; the live-DB override is now file-scoped inside `test_mapping.py` (review round 1).
+
+### Change Log
+
+- 2026-05-26 — Story 2.1 implemented: `domain.project` + 3 relation tables mapped into each stack's data layer; AC5 smoke tests landed in all three lanes; pg_indexes parity preserved.
+- 2026-05-27 — Addressed code review findings: 5 patch items resolved (Django conftest scoping, Go test cleanup ordering, Django migration drift via `MIGRATION_MODULES`, Go `LoadWithRelations` single-snapshot read, .NET smoke rollback pattern).
+- 2026-05-27 — Rerun review: 2 patch items resolved (Django migration drift re-fixed by committing the no-op state migration instead of the `MIGRATION_MODULES` workaround; Go smoke rewritten to use tx + rollback via new exported `Querier` interface and `LoadProjectFrom` helper).
 
 ## Sign-off
 
 | Field | Value |
 |---|---|
-| Final review date | _pending_ |
-| Total review rounds | _pending_ |
-| Final reviewer verdict | _pending_ |
-| Deferred-work entries | _pending_ |
-| Dev-notes divergences from epic AC | DDL-vs-AC enum casing: implemented PascalCase per DDL; epic AC mentioned SCREAMING_SNAKE_CASE per `research/domain-model.md` §9 which is non-authoritative (root CLAUDE.md: research/ is not maintained). |
+| Final review date | _pending review_ |
+| Total review rounds | 2 (5 patches resolved round 1, 2 patches resolved rerun, all 2026-05-27) |
+| Final reviewer verdict | _pending review_ |
+| Deferred-work entries | [deferred-work.md → "Deferred from: Story 2.1 (2026-05-26)"](deferred-work.md) — pre-existing routes-parity drift (`/robots.txt`, `/.well-known/security.txt`). |
+| Dev-notes divergences from epic AC | (1) DDL-vs-AC enum casing: implemented PascalCase per DDL; epic AC mentioned SCREAMING_SNAKE_CASE per `research/domain-model.md` §9 which is non-authoritative (root CLAUDE.md: research/ is not maintained). (2) AC2 §"No migration generated": initially flagged as a divergence; review round 1 used `MIGRATION_MODULES = {"projects": None}` but the rerun review found that broke `makemigrations projects --check` with a `ValueError`. **Final resolution (rerun review):** committed the auto-generated state-only `projects/migrations/0001_initial.py`. Every operation in the file carries `managed = False`, so `sqlmigrate projects 0001` is `-- (no-op)` everywhere — schema editor never touches `domain.*` (AC intent preserved) and `makemigrations --check` is clean (autodetector satisfied). (3) AC1 §`AddDbContextPool`: existing Program.cs uses `AddDbContext` consistently for both `AuthDbContext` and `FieldMarkDbContext`; not changed in this story (out-of-scope refactor risk). |

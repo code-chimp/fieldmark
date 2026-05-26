@@ -58,7 +58,8 @@ public sealed class PostgresContainerFixture : IAsyncLifetime
             dir = dir.Parent;
         }
         throw new DirectoryNotFoundException(
-            "Could not locate docker/postgres/init relative to the test working directory.");
+            "Could not locate docker/postgres/init relative to the test working directory."
+        );
     }
 }
 
