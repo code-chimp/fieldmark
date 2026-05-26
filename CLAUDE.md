@@ -14,6 +14,26 @@ The `docs/` folder is organized by the Diátaxis framework: `tutorials/` (learni
 
 See [docs/reference/hard-rules.md](docs/reference/hard-rules.md). Stack-specific rules live in each project's own `CLAUDE.md`.
 
+## Cross-Stack Architecture Principle
+
+Each stack (.NET, Django, Go) is a self-contained, idiomatic application. A native developer opening one stack must see every enum, DTO, DAO, handler, and test in its expected location with no surprises.
+
+**Shared only via symlink:** the compiled design-system bundle (`fieldmark_shared/dist/fieldmark.css`) and vendored static assets (`htmx.min.js`, `ag-grid-community.min.js`, fonts). That is the full list.
+
+**Cross-stack invariants live as documentation contracts**, not as shared code:
+- A spec page under `docs/reference/` (data contracts: audit actions, AG Grid SSRM wire format, role names, canonical HTMX target IDs, form field names for cross-stack forms) or `docs/how-to/` (orchestration patterns: three-region OOB, canonical request flow).
+- A native implementation in each stack — idiomatic to that stack's framework.
+- A per-stack conformance test asserting the native implementation matches the documented contract.
+
+**Form-contract corollary:** when a form appears in ≥2 stacks (login, project-create, place-on-hold, corrective-action submit), the canonical field names, hidden-input names, and return-target conventions must appear in the story AC list or in a contract doc. Per-stack drift between template field names and handler bindings is a recurring Epic 1 bug class.
+
+**Anti-patterns:**
+- Extracting cross-stack constants into a shared package, generated stubs, or a symlinked manifest file.
+- A shared template engine, partial, or component fragment.
+- Any artifact that requires a developer working in one stack to read files in another stack to understand their own code.
+
+This principle was ratified in the Epic 1 retrospective (2026-05-25). It overrides any earlier guidance that suggested otherwise.
+
 ## Key Reference Documents
 
 - [docs/explanation/architecture.md](docs/explanation/architecture.md) and [docs/tutorials/getting-started.md](docs/tutorials/getting-started.md) — canonical docs (progressive disclosure from this file).

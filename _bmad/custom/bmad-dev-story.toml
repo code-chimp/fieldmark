@@ -1,0 +1,14 @@
+# Team-level overrides for bmad-dev-story.
+# Committed to the repo.
+#
+# Ratified by Epic 1 retrospective 2026-05-25 — Action Item A1.
+
+[workflow]
+
+persistent_facts = [
+  "file:{project-root}/docs/reference/security-defaults.md",
+  "file:{project-root}/docs/reference/component-edge-case-checklist.md",
+  "Cross-stack implementation order (Epic 1 lesson): when implementing logic that will exist in ≥2 stacks, implement once, then port the same logical shape to each stack. After implementing the third stack, re-read all three implementations side-by-side and verify shape parity (same branch order, same fallback values, same error handling) before declaring the story complete. Skipping the side-by-side check produces symmetric bugs that the reviewer will find.",
+  "AC-sync rule: if your implementation diverges from the AC wording in a defensible way (the AC was imprecise, the framework idiom requires a different approach), update the AC in the same PR with a one-line rationale. Do not leave the AC and implementation in disagreement — that becomes a review round (see Story 1.14 Basecoat class smoke-test).",
+  "Sign-off ritual: end each story file with a standardized sign-off block — date of final review, total review-round count, final reviewer-verdict (PASS/FAIL), link to any deferred-work entries created from the story. Provides a consistent paper trail.",
+]

@@ -150,6 +150,19 @@ cd fieldmark-go && go run ./cmd/server
 - CSS partials use underscore prefix (`_fonts.css`, `_tokens.css`, `_layout.css`, `_ag-grid.css`). They are imported into `fieldmark.css` only.
 - When editing CSS, run `pnpm run build` and commit both the source changes and the updated `dist/fieldmark.css`.
 
+## Build-Script Defensive Defaults
+
+Lessons absorbed during Story 1.4's six review rounds on `scripts/optimize-css.mjs`. Any new script in `fieldmark_shared/scripts/` must follow these defaults — they apply to every build-tool addition, not just CSS.
+
+- **Atomic writes.** Write to `<target>.tmp`, then `renameSync` to the final path. Wrap in `try/finally` so the `.tmp` is cleaned up on failure. Never mutate the target file in place.
+- **No hardcoded package-manager paths.** Resolve dependencies via `require.resolve` / `createRequire` against `import.meta.url`, not by scanning `node_modules/.pnpm/...`. Hardcoded store paths break on pnpm upgrade, clean install, and other package managers.
+- **Fatal warnings exit non-zero.** Tool wrappers (LightningCSS, esbuild, etc.) often have an `errorRecovery` mode that silently continues on bad input. Either disable it, or classify warning severities and `process.exit(1)` on the fatal types. Silent success on broken input is the worst failure mode.
+- **Validate inputs before writing.** Missing input file, directory passed as file, empty input, non-writable output dir, absolute or `..` traversal paths — all exit non-zero with a clear message before touching the filesystem.
+- **Engine guards.** If the script uses Node ≥ N features, both `engines.node` in `package.json` *and* a runtime check (`if (parseInt(process.versions.node) < N) process.exit(1)`) — `engines` is advisory only.
+- **Package-manager guard.** `preinstall` script that enforces pnpm (or whatever the project uses); without it, npm/yarn users hit cryptic mid-pipeline failures.
+- **Surface tool warnings to stderr.** Don't swallow LightningCSS / esbuild / Tailwind warnings — log them. The reviewer should see them; CI should see them.
+- **No script silently outputs zero.** `@source` glob misses, empty input directories, missing dependencies → fail loud with an actionable error, not a zero-byte file.
+
 ## Component Examples
 
 The `components/` directory holds canonical reference HTML fragments that serve as cross-stack snapshot-test targets. These are **not** live HTML pages — they contain only the component markup, without surrounding layout chrome.

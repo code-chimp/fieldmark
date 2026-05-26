@@ -36,7 +36,10 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-05-11
-last_updated: 2026-05-24
+last_updated: 2026-05-25
+#   (2-2 story created by create-story workflow; status set to ready-for-dev)
+#   (2-1 story created by create-story workflow; status set to ready-for-dev; epic-2 set to in-progress)
+#   (epic-1-retrospective completed; status set to done; retro saved at epic-1-retro-2026-05-25.md)
 #   (1-14 fifth review round complete; 1 patch item resolved; status set to review)
 #   (1-14 fourth review round complete; 6 patch items resolved; status set to review)
 #   (1-14 story created by create-story workflow; status set to ready-for-dev)
@@ -112,12 +115,12 @@ development_status:
   1-12-implement-authz-can-primitive-and-actionbutton-trichotomy-helper-per-stack: done
   1-13-render-empty-role-aware-home-page-identically-across-all-three-stacks: done
   1-14-harden-design-system-foundation-and-build-tooling-against-known-edge-cases: done
-  epic-1-retrospective: optional
+  epic-1-retrospective: done
 
   # ===== Epic 2: Project Lifecycle & Compliance Dashboard =====
-  epic-2: backlog
-  2-1-map-domain-project-and-supporting-tables-into-each-stacks-data-layer: backlog
-  2-2-map-domain-audit-entry-and-provide-a-per-stack-append-audit-entry-helper: backlog
+  epic-2: in-progress
+  2-1-map-domain-project-and-supporting-tables-into-each-stacks-data-layer: ready-for-dev
+  2-2-map-domain-audit-entry-and-provide-a-per-stack-append-audit-entry-helper: ready-for-dev
   2-3-map-reference-data-tables-and-expose-a-read-api-per-stack: backlog
   2-4-implement-phase-2-markup-only-components-statusbadge-inlinealert-auditrow-dashboardtile: backlog
   2-5-implement-compliancetile-component-and-compliance-tile-oob-target: backlog

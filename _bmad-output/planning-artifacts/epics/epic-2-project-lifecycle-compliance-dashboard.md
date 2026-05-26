@@ -62,6 +62,16 @@ So that FR39 (audit-on-every-mutation) is mechanically satisfied for every trans
 **Then** the same 14 strings are present with the same SCREAMING/PascalCase casing
 **And** the cross-stack diff for audit action constants is clean.
 
+**Given** the principle that cross-stack invariants live as documentation contracts (Epic 1 retro)
+**When** I inspect `docs/reference/audit-actions.md`
+**Then** the file exists and lists every canonical audit action string as the single source of truth
+**And** each stack's native enum/constants module references the doc URL in a top-of-file comment
+**And** the doc is the only place the list is authored — no shared code package, no symlinked manifest.
+
+**Given** each stack's test suite
+**When** I run a per-stack audit-action conformance test
+**Then** the test reads the documented list (parsed from `docs/reference/audit-actions.md` or a checked-in fixture derived from it) and asserts the stack's native enum/constants set matches exactly — no extras, no missing entries.
+
 ---
 
 ## Story 2.3: Map reference data tables and expose a read API per stack
@@ -125,6 +135,15 @@ So that I can compose subsequent stories without inventing markup per screen.
 **Given** the canonical example gallery at `fieldmark_shared/components/`
 **When** I run the per-stack snapshot tests
 **Then** each stack's wrapper produces output byte-identical to the canonical example (UX-DR40 initial coverage).
+
+**Given** the principle that cross-stack invariants live as documentation contracts (Epic 1 retro)
+**When** I inspect each component's directory under `fieldmark_shared/components/` (e.g., `status_badge/`, `inline_alert/`, `audit_row/`, `dashboard_tile/`)
+**Then** each directory contains a `canonical.html` example *and* a `README.md` describing the contract: required props, ARIA attributes, allowed class vocabulary, and the snapshot-equality requirement
+**And** the per-stack snapshot test references the canonical file by path (no copy-paste of the expected markup into test source).
+
+**Given** the components are markup-only wrappers
+**When** I inspect each stack's wrapper implementation
+**Then** the wrapper lives natively in that stack's idiomatic component location (.NET `Pages/Shared/Components/`, Django `templates/components/`, Go `internal/web/templates/components/`) — no shared template engine, no symlinked partial.
 
 ---
 
@@ -288,6 +307,15 @@ So that I can navigate the portfolio without client-side compute (FR48–FR51).
 **When** I run it
 **Then** `POST /grid/projects` exists on all three stacks identically.
 
+**Given** the principle that cross-stack invariants live as documentation contracts (Epic 1 retro)
+**When** I inspect `docs/reference/ag-grid-ssrm-contract.md`
+**Then** the file exists and specifies the SSRM wire format exhaustively: request shape (`filterModel`, `sortModel`, `startRow`, `endRow`, allowed filter operators), response shape (`{ "rows": [...], "lastRow": N }`), snake_case key convention, row-projection rules (no AutoMapper), and error behaviour for invalid inputs
+**And** each stack's grid handler implements the contract natively — direct EF Core projection (.NET), direct ORM/raw SQL projection (Django), direct `pgx` query (Go) — with no shared codec or generated stubs.
+
+**Given** each stack's test suite
+**When** I run a per-stack SSRM conformance test
+**Then** the test issues a canonical SSRM request (fixture loaded from the doc or a derived JSON) against `POST /grid/projects` and asserts the response shape, key casing, and lastRow semantics match the documented contract exactly.
+
 ---
 
 ## Story 2.10: Compliance Dashboard with portfolio tiles
@@ -395,6 +423,15 @@ So that the canonical three-region orchestration pattern (UX-DR20) is verified b
 **When** the place-on-hold action is exercised
 **Then** all three stacks produce a single HTTP round trip (no follow-up requests) with the three-region updates in one paint
 **And** the local-dev p95 timing is ≤ 200 ms per stack with cross-stack divergence ≤ 50 ms p95 (NFR1).
+
+**Given** the principle that cross-stack patterns live as documentation contracts (Epic 1 retro)
+**When** I inspect `docs/how-to/three-region-oob-orchestration.md`
+**Then** the recipe exists with a worked example: when to use it (mutations that affect entity + header tile + audit log), the canonical response composition (main partial + OOB `#compliance-tile` + OOB `#audit-log` prepend), the negative cases (403 / 409 must NOT emit OOB swaps per UX-DR22), and the testing contract for response shape
+**And** each stack's handler implements the recipe natively — Razor partial composition (.NET), Django template `include`/`extends` (Django), Go `html/template` blocks (Go) — with no shared template fragment or symlinked partial.
+
+**Given** each stack's test suite
+**When** I run a per-stack three-region conformance test
+**Then** the test exercises a successful place-on-hold and asserts the response contains exactly the three documented regions (main `#project-detail`, OOB `#compliance-tile`, OOB `#audit-log`); a 403 response asserts zero OOB regions; a 409 response asserts the main partial re-renders with current state plus InlineAlert and zero OOB regions.
 
 ---
 

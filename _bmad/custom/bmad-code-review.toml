@@ -1,0 +1,20 @@
+# Team-level overrides for bmad-code-review.
+# Committed to the repo. Applies to every developer on the project.
+# See _bmad/custom/<skill>.user.toml for personal overrides (gitignored).
+#
+# Ratified by Epic 1 retrospective 2026-05-25 — Action Item A1.
+
+[workflow]
+
+# Load the cross-cutting rule docs as persistent facts. The reviewer
+# consults these on every code-review run instead of re-deriving them.
+persistent_facts = [
+  "file:{project-root}/docs/reference/hard-rules.md",
+  "file:{project-root}/docs/reference/security-defaults.md",
+  "file:{project-root}/docs/reference/component-edge-case-checklist.md",
+  "Cross-stack symmetry check (Epic 1 highest-frequency finding category): for any logic that exists in ≥2 stacks (.NET / Django / Go), locate the equivalent implementation in each stack and assert shape parity — same branch order, same fallback values, same error handling. Symmetric bugs (the same logical mistake repeated across stacks) accounted for the majority of multi-round reviews in Epic 1 (Stories 1.13, 1.14).",
+  "Cross-reference _bmad-output/implementation-artifacts/deferred-work.md before flagging. If an issue is already documented there, note 'pre-existing — see deferred-work.md' inline rather than re-surfacing it as a new finding. Re-flagged known debt was a process artifact in Epic 1 reviews.",
+  "Distinguish source CSS (fieldmark_shared/src/*.css) from generated/optimized output (fieldmark_shared/dist/fieldmark.css). Do not flag generated-output variance, normalization artifacts, or LightningCSS dedup output as defects — those are mechanical, not authored.",
+  "Skipped-test gate check: when a test calls test.skip / pytest.mark.skip / [Fact(Skip=…)] / t.Skip conditional on environment (npx present, browser feature support, authenticated session, live HTTP server), verify at least one CI lane guarantees the precondition and the test actually runs there. A test that skips in every reachable lane is a gate bypass — flag as such. See hard-rules.md.",
+  "Form-contract drift check: for any form rendered in ≥2 stacks, verify the field names, hidden-input names, and return-target conventions match between the template, the handler binding, and any documented contract. Story 1.11 had two review rounds on return-target field-name drift between template and handler.",
+]

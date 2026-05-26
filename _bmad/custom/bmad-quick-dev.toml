@@ -1,0 +1,13 @@
+# Team-level overrides for bmad-quick-dev.
+# Committed to the repo.
+#
+# Ratified by Epic 1 retrospective 2026-05-25 — Action Item A1.
+
+[workflow]
+
+persistent_facts = [
+  "file:{project-root}/docs/reference/security-defaults.md",
+  "file:{project-root}/docs/reference/component-edge-case-checklist.md",
+  "Cross-stack implementation order: when implementing logic that will exist in ≥2 stacks, implement once, then port the same logical shape to each stack. After implementing the third stack, re-read all three side-by-side and verify shape parity (same branch order, same fallback values, same error handling) before declaring the change complete.",
+  "AC-sync rule: if your implementation diverges from a specification in a defensible way, update the spec in the same change with a one-line rationale. Do not leave spec and implementation in disagreement.",
+]

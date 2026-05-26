@@ -1,0 +1,15 @@
+# Team-level overrides for bmad-create-story.
+# Committed to the repo.
+#
+# Ratified by Epic 1 retrospective 2026-05-25 — Action Item A1.
+
+[workflow]
+
+persistent_facts = [
+  "file:{project-root}/docs/reference/component-edge-case-checklist.md",
+  "file:{project-root}/docs/reference/security-defaults.md",
+  "When authoring a component story, walk the nine categories in component-edge-case-checklist.md and add a Given/When/Then AC block for each one that applies. Do not assume a category doesn't apply without checking — Epic 1's 2026-05-17 deferred-work block was nine missed edge-case ACs across Story 1.4 and 1.5.",
+  "When authoring a story that handles forms, cookies, redirects, user input, or filesystem writes, walk the seven categories in security-defaults.md and add ACs for the applicable ones. Story 1.11 (login open-redirect) and Story 1.6 (cookie regex injection) shipped without these ACs and required multiple review rounds to add them after-the-fact.",
+  "When authoring a story that introduces a cross-stack contract (data shape, response shape, orchestration pattern, form field names), the AC list must include three deliverables: (1) a documentation contract under docs/reference/ or docs/how-to/, (2) a native implementation per stack, (3) a per-stack conformance test. See root CLAUDE.md Cross-Stack Architecture Principle.",
+  "Story file sign-off block: every story file ends with a standardized block — date of final review, total review-round count, final reviewer-verdict (PASS/FAIL), link to any deferred-work entries created from the story. Add a placeholder section in the story template so dev-story / code-review can populate it.",
+]
