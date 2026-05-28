@@ -147,6 +147,35 @@ auth.Can(actor *app.Actor, action string, entityID uuid.UUID) bool
 
 Canonical snapshot reference: `fieldmark_shared/components/action_button.example.html`.
 
+## Go Component Template Rules
+
+These rules apply to every component template in `internal/web/templates/components/` and were ratified after Story 2.4's five review rounds.
+
+**No `template.HTML(...)` casts in component templates or view models.** Go's `html/template` context-aware escaping covers all output by default. A `template.HTML(...)` cast bypasses escaping and is an XSS vector. It is prohibited in component wrappers and in any view model field that feeds into a component template.
+
+**Every component test file must include a `template.HTML(` grep guard.** When a component test file (`*_test.go`) is written, it must include a sub-test asserting that `template.HTML(` does not appear in the wrapper template file. This applies to every component — not just the first three written. A component test file without this guard is incomplete.
+
+**Table-driven tests: avoid mutating captured VMs.** Go 1.22+ gives range variables per-iteration scope, so `tc := tc` is no longer the safety mechanism. The real trap is mutating a shared or previously captured VM struct before or inside `t.Run`; if subtests are ever parallelized with `t.Parallel()`, that becomes a data race or order-dependent assertion. Pattern to avoid:
+
+```go
+// WRONG: vm is shared; mutating it for each case corrupts parallel sub-tests
+for _, tc := range cases {
+    vm.Field = tc.Input   // mutation of shared fixture — do not do this
+    t.Run(tc.Name, func(t *testing.T) { ... })
+}
+```
+
+Correct pattern — construct or copy the VM inside the loop body before `t.Run` so each sub-test owns its own value:
+
+```go
+for _, tc := range cases {
+    vm := SomeVM{Field: tc.Input}  // owned per sub-test
+    t.Run(tc.Name, func(t *testing.T) {
+        ...
+    })
+}
+```
+
 ## Hard Rules (Go-specific)
 
 Root `CLAUDE.md` covers cross-stack rules (no client-side state, no fat service layers, real PostgreSQL in tests, infrastructure-owned `domain` schema). The Go-specific rules are:

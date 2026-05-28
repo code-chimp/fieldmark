@@ -1,0 +1,19 @@
+{{ define "audit_row" -}}
+{{/* Contract: docs/reference/component-canonical-examples.md */ -}}
+<li class="audit-row" data-audit-action="{{ .Action }}">
+  <span class="audit-row__action"><span class="badge {{ .ActionClass }}">{{ .Action }}</span></span>
+  <span class="audit-row__actor">{{ .ActorDisplay }}</span>
+  {{- if .ShowInitialsFallback }}
+  <span class="audit-row__initials">??</span>
+  {{- end }}
+  <time class="audit-row__timestamp tnum" datetime="{{ .OccurredAt }}" title="{{ .Absolute }}">{{ .Relative }}</time>
+  {{- if .BeforeAfterJSON }}
+  <details class="audit-row__disclosure"{{ if .Expanded }} open{{ end }}>
+    <summary>Show change</summary>
+    {{- if .Expanded }}
+    <pre><code class="font-mono">{{ .BeforeAfterJSON }}</code></pre>
+    {{- end }}
+  </details>
+  {{- end }}
+</li>
+{{- end }}

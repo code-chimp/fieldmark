@@ -1,0 +1,6 @@
+{% comment %}Contract: docs/reference/component-canonical-examples.md{% endcomment %}
+<section class="dashboard-tile" id="{{ tile_id }}"{% if role_status %} role="status"{% endif %}>
+  <p class="dashboard-tile__label">{{ label }}</p>
+  <p class="dashboard-tile__value text-3xl font-bold tnum{% if value_color == "success" %} text-success{% elif value_color == "warning" %} text-warning{% elif value_color == "danger" %} text-danger{% elif value_color == "info" %} text-info{% elif value_color == "neutral" %} text-neutral{% endif %}">{% if value == 0 or value != None and value|stringformat:"s"|slugify %}{{ value }}{% else %}—{% endif %}</p>
+  {% if secondary %}<p class="dashboard-tile__secondary">{{ secondary }}</p>{% endif %}
+</section>

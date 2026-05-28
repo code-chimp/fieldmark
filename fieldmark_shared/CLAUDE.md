@@ -149,6 +149,14 @@ cd fieldmark-go && go run ./cmd/server
 - All npm dependencies must use exact version pins — no `^` or `~` ranges.
 - CSS partials use underscore prefix (`_fonts.css`, `_tokens.css`, `_layout.css`, `_ag-grid.css`). They are imported into `fieldmark.css` only.
 - When editing CSS, run `pnpm run build` and commit both the source changes and the updated `dist/fieldmark.css`.
+- **Accessibility media queries belong exclusively in `_a11y.css`.** Never add `@media (forced-colors: active)` or `@media (prefers-reduced-motion: reduce)` blocks to `_tokens.css`, `_components.css`, or any other partial. Splitting these blocks across files produces duplicate `@media` rules in `dist/fieldmark.css` and makes it impossible to audit accessibility coverage from a single file. (Story 2.4 round 3: a `forced-colors` block was erroneously placed in `_tokens.css`.)
+
+## Component Canonical Examples — Maintenance Rules
+
+When creating or modifying a component under `fieldmark_shared/components/<name>/`:
+
+- **`canonical.html` and `README.md` travel together.** Whenever a new `<!-- variant: name -->` block is added to `canonical.html`, the corresponding entry in the README's "Variant List" section must be updated in the same commit. A `canonical.html` whose variant count differs from the README's Variant List is a documentation defect. (Story 2.4 round 4: `zero-value` variant was added to `dashboard_tile/canonical.html` but not to `README.md`.)
+- When per-stack snapshot tests are updated to cover a new variant, the README must also reflect that variant before the story is marked complete.
 
 ## Build-Script Defensive Defaults
 

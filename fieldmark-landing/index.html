@@ -1,817 +1,1835 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="FieldMark demonstrates server-authoritative HTMX architecture across ASP.NET Core, Django, and Go/Fiber against one PostgreSQL domain." />
-  <meta property="og:title" content="FieldMark" />
-  <meta property="og:description" content="Server-authoritative architecture. Three stacks. One database." />
-  <meta property="og:image" content="/static/img/fieldmark-og.png" />
-  <link rel="icon" href="/static/img/favicon.svg" type="image/svg+xml" />
-  <link rel="alternate icon" href="/favicon.ico" sizes="16x16 32x32" />
-  <link rel="icon" href="/static/img/favicon-16.png" sizes="16x16" type="image/png" />
-  <link rel="icon" href="/static/img/favicon-32.png" sizes="32x32" type="image/png" />
-  <link rel="apple-touch-icon" href="/static/img/apple-touch-icon.png" />
-  <link rel="manifest" href="/site.webmanifest" />
-  <meta name="theme-color" content="#f5f8ff" media="(prefers-color-scheme: light)" />
-  <meta name="theme-color" content="#101828" media="(prefers-color-scheme: dark)" />
-  <title>FieldMark · Server-authoritative architecture</title>
-  <script>
-    (function () {
-      var stored = 'system';
-      try {
-        stored = localStorage.getItem('fieldmark-theme') || 'system';
-      } catch (error) {
-        stored = 'system';
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="FieldMark demonstrates server-authoritative HTMX architecture across ASP.NET Core, Django, and Go/Fiber against one PostgreSQL domain."
+    />
+    <meta property="og:title" content="FieldMark" />
+    <meta
+      property="og:description"
+      content="Server-authoritative architecture. Three stacks. One database."
+    />
+    <meta property="og:image" content="/static/img/fieldmark-og.png" />
+    <link rel="icon" href="/static/img/favicon.svg" type="image/svg+xml" />
+    <link rel="alternate icon" href="/favicon.ico" sizes="16x16 32x32" />
+    <link
+      rel="icon"
+      href="/static/img/favicon-16.png"
+      sizes="16x16"
+      type="image/png"
+    />
+    <link
+      rel="icon"
+      href="/static/img/favicon-32.png"
+      sizes="32x32"
+      type="image/png"
+    />
+    <link rel="apple-touch-icon" href="/static/img/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta
+      name="theme-color"
+      content="#f5f8ff"
+      media="(prefers-color-scheme: light)"
+    />
+    <meta
+      name="theme-color"
+      content="#101828"
+      media="(prefers-color-scheme: dark)"
+    />
+    <title>FieldMark · Server-authoritative architecture</title>
+    <script>
+      (function () {
+        var stored = "system";
+        try {
+          stored = localStorage.getItem("fieldmark-theme") || "system";
+        } catch (error) {
+          stored = "system";
+        }
+        var resolved =
+          stored === "system"
+            ? window.matchMedia &&
+              window.matchMedia("(prefers-color-scheme: dark)").matches
+              ? "dark"
+              : "light"
+            : stored;
+        document.documentElement.dataset.theme = resolved;
+        document.documentElement.dataset.themePref = stored;
+      })();
+    </script>
+    <style>
+      @font-face {
+        font-family: "Inter";
+        src: url("static/fonts/inter/InterVariable.woff2") format("woff2");
+        font-weight: 100 900;
+        font-style: normal;
+        font-display: swap;
       }
-      var resolved = stored === 'system'
-        ? (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
-        : stored;
-      document.documentElement.dataset.theme = resolved;
-      document.documentElement.dataset.themePref = stored;
-    })();
-  </script>
-  <style>
-    @font-face {
-      font-family: "Inter";
-      src: url("static/fonts/inter/InterVariable.woff2") format("woff2");
-      font-weight: 100 900;
-      font-style: normal;
-      font-display: swap;
-    }
 
-    @font-face {
-      font-family: "JetBrains Mono";
-      src: url("static/fonts/jetbrains-mono/JetBrainsMono%5Bwght%5D.woff2") format("woff2");
-      font-weight: 100 800;
-      font-style: normal;
-      font-display: swap;
-    }
+      @font-face {
+        font-family: "JetBrains Mono";
+        src: url("static/fonts/jetbrains-mono/JetBrainsMono%5Bwght%5D.woff2")
+          format("woff2");
+        font-weight: 100 800;
+        font-style: normal;
+        font-display: swap;
+      }
 
-    /* design-systems/flat/tokens.css
+      /* design-systems/flat/tokens.css
      * Structured token bindings for Flat.
      * flat interface system with crisp colors, no depth effects, and direct component hierarchy.
      */
 
-    :root {
-      --bg: #f5f8ff;
-      --surface: #ffffff;
-      --surface-warm: #eaf1ff;
-      --fg: #101828;
-      --fg-2: #344054;
-      --muted: #667085;
-      --meta: #2563eb;
-      --border: #d7e0ef;
-      --border-soft: #edf2f8;
-      --accent: #2563eb;
-      --accent-on: #ffffff;
-      --accent-hover: color-mix(in oklab, var(--accent), black 8%);
-      --accent-active: color-mix(in oklab, var(--accent), black 14%);
-      --success: #16a34a;
-      --warn: #f59e0b;
-      --danger: #ef4444;
-      --font-display: Inter, system-ui, sans-serif;
-      --font-body: Inter, system-ui, sans-serif;
-      --font-mono: "JetBrains Mono", "SF Mono", ui-monospace, Menlo, monospace;
-      --text-xs: 12px;
-      --text-sm: 14px;
-      --text-base: 16px;
-      --text-lg: 18px;
-      --text-xl: 24px;
-      --text-2xl: 36px;
-      --text-3xl: 54px;
-      --text-4xl: 76px;
-      --leading-body: 1.52;
-      --leading-tight: 1.06;
-      --tracking-display: -0.025em;
-      --space-1: 4px;
-      --space-2: 8px;
-      --space-3: 12px;
-      --space-4: 16px;
-      --space-5: 20px;
-      --space-6: 24px;
-      --space-8: 32px;
-      --space-12: 48px;
-      --section-y-desktop: 96px;
-      --section-y-tablet: 68px;
-      --section-y-phone: 48px;
-      --radius-sm: 10px;
-      --radius-md: 16px;
-      --radius-lg: 24px;
-      --radius-pill: 9999px;
-      --elev-flat: none;
-      --elev-ring: 0 0 0 1px var(--border);
-      --elev-raised: 0 20px 52px rgba(16, 24, 40, 0.11);
-      --focus-ring: 0 0 0 4px rgba(37, 99, 235, 0.22);
-      --motion-fast: 150ms;
-      --motion-base: 240ms;
-      --ease-standard: cubic-bezier(0.2, 0, 0, 1);
-      --container-max: 1180px;
-      --container-gutter-desktop: 36px;
-      --container-gutter-tablet: 24px;
-      --container-gutter-phone: 16px;
-    }
-
-    :root {
-      --accent-soft: color-mix(in oklch, var(--accent) 12%, transparent);
-      --fg-soft: color-mix(in oklch, var(--fg) 6%, transparent);
-      --code-bg: color-mix(in oklch, var(--fg) 5%, var(--surface));
-      --nav-bg: color-mix(in oklch, var(--bg) 88%, transparent);
-      --logo-a: color-mix(in oklch, var(--fg) 18%, transparent);
-      --logo-b: color-mix(in oklch, var(--fg) 10%, transparent);
-      --fs-h1: clamp(48px, 6vw, var(--text-4xl));
-      --fs-h2: clamp(32px, 4vw, var(--text-2xl));
-      --fs-h3: 22px;
-      --fs-lead: var(--text-lg);
-      --container: var(--container-max);
-      --gutter: var(--container-gutter-desktop);
-    }
-
-    html[data-theme="dark"] {
-      --bg: oklch(17.3% 0.016 264.665);
-      --surface: oklch(20.5% 0.023 264.665);
-      --surface-warm: oklch(26.9% 0.029 264.665);
-      --fg: oklch(98.5% 0.002 247.839);
-      --fg-2: oklch(92.8% 0.006 264.531);
-      --muted: oklch(70.4% 0.04 256.788);
-      --meta: oklch(74.6% 0.16 232.661);
-      --border: oklch(37.3% 0.034 264.665);
-      --border-soft: oklch(32.1% 0.029 264.665);
-      --accent: oklch(74.6% 0.16 232.661);
-      --accent-on: oklch(17.3% 0.016 264.665);
-      --success: oklch(76.5% 0.177 163.223);
-      --warn: oklch(82.8% 0.189 84.429);
-      --danger: oklch(71.2% 0.194 13.428);
-      --elev-raised: 0 20px 52px color-mix(in oklch, black 32%, transparent);
-      --focus-ring: 0 0 0 4px color-mix(in oklch, var(--accent) 24%, transparent);
-    }
-    html[data-theme="dark"] .arch-browser {
-      background: color-mix(in oklch, var(--accent) 10%, var(--surface));
-      border-color: color-mix(in oklch, var(--accent) 32%, var(--border));
-    }
-    html[data-theme="dark"] .arch-chip {
-      color: var(--fg-2);
-      border-color: color-mix(in oklch, var(--accent) 32%, var(--border));
-      background: color-mix(in oklch, var(--accent) 12%, transparent);
-    }
-    html[data-theme="dark"] .arch-rails::before,
-    html[data-theme="dark"] .arch-rails::after {
-      border-color: color-mix(in oklch, var(--accent) 38%, var(--border));
-    }
-    html[data-theme="dark"] .rail-partial {
-      background: color-mix(in oklch, var(--accent) 18%, var(--surface));
-      border-color: color-mix(in oklch, var(--accent) 42%, var(--border));
-    }
-    html[data-theme="dark"] .rail-json {
-      background: color-mix(in oklch, var(--success) 16%, var(--surface));
-      border-color: color-mix(in oklch, var(--success) 38%, var(--border));
-    }
-    html[data-theme="dark"] .server-band {
-      background: color-mix(in oklch, var(--meta) 12%, var(--surface-warm));
-      border-color: color-mix(in oklch, var(--meta) 34%, var(--border));
-    }
-    html[data-theme="dark"] .server-stack {
-      background: color-mix(in oklch, var(--fg) 3%, var(--surface));
-      border-color: color-mix(in oklch, var(--fg) 16%, var(--border));
-    }
-    html[data-theme="dark"] .db-layer {
-      background: color-mix(in oklch, var(--fg) 5%, var(--surface));
-      border-color: color-mix(in oklch, var(--fg) 18%, var(--border));
-    }
-
-    *, *::before, *::after { box-sizing: border-box; }
-    html { -webkit-text-size-adjust: 100%; scroll-behavior: auto; }
-    body {
-      margin: 0;
-      background: var(--bg);
-      color: var(--fg);
-      font-family: var(--font-body);
-      font-size: var(--text-base);
-      line-height: var(--leading-body);
-      text-rendering: optimizeLegibility;
-      -webkit-font-smoothing: antialiased;
-    }
-    img, svg { display: block; max-width: 100%; }
-    a { color: inherit; text-decoration: none; }
-    button { font: inherit; cursor: pointer; }
-    p { text-wrap: pretty; }
-    h1, h2, h3, h4 { text-wrap: balance; }
-    code { font-family: var(--font-mono); font-size: 0.94em; }
-    :focus-visible { outline: none; box-shadow: var(--focus-ring); }
-    .skip-link {
-      position: fixed;
-      left: var(--space-4);
-      top: var(--space-4);
-      z-index: 50;
-      transform: translateY(calc(-100% - var(--space-8)));
-      background: var(--fg);
-      color: var(--surface);
-      border-radius: var(--radius-md);
-      padding: 10px 14px;
-      font-size: var(--text-sm);
-      font-weight: 700;
-      transition: transform var(--motion-fast) var(--ease-standard);
-    }
-    .skip-link:focus-visible { transform: translateY(0); }
-    .sr-only {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      padding: 0;
-      margin: -1px;
-      overflow: hidden;
-      clip: rect(0, 0, 0, 0);
-      white-space: nowrap;
-      border: 0;
-    }
-
-    .container { max-width: var(--container); margin-inline: auto; padding-inline: var(--gutter); }
-    .section { padding-block: clamp(var(--section-y-phone), 8vw, var(--section-y-desktop)); }
-    .section + .section { border-top: 1px solid var(--border); }
-    .stack { display: flex; flex-direction: column; gap: var(--space-6); }
-    .row { display: flex; align-items: center; gap: var(--space-4); }
-    .row-between { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); }
-    .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-8); }
-    .grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-6); }
-    .grid-4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-4); }
-    .grid-2-1 { display: grid; grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr); gap: var(--space-12); align-items: start; }
-    .grid-1-2 { display: grid; grid-template-columns: minmax(280px, 1fr) minmax(0, 2fr); gap: var(--space-12); align-items: start; }
-
-    .h1, h1 {
-      font-family: var(--font-display);
-      font-size: var(--fs-h1);
-      line-height: var(--leading-tight);
-      letter-spacing: var(--tracking-display);
-      margin: 0;
-    }
-    .h2, h2 {
-      font-family: var(--font-display);
-      font-size: var(--fs-h2);
-      line-height: 1.12;
-      letter-spacing: var(--tracking-display);
-      margin: 0;
-    }
-    .h3, h3 { font-family: var(--font-display); font-size: var(--fs-h3); font-weight: 650; line-height: 1.25; margin: 0; }
-    .lead { color: var(--muted); font-size: var(--fs-lead); max-width: 62ch; margin: 0; }
-    .eyebrow {
-      font-family: var(--font-mono);
-      font-size: var(--text-xs);
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin: 0 0 var(--space-5);
-    }
-    .meta { color: var(--muted); font-family: var(--font-mono); font-size: var(--text-xs); }
-    .num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
-
-    .topnav {
-      position: sticky;
-      top: 0;
-      z-index: 20;
-      background: var(--nav-bg);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--border);
-    }
-    .topnav-inner { min-height: 68px; display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); }
-    .brand-lockup { display: inline-flex; align-items: center; gap: var(--space-3); font-weight: 750; letter-spacing: -0.01em; }
-    .brand-mark {
-      width: 34px;
-      height: 34px;
-      color: var(--fg);
-      display: grid;
-      place-items: center;
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      background: var(--surface);
-    }
-    .nav-links { display: flex; align-items: center; gap: var(--space-5); }
-    .nav-links a { color: var(--muted); font-size: var(--text-sm); }
-    .nav-links a:hover { color: var(--fg); }
-    .nav-actions { display: flex; align-items: center; gap: var(--space-3); }
-    .github-link { width: 36px; height: 36px; display: grid; place-items: center; border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--fg); background: var(--surface); }
-    .github-link:hover { border-color: var(--fg); }
-
-    .theme-toggle { display: inline-grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-1); padding: var(--space-1); border: 1px solid var(--border); border-radius: var(--radius-pill); background: var(--surface); }
-    .theme-toggle button { border: 0; color: var(--muted); background: transparent; border-radius: var(--radius-pill); min-width: 40px; min-height: 32px; display: grid; place-items: center; }
-    .theme-toggle button[aria-pressed="true"] { color: var(--surface); background: var(--fg); }
-    .theme-toggle svg { width: 16px; height: 16px; }
-
-    .hero { padding-block: clamp(72px, 10vw, 128px); }
-    .hero-grid { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(420px, 0.85fr); align-items: center; gap: var(--space-12); }
-    .hero-cta { display: flex; flex-wrap: wrap; gap: var(--space-3); margin-top: var(--space-8); }
-    .hero-panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-6); box-shadow: var(--elev-raised); }
-    .browser-bar { display: flex; gap: var(--space-2); padding-bottom: var(--space-4); border-bottom: 1px solid var(--border); }
-    .dot { width: 10px; height: 10px; border-radius: var(--radius-pill); background: var(--border); }
-    .diagram { padding-top: var(--space-6); display: grid; gap: var(--space-4); }
-    .diagram-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-3); }
-    .diagram-node { border: 1px solid var(--border); background: var(--code-bg); border-radius: var(--radius-md); padding: var(--space-4); min-height: 86px; display: flex; flex-direction: column; justify-content: space-between; }
-    .diagram-node strong { font-family: var(--font-display); }
-    .diagram-line { height: 1px; background: var(--border); position: relative; }
-    .diagram-line::after { content: ""; position: absolute; left: 50%; top: 0; width: 1px; height: var(--space-6); background: var(--border); }
-    .db-node { border: 1px solid var(--fg); border-radius: var(--radius-md); padding: var(--space-5); display: grid; gap: var(--space-2); background: var(--surface); }
-    .arch-map { display: grid; gap: var(--space-4); }
-    .arch-layer { border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--surface); padding: var(--space-5); }
-    .arch-browser { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: var(--space-4); background: var(--code-bg); }
-    .arch-layer strong, .server-stack strong { font-family: var(--font-display); }
-    .arch-layer p, .server-stack p { margin: var(--space-2) 0 0; color: var(--muted); font-size: var(--text-sm); }
-    .arch-chip { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--muted); border: 1px solid var(--border); border-radius: var(--radius-pill); padding: 6px 10px; white-space: nowrap; }
-    .arch-rails { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); position: relative; }
-    .arch-rails::before, .arch-rails::after { content: ""; position: absolute; left: 25%; right: 25%; height: var(--space-4); border-inline: 1px solid var(--border); pointer-events: none; }
-    .arch-rails::before { top: calc(var(--space-4) * -1); border-top: 1px solid var(--border); border-radius: var(--radius-sm) var(--radius-sm) 0 0; }
-    .arch-rails::after { bottom: calc(var(--space-4) * -1); border-bottom: 1px solid var(--border); border-radius: 0 0 var(--radius-sm) var(--radius-sm); }
-    .rail { border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface); padding: var(--space-4); display: grid; gap: var(--space-2); min-height: 112px; }
-    .rail strong { display: flex; align-items: center; gap: var(--space-2); }
-    .rail strong::before { content: ""; width: 10px; height: 10px; border-radius: var(--radius-pill); background: var(--accent); }
-    .rail-json { background: color-mix(in oklch, var(--success) 8%, var(--surface)); }
-    .rail-json strong::before { background: var(--success); }
-    .rail-partial { background: color-mix(in oklch, var(--accent) 8%, var(--surface)); }
-    .server-band { border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--surface-warm); padding: var(--space-5); display: grid; gap: var(--space-4); }
-    .server-band-head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-4); }
-    .server-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-3); }
-    .server-stack { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); padding: var(--space-4); }
-    .db-layer { border-color: var(--fg); }
-    .contract-strip { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-2); }
-    .contract-strip span { border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--code-bg); padding: var(--space-3); color: var(--fg-2); font-family: var(--font-mono); font-size: var(--text-xs); text-align: center; }
-
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: var(--space-2);
-      padding: 11px 18px;
-      border-radius: var(--radius-md);
-      border: 1px solid transparent;
-      font-size: var(--text-sm);
-      font-weight: 650;
-      transition: transform var(--motion-fast) var(--ease-standard), background var(--motion-fast) var(--ease-standard), border-color var(--motion-fast) var(--ease-standard);
-    }
-    .btn:active { transform: translateY(1px); }
-    .btn-primary { background: var(--accent); color: var(--accent-on); border-color: var(--accent); }
-    .btn-primary:hover { background: var(--accent-hover); }
-    .btn-secondary { background: var(--surface); color: var(--fg); border-color: var(--border); }
-    .btn-secondary:hover { border-color: var(--fg); }
-    .btn-ghost { background: transparent; color: var(--fg); padding-inline: 0; }
-    .btn-ghost:hover { color: var(--meta); }
-    .btn-arrow::after { content: "->"; font-family: var(--font-mono); transition: transform var(--motion-fast) var(--ease-standard); }
-    .btn-arrow:hover::after { transform: translateX(2px); }
-
-    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-6); }
-    .card-flat { background: transparent; border: 0; padding: 0; }
-    .card-rule { border-top: 1px solid var(--fg); padding-top: var(--space-5); }
-    .pill, .tag {
-      display: inline-flex;
-      align-items: center;
-      width: fit-content;
-      gap: var(--space-2);
-      border-radius: var(--radius-pill);
-      font-size: var(--text-xs);
-      font-family: var(--font-mono);
-      line-height: 1;
-      white-space: nowrap;
-    }
-    .pill { padding: 6px 10px; color: var(--fg); background: var(--fg-soft); text-transform: uppercase; letter-spacing: 0.04em; }
-    .tag { padding: 5px 10px; color: var(--muted); border: 1px solid var(--border); background: var(--surface); }
-    .feature-mark { width: 44px; height: 44px; display: grid; place-items: center; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface); color: var(--fg); margin-bottom: var(--space-4); }
-    .feature-mark svg { width: 22px; height: 22px; }
-
-    .thesis-layout { display: grid; grid-template-columns: minmax(320px, 0.9fr) minmax(0, 1.1fr); gap: var(--space-12); align-items: stretch; }
-    .thesis-intro { display: flex; flex-direction: column; justify-content: space-between; gap: var(--space-8); min-height: 100%; }
-    .thesis-statement { border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--surface); padding: var(--space-6); }
-    .thesis-statement p { margin: 0; color: var(--fg); font-size: var(--text-lg); line-height: 1.45; font-weight: 620; }
-    .thesis-panel { border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--surface); padding: var(--space-6); display: grid; gap: var(--space-6); }
-    .thesis-copy { display: grid; gap: var(--space-5); color: var(--fg-2); }
-    .thesis-copy p { margin: 0; max-width: 66ch; }
-    .proof-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-3); }
-    .proof-item { border-top: 1px solid var(--border); padding-top: var(--space-4); display: grid; gap: var(--space-2); }
-    .proof-item strong { font-size: var(--text-sm); }
-    .proof-item span { color: var(--muted); font-size: var(--text-sm); line-height: 1.45; }
-    .stack-card { display: grid; gap: var(--space-5); min-height: 100%; }
-    .mascot-frame {
-      aspect-ratio: 1 / 1;
-      width: 100%;
-      border: 0;
-      border-radius: calc(var(--radius-lg) - 4px);
-      background: var(--surface-warm);
-      color: var(--fg);
-      display: grid;
-      place-items: center;
-      overflow: hidden;
-      box-shadow: inset 0 0 0 1px var(--border-soft);
-    }
-    .mascot-frame span { font-family: var(--font-display); font-size: clamp(32px, 5vw, 54px); font-weight: 800; letter-spacing: var(--tracking-display); }
-    .mascot-frame img { width: 100%; height: 100%; object-fit: contain; object-position: center center; padding: 0; }
-    .stack-card p { color: var(--muted); margin: 0; }
-    .stack-badges { display: flex; flex-wrap: wrap; gap: var(--space-2); }
-    .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--surface); }
-    .ds-table { width: 100%; border-collapse: collapse; font-size: var(--text-sm); min-width: 760px; }
-    .ds-table th, .ds-table td { padding: 14px 16px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
-    .ds-table th { color: var(--muted); font-family: var(--font-mono); font-size: var(--text-xs); font-weight: 650; text-transform: uppercase; letter-spacing: 0.04em; }
-    .ds-table tbody td:first-child { color: var(--fg-2); font-family: var(--font-mono); font-size: var(--text-xs); font-weight: 650; text-transform: uppercase; letter-spacing: 0.04em; }
-    .ds-table code, .stack-card .meta, .state-path span { font-family: var(--font-mono); font-size: var(--text-xs); }
-    .ds-table tr:last-child td { border-bottom: 0; }
-    .ds-table tbody tr:hover { background: var(--fg-soft); }
-    .state-flow { display: grid; gap: var(--space-3); }
-    .state-row { display: grid; grid-template-columns: 160px 1fr; gap: var(--space-4); align-items: center; padding-block: var(--space-3); border-bottom: 1px solid var(--border); }
-    .state-row:last-child { border-bottom: 0; }
-    .state-path { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; color: var(--muted); }
-    .state-path span { padding: 5px 9px; border: 1px solid var(--border); border-radius: var(--radius-pill); background: var(--surface); }
-    .pagefoot { padding-block: var(--space-8); color: var(--muted); border-top: 1px solid var(--border); font-size: var(--text-sm); }
-    .pagefoot a { text-decoration: underline; text-underline-offset: 3px; }
-    .footer-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: var(--space-8); }
-    .footer-links { display: grid; gap: var(--space-3); align-content: start; }
-    .footer-links p { margin: 0; }
-    .footer-legal { padding-top: var(--space-2); color: color-mix(in oklch, var(--muted) 86%, transparent); font-size: var(--text-xs); line-height: 1.55; }
-
-    @media (max-width: 1020px) {
-      :root { --gutter: var(--container-gutter-tablet); }
-      .hero-grid, .grid-2, .grid-3, .grid-4, .grid-2-1, .grid-1-2, .thesis-layout { grid-template-columns: 1fr; }
-      .hero-panel { box-shadow: var(--elev-flat); }
-      .proof-grid { grid-template-columns: 1fr; }
-      .server-grid, .contract-strip { grid-template-columns: 1fr; }
-      .nav-links { display: none; }
-    }
-    @media (max-width: 620px) {
-      :root { --gutter: var(--container-gutter-phone); }
-      .topnav-inner { min-height: auto; padding-block: var(--space-3); align-items: flex-start; }
-      .nav-actions { flex-wrap: wrap; justify-content: flex-end; }
-      .brand-lockup span { display: none; }
-      .hero { padding-block: var(--section-y-phone); }
-      .hero-cta { flex-direction: column; }
-      .btn { width: 100%; }
-      .theme-toggle button { min-width: 34px; }
-      .diagram-row { grid-template-columns: 1fr; }
-      .arch-browser, .arch-rails { grid-template-columns: 1fr; }
-      .arch-rails::before, .arch-rails::after { display: none; }
-      .server-band-head { display: grid; }
-      .state-row, .footer-grid { grid-template-columns: 1fr; }
-    }
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        scroll-behavior: auto !important;
-        transition-duration: 0.01ms !important;
+      :root {
+        --bg: #f5f8ff;
+        --surface: #ffffff;
+        --surface-warm: #eaf1ff;
+        --fg: #101828;
+        --fg-2: #344054;
+        --muted: #667085;
+        --meta: #2563eb;
+        --border: #d7e0ef;
+        --border-soft: #edf2f8;
+        --accent: #2563eb;
+        --accent-on: #ffffff;
+        --accent-hover: color-mix(in oklab, var(--accent), black 8%);
+        --accent-active: color-mix(in oklab, var(--accent), black 14%);
+        --success: #16a34a;
+        --warn: #f59e0b;
+        --danger: #ef4444;
+        --font-display: Inter, system-ui, sans-serif;
+        --font-body: Inter, system-ui, sans-serif;
+        --font-mono:
+          "JetBrains Mono", "SF Mono", ui-monospace, Menlo, monospace;
+        --text-xs: 12px;
+        --text-sm: 14px;
+        --text-base: 16px;
+        --text-lg: 18px;
+        --text-xl: 24px;
+        --text-2xl: 36px;
+        --text-3xl: 54px;
+        --text-4xl: 76px;
+        --leading-body: 1.52;
+        --leading-tight: 1.06;
+        --tracking-display: -0.025em;
+        --space-1: 4px;
+        --space-2: 8px;
+        --space-3: 12px;
+        --space-4: 16px;
+        --space-5: 20px;
+        --space-6: 24px;
+        --space-8: 32px;
+        --space-12: 48px;
+        --section-y-desktop: 96px;
+        --section-y-tablet: 68px;
+        --section-y-phone: 48px;
+        --radius-sm: 10px;
+        --radius-md: 16px;
+        --radius-lg: 24px;
+        --radius-pill: 9999px;
+        --elev-flat: none;
+        --elev-ring: 0 0 0 1px var(--border);
+        --elev-raised: 0 20px 52px rgba(16, 24, 40, 0.11);
+        --focus-ring: 0 0 0 4px rgba(37, 99, 235, 0.22);
+        --motion-fast: 150ms;
+        --motion-base: 240ms;
+        --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+        --container-max: 1180px;
+        --container-gutter-desktop: 36px;
+        --container-gutter-tablet: 24px;
+        --container-gutter-phone: 16px;
       }
-    }
-  </style>
-</head>
-<body>
-  <a class="skip-link" href="#top">Skip to content</a>
-  <header class="topnav">
-    <div class="container topnav-inner">
-      <a href="#top" class="brand-lockup" aria-label="FieldMark home">
-        <span class="brand-mark" aria-hidden="true">
-          <svg viewBox="0 0 32 32" fill="none">
-            <path d="M16 3 29 16 16 29 3 16 16 3Z" fill="currentColor" fill-opacity="0.08" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
-            <path d="M16 3v26M3 16h26" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-opacity="0.28" />
-            <path d="m11 17.2 4 4L22.4 12" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
-        </span>
-        <span>FieldMark</span>
-      </a>
-      <nav class="nav-links" aria-label="Primary navigation">
-        <a href="#thesis">Thesis</a>
-        <a href="#architecture">Architecture</a>
-        <a href="#stacks">Stacks</a>
-        <a href="#comparison">Comparison</a>
-        <a href="#domain">Domain</a>
-      </nav>
-      <div class="nav-actions">
-        <div class="theme-toggle" role="group" aria-label="Theme">
-          <button type="button" data-theme-choice="system" aria-label="Use system theme">
-            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>
-          </button>
-          <button type="button" data-theme-choice="light" aria-label="Use light theme">
-            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
-          </button>
-          <button type="button" data-theme-choice="dark" aria-label="Use dark theme">
-            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 13A8 8 0 1 1 11 3a6 6 0 0 0 10 10Z"/></svg>
-          </button>
-        </div>
-        <a class="github-link" href="https://github.com/code-chimp/fieldmark" target="_blank" rel="noopener noreferrer" aria-label="View FieldMark on GitHub">
-          <svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5A11.5 11.5 0 0 0 8.36 22.9c.58.11.79-.25.79-.56v-2.02c-3.22.7-3.9-1.38-3.9-1.38-.53-1.34-1.29-1.7-1.29-1.7-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.2 1.77 1.2 1.04 1.76 2.72 1.25 3.38.96.1-.75.4-1.25.73-1.54-2.57-.29-5.27-1.28-5.27-5.72 0-1.26.45-2.3 1.19-3.11-.12-.29-.52-1.47.11-3.07 0 0 .97-.31 3.17 1.19a10.9 10.9 0 0 1 5.78 0c2.2-1.5 3.17-1.19 3.17-1.19.63 1.6.23 2.78.11 3.07.74.81 1.19 1.85 1.19 3.11 0 4.45-2.71 5.43-5.29 5.71.42.36.78 1.07.78 2.16v3.02c0 .31.21.68.8.56A11.5 11.5 0 0 0 12 .5Z"/></svg>
-        </a>
-      </div>
-    </div>
-  </header>
 
-  <main id="top" tabindex="-1">
-    <section class="section hero" data-od-id="hero">
-      <div class="container hero-grid">
-        <div class="stack">
-          <p class="eyebrow">HTMX architecture reference</p>
-          <h1>Server-authoritative architecture. Three stacks. One database.</h1>
-          <p class="lead">FieldMark asks whether a request-response application really needs a client-side SPA by implementing the same inspection domain in ASP.NET Core, Django, and Go/Fiber.</p>
-          <div class="hero-cta">
-            <a class="btn btn-primary" href="#thesis">Read the thesis</a>
-            <a class="btn btn-secondary" href="#stacks">See the stacks</a>
-            <a class="btn btn-ghost btn-arrow" href="https://github.com/code-chimp/fieldmark" target="_blank" rel="noopener noreferrer">View on GitHub</a>
-          </div>
-        </div>
-        <div class="hero-panel" aria-label="Architecture preview">
-          <div class="browser-bar" aria-hidden="true"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
-          <div class="diagram">
-            <div class="diagram-row">
-              <div class="diagram-node"><strong>.NET</strong><span class="meta">Razor Pages</span></div>
-              <div class="diagram-node"><strong>Django</strong><span class="meta">Templates</span></div>
-              <div class="diagram-node"><strong>Go/Fiber</strong><span class="meta">Fiber views</span></div>
-            </div>
-            <div class="diagram-line" aria-hidden="true"></div>
-            <div class="db-node">
-              <span class="pill">PostgreSQL</span>
-              <strong>domain schema + isolated auth schemas</strong>
-              <span class="meta">domain · dotnet_auth · django_auth · fiber_auth</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
+      :root {
+        --accent-soft: color-mix(in oklch, var(--accent) 12%, transparent);
+        --fg-soft: color-mix(in oklch, var(--fg) 6%, transparent);
+        --code-bg: color-mix(in oklch, var(--fg) 5%, var(--surface));
+        --nav-bg: color-mix(in oklch, var(--bg) 88%, transparent);
+        --logo-a: color-mix(in oklch, var(--fg) 18%, transparent);
+        --logo-b: color-mix(in oklch, var(--fg) 10%, transparent);
+        --fs-h1: clamp(48px, 6vw, var(--text-4xl));
+        --fs-h2: clamp(32px, 4vw, var(--text-2xl));
+        --fs-h3: 22px;
+        --fs-lead: var(--text-lg);
+        --container: var(--container-max);
+        --gutter: var(--container-gutter-desktop);
+      }
 
-    <section class="section" id="thesis" data-od-id="thesis">
-      <div class="container thesis-layout">
-        <div class="thesis-intro">
-          <div>
-            <p class="eyebrow">The thesis</p>
-            <h2>You may not need an SPA for this class of product.</h2>
-          </div>
-          <div class="thesis-statement">
-            <p>The point is not nostalgia for server rendering. The point is keeping business authority in one place while still delivering responsive product interactions.</p>
-          </div>
-        </div>
-        <div class="thesis-panel">
-          <div class="thesis-copy">
-            <p>SPAs have become the default answer for applications that are mostly request-response: forms, authorization checks, filtered lists, detail panes, audit logs, and state transitions. The cost shows up as duplicated validation, drift between client and server rules, and UI paths that have to reconstruct the same business decision twice.</p>
-            <p>FieldMark keeps the server authoritative without pretending the browser should be inert. HTMX handles targeted interactivity, AG Grid runs as a focused JavaScript island for rich enterprise tables, and the server still decides which controls exist, which transitions are valid, and which audit entry is appended.</p>
-            <p>The reference proves the idea by building one inspection and compliance domain three times. Routes, HTMX targets, AG Grid contracts, audit strings, and domain method names are treated as a parity contract; divergence is a defect.</p>
-          </div>
-          <div class="proof-grid" aria-label="FieldMark proof points">
-            <div class="proof-item">
-              <strong>One domain</strong>
-              <span>Project, inspection, violation, and corrective-action logic stays server-side.</span>
-            </div>
-            <div class="proof-item">
-              <strong>Pragmatic islands</strong>
-              <span>AG Grid supplies familiar client-side table controls without moving domain authority into an SPA.</span>
-            </div>
-            <div class="proof-item">
-              <strong>Parity as proof</strong>
-              <span>Routes, HTMX targets, grids, audit strings, and method names are compared directly.</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
+      html[data-theme="dark"] {
+        --bg: oklch(17.3% 0.016 264.665);
+        --surface: oklch(20.5% 0.023 264.665);
+        --surface-warm: oklch(26.9% 0.029 264.665);
+        --fg: oklch(98.5% 0.002 247.839);
+        --fg-2: oklch(92.8% 0.006 264.531);
+        --muted: oklch(70.4% 0.04 256.788);
+        --meta: oklch(74.6% 0.16 232.661);
+        --border: oklch(37.3% 0.034 264.665);
+        --border-soft: oklch(32.1% 0.029 264.665);
+        --accent: oklch(74.6% 0.16 232.661);
+        --accent-on: oklch(17.3% 0.016 264.665);
+        --success: oklch(76.5% 0.177 163.223);
+        --warn: oklch(82.8% 0.189 84.429);
+        --danger: oklch(71.2% 0.194 13.428);
+        --elev-raised: 0 20px 52px color-mix(in oklch, black 32%, transparent);
+        --focus-ring: 0 0 0 4px
+          color-mix(in oklch, var(--accent) 24%, transparent);
+      }
+      html[data-theme="dark"] .arch-browser {
+        background: color-mix(in oklch, var(--accent) 10%, var(--surface));
+        border-color: color-mix(in oklch, var(--accent) 32%, var(--border));
+      }
+      html[data-theme="dark"] .arch-chip {
+        color: var(--fg-2);
+        border-color: color-mix(in oklch, var(--accent) 32%, var(--border));
+        background: color-mix(in oklch, var(--accent) 12%, transparent);
+      }
+      html[data-theme="dark"] .arch-rails::before,
+      html[data-theme="dark"] .arch-rails::after {
+        border-color: color-mix(in oklch, var(--accent) 38%, var(--border));
+      }
+      html[data-theme="dark"] .rail-partial {
+        background: color-mix(in oklch, var(--accent) 18%, var(--surface));
+        border-color: color-mix(in oklch, var(--accent) 42%, var(--border));
+      }
+      html[data-theme="dark"] .rail-json {
+        background: color-mix(in oklch, var(--success) 16%, var(--surface));
+        border-color: color-mix(in oklch, var(--success) 38%, var(--border));
+      }
+      html[data-theme="dark"] .server-band {
+        background: color-mix(in oklch, var(--meta) 12%, var(--surface-warm));
+        border-color: color-mix(in oklch, var(--meta) 34%, var(--border));
+      }
+      html[data-theme="dark"] .server-stack {
+        background: color-mix(in oklch, var(--fg) 3%, var(--surface));
+        border-color: color-mix(in oklch, var(--fg) 16%, var(--border));
+      }
+      html[data-theme="dark"] .db-layer {
+        background: color-mix(in oklch, var(--fg) 5%, var(--surface));
+        border-color: color-mix(in oklch, var(--fg) 18%, var(--border));
+      }
 
-    <section class="section" id="architecture" data-od-id="architecture">
-      <div class="container stack" style="gap: var(--space-12);">
-        <div class="grid-2">
-          <div>
-            <p class="eyebrow">Architecture visual</p>
-            <h2>Parallel web stacks, one infrastructure-owned domain.</h2>
-          </div>
-          <p class="lead">Each stack renders pages and HTMX partials against the same PostgreSQL domain schema. Authentication data stays isolated per ecosystem; domain user references remain opaque.</p>
-        </div>
-        <div class="card">
-          <p id="architecture-summary" class="sr-only">Architecture summary: the browser exchanges server-rendered HTML partials and JSON payloads with one of three server implementations: ASP.NET Core, Django, or Go/Fiber. Each server follows shared routes, HTMX targets, AG Grid contracts, and audit strings over one PostgreSQL domain schema.</p>
-          <div class="arch-map" aria-label="FieldMark architecture diagram" aria-describedby="architecture-summary">
-            <div class="arch-layer arch-browser">
-              <div>
-                <strong>Browser</strong>
-                <p>HTMX swaps server-rendered fragments while JavaScript islands provide focused rich controls.</p>
-              </div>
-              <span class="arch-chip">UX shell</span>
-            </div>
-            <div class="arch-rails" aria-label="Browser and server communication">
-              <div class="rail rail-partial">
-                <strong>HTML partials</strong>
-                <span class="meta">Forms, validation messages, detail panels, and stable HTMX target IDs.</span>
-              </div>
-              <div class="rail rail-json">
-                <strong>JSON payloads</strong>
-                <span class="meta">AG Grid contracts for filtering, sorting, pagination, and enterprise table behavior.</span>
-              </div>
-            </div>
-            <div class="server-band">
-              <div class="server-band-head">
-                <strong>Server flavors</strong>
-                <span class="meta">Same application contract, three ecosystem implementations</span>
-              </div>
-              <div class="server-grid">
-                <div class="server-stack"><strong>ASP.NET Core</strong><p>Razor Pages + EF Core</p></div>
-                <div class="server-stack"><strong>Django</strong><p>Templates + Django ORM</p></div>
-                <div class="server-stack"><strong>Go/Fiber</strong><p>Fiber views + pgx SQL</p></div>
-              </div>
-            </div>
-            <div class="arch-layer db-layer">
-              <strong>Shared PostgreSQL domain</strong>
-              <p>The <code>domain</code> schema is owned by infrastructure SQL init scripts, not by any single framework.</p>
-            </div>
-            <div class="contract-strip" aria-label="Shared implementation contracts">
-              <span>Identical routes</span>
-              <span>HTMX targets</span>
-              <span>AG Grid contracts</span>
-              <span>Audit strings</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+      html {
+        -webkit-text-size-adjust: 100%;
+        scroll-behavior: auto;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--fg);
+        font-family: var(--font-body);
+        font-size: var(--text-base);
+        line-height: var(--leading-body);
+        text-rendering: optimizeLegibility;
+        -webkit-font-smoothing: antialiased;
+      }
+      img,
+      svg {
+        display: block;
+        max-width: 100%;
+      }
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+      button {
+        font: inherit;
+        cursor: pointer;
+      }
+      p {
+        text-wrap: pretty;
+      }
+      h1,
+      h2,
+      h3,
+      h4 {
+        text-wrap: balance;
+      }
+      code {
+        font-family: var(--font-mono);
+        font-size: 0.94em;
+      }
+      :focus-visible {
+        outline: none;
+        box-shadow: var(--focus-ring);
+      }
+      .skip-link {
+        position: fixed;
+        left: var(--space-4);
+        top: var(--space-4);
+        z-index: 50;
+        transform: translateY(calc(-100% - var(--space-8)));
+        background: var(--fg);
+        color: var(--surface);
+        border-radius: var(--radius-md);
+        padding: 10px 14px;
+        font-size: var(--text-sm);
+        font-weight: 700;
+        transition: transform var(--motion-fast) var(--ease-standard);
+      }
+      .skip-link:focus-visible {
+        transform: translateY(0);
+      }
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
 
-    <section class="section" id="stacks" data-od-id="stacks">
-      <div class="container stack" style="gap: var(--space-12);">
-        <div class="row-between">
-          <div style="max-width: 48ch;">
-            <p class="eyebrow">Stack comparison</p>
-            <h2>Three implementations you can run and inspect.</h2>
-          </div>
-          <a class="btn btn-secondary" href="https://github.com/code-chimp/fieldmark" target="_blank" rel="noopener noreferrer">Open repository</a>
-        </div>
-        <div class="grid-3">
-          <a class="card stack-card" href="https://dotnet.fieldmark.dev" target="_blank" rel="noopener noreferrer" aria-label="Open ASP.NET Core FieldMark implementation">
-            <div class="row-between">
-              <span class="pill">.NET</span>
-              <span class="meta">dotnet.fieldmark.dev</span>
-            </div>
-            <div class="mascot-frame">
-              <img src="static/img/fieldmark-stack-dotnet-mascot-400.png" alt=".NET robot riding an HTMX bison concept mascot" loading="lazy" />
-            </div>
-            <div class="stack">
-              <h3>ASP.NET Core driven hypermedia</h3>
-              <p>Razor Pages + EF Core + HTMX, with symmetric route inventory and server-rendered partials.</p>
-              <div class="stack-badges"><span class="tag">Razor Pages</span><span class="tag">EF Core</span><span class="tag">HTMX</span></div>
-            </div>
-          </a>
-          <a class="card stack-card" href="https://django.fieldmark.dev" target="_blank" rel="noopener noreferrer" aria-label="Open Django FieldMark implementation">
-            <div class="row-between">
-              <span class="pill">Django</span>
-              <span class="meta">django.fieldmark.dev</span>
-            </div>
-            <div class="mascot-frame">
-              <img src="static/img/fieldmark-stack-django-mascot-400.png" alt="Django pony with laser eyes concept mascot" loading="lazy" />
-            </div>
-            <div class="stack">
-              <h3>Django driven hypermedia</h3>
-              <p>Django Templates + Django ORM + HTMX, sharing the same target IDs and audit action vocabulary.</p>
-              <div class="stack-badges"><span class="tag">Templates</span><span class="tag">Django ORM</span><span class="tag">HTMX</span></div>
-            </div>
-          </a>
-          <a class="card stack-card" href="https://fiber.fieldmark.dev" target="_blank" rel="noopener noreferrer" aria-label="Open Go Fiber FieldMark implementation">
-            <div class="row-between">
-              <span class="pill">Go/Fiber</span>
-              <span class="meta">fiber.fieldmark.dev</span>
-            </div>
-            <div class="mascot-frame">
-              <img src="static/img/fieldmark-stack-fiber-mascot-400.png" alt="Go gopher sharing coffee with an HTMX pickle concept mascot" loading="lazy" />
-            </div>
-            <div class="stack">
-              <h3>Go/Fiber driven hypermedia</h3>
-              <p>Fiber + pgx + HTMX, using explicit SQL while preserving the same domain and interface contracts.</p>
-              <div class="stack-badges"><span class="tag">Fiber</span><span class="tag">pgx</span><span class="tag">HTMX</span></div>
-            </div>
-          </a>
-        </div>
-      </div>
-    </section>
+      .container {
+        max-width: var(--container);
+        margin-inline: auto;
+        padding-inline: var(--gutter);
+      }
+      .section {
+        padding-block: clamp(
+          var(--section-y-phone),
+          8vw,
+          var(--section-y-desktop)
+        );
+      }
+      .section + .section {
+        border-top: 1px solid var(--border);
+      }
+      .stack {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-6);
+      }
+      .row {
+        display: flex;
+        align-items: center;
+        gap: var(--space-4);
+      }
+      .row-between {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-4);
+      }
+      .grid-2 {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: var(--space-8);
+      }
+      .grid-3 {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: var(--space-6);
+      }
+      .grid-4 {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: var(--space-4);
+      }
+      .grid-2-1 {
+        display: grid;
+        grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
+        gap: var(--space-12);
+        align-items: start;
+      }
+      .grid-1-2 {
+        display: grid;
+        grid-template-columns: minmax(280px, 1fr) minmax(0, 2fr);
+        gap: var(--space-12);
+        align-items: start;
+      }
 
-    <section class="section" id="comparison" data-od-id="comparison">
-      <div class="container stack" style="gap: var(--space-8);">
-        <div style="max-width: 44ch;">
-          <p class="eyebrow">Technical matrix</p>
-          <h2>The same app contract, compared side by side.</h2>
-        </div>
-        <div class="table-wrap">
-          <table class="ds-table">
-            <thead>
-              <tr><th>Dimension</th><th>.NET</th><th>Django</th><th>Go</th></tr>
-            </thead>
-            <tbody>
-              <tr><td>Runtime</td><td class="num">.NET 10</td><td class="num">Python 3.14+</td><td class="num">Go 1.26+</td></tr>
-              <tr><td>Web framework</td><td>ASP.NET Core Razor Pages</td><td>Django 6.x</td><td>Fiber v3</td></tr>
-              <tr><td>Data access</td><td>EF Core 10</td><td>Django ORM</td><td>pgx/v5 explicit SQL</td></tr>
-              <tr><td>Interactivity</td><td>HTMX 4.x</td><td>HTMX 4.x</td><td>HTMX 4.x</td></tr>
-              <tr><td>Data grids</td><td>AG Grid Community 35.x</td><td>AG Grid Community 35.x</td><td>AG Grid Community 35.x</td></tr>
-              <tr><td>Auth schema</td><td><code>dotnet_auth</code></td><td><code>django_auth</code></td><td><code>fiber_auth</code></td></tr>
-            </tbody>
-          </table>
-        </div>
-        <p class="meta">Shared Tailwind CSS is compiled once in <code>fieldmark_shared/</code> and symlinked into all three stacks.</p>
-      </div>
-    </section>
+      .h1,
+      h1 {
+        font-family: var(--font-display);
+        font-size: var(--fs-h1);
+        line-height: var(--leading-tight);
+        letter-spacing: var(--tracking-display);
+        margin: 0;
+      }
+      .h2,
+      h2 {
+        font-family: var(--font-display);
+        font-size: var(--fs-h2);
+        line-height: 1.12;
+        letter-spacing: var(--tracking-display);
+        margin: 0;
+      }
+      .h3,
+      h3 {
+        font-family: var(--font-display);
+        font-size: var(--fs-h3);
+        font-weight: 650;
+        line-height: 1.25;
+        margin: 0;
+      }
+      .lead {
+        color: var(--muted);
+        font-size: var(--fs-lead);
+        max-width: 62ch;
+        margin: 0;
+      }
+      .eyebrow {
+        font-family: var(--font-mono);
+        font-size: var(--text-xs);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin: 0 0 var(--space-5);
+      }
+      .meta {
+        color: var(--muted);
+        font-family: var(--font-mono);
+        font-size: var(--text-xs);
+      }
+      .num {
+        font-family: var(--font-mono);
+        font-variant-numeric: tabular-nums;
+      }
 
-    <section class="section" id="domain" data-od-id="domain">
-      <div class="container grid-1-2">
-        <div class="stack">
-          <p class="eyebrow">The domain</p>
-          <h2>Inspection workflows with real state.</h2>
-          <p class="lead">FieldMark is deliberately more than a todo list. It carries nested aggregates, compliance scoring, authorization, validation failures, and audit trails.</p>
-        </div>
-        <div class="card state-flow">
-          <div class="state-row">
-            <strong>Aggregate chain</strong>
-            <div class="state-path"><span>Project</span><span>Inspection</span><span>Violation</span><span>CorrectiveAction</span></div>
-          </div>
-          <div class="state-row">
-            <strong>Project</strong>
-            <div class="state-path"><span>Draft</span><span>Active</span><span>OnHold</span><span>Completed</span><span>Closed</span></div>
-          </div>
-          <div class="state-row">
-            <strong>Inspection</strong>
-            <div class="state-path"><span>Scheduled</span><span>InProgress</span><span>Completed</span><span>Cancelled</span></div>
-          </div>
-          <div class="state-row">
-            <strong>Violation</strong>
-            <div class="state-path"><span>Open</span><span>Assigned</span><span>Submitted</span><span>UnderReview</span><span>Approved</span></div>
-          </div>
-          <p class="meta">Compliance score is recomputed after relevant state changes; every valid mutation appends an audit entry in the same transaction.</p>
-        </div>
-      </div>
-    </section>
+      .topnav {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        background: var(--nav-bg);
+        backdrop-filter: blur(12px);
+        border-bottom: 1px solid var(--border);
+      }
+      .topnav-inner {
+        min-height: 68px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-4);
+      }
+      .brand-lockup {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--space-3);
+        font-weight: 750;
+        letter-spacing: -0.01em;
+      }
+      .brand-mark {
+        width: 34px;
+        height: 34px;
+        color: var(--fg);
+        display: grid;
+        place-items: center;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        background: var(--surface);
+      }
+      .nav-links {
+        display: flex;
+        align-items: center;
+        gap: var(--space-5);
+      }
+      .nav-links a {
+        color: var(--muted);
+        font-size: var(--text-sm);
+      }
+      .nav-links a:hover {
+        color: var(--fg);
+      }
+      .nav-actions {
+        display: flex;
+        align-items: center;
+        gap: var(--space-3);
+      }
+      .github-link {
+        width: 36px;
+        height: 36px;
+        display: grid;
+        place-items: center;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        color: var(--fg);
+        background: var(--surface);
+      }
+      .github-link:hover {
+        border-color: var(--fg);
+      }
 
-    <section class="section" data-od-id="get-involved" style="text-align: center;">
-      <div class="container stack" style="max-width: 680px;">
-        <p class="eyebrow">Get involved</p>
-        <h2>Read the thesis, run a stack, compare the code.</h2>
-        <p class="lead" style="margin-inline: auto;">FieldMark is MIT licensed and built as a durable reference for server-authoritative HTMX architecture. Notes, articles, or presentation material can be linked here when they are ready.</p>
-        <div class="hero-cta" style="justify-content: center;">
-          <a class="btn btn-primary" href="#thesis">Read the thesis</a>
-          <a class="btn btn-secondary" href="https://github.com/code-chimp/fieldmark" target="_blank" rel="noopener noreferrer">View source</a>
-        </div>
-      </div>
-    </section>
-  </main>
+      .theme-toggle {
+        display: inline-grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: var(--space-1);
+        padding: var(--space-1);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-pill);
+        background: var(--surface);
+      }
+      .theme-toggle button {
+        border: 0;
+        color: var(--muted);
+        background: transparent;
+        border-radius: var(--radius-pill);
+        min-width: 40px;
+        min-height: 32px;
+        display: grid;
+        place-items: center;
+      }
+      .theme-toggle button[aria-pressed="true"] {
+        color: var(--surface);
+        background: var(--fg);
+      }
+      .theme-toggle svg {
+        width: 16px;
+        height: 16px;
+      }
 
-  <footer class="pagefoot">
-    <div class="container footer-grid">
-      <div class="stack">
-        <a href="#top" class="brand-lockup">
+      .hero {
+        padding-block: clamp(72px, 10vw, 128px);
+      }
+      .hero-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.15fr) minmax(420px, 0.85fr);
+        align-items: center;
+        gap: var(--space-12);
+      }
+      .hero-cta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-3);
+        margin-top: var(--space-8);
+      }
+      .hero-panel {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: var(--space-6);
+        box-shadow: var(--elev-raised);
+      }
+      .browser-bar {
+        display: flex;
+        gap: var(--space-2);
+        padding-bottom: var(--space-4);
+        border-bottom: 1px solid var(--border);
+      }
+      .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: var(--radius-pill);
+        background: var(--border);
+      }
+      .diagram {
+        padding-top: var(--space-6);
+        display: grid;
+        gap: var(--space-4);
+      }
+      .diagram-row {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: var(--space-3);
+      }
+      .diagram-node {
+        border: 1px solid var(--border);
+        background: var(--code-bg);
+        border-radius: var(--radius-md);
+        padding: var(--space-4);
+        min-height: 86px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+      .diagram-node strong {
+        font-family: var(--font-display);
+      }
+      .diagram-line {
+        height: 1px;
+        background: var(--border);
+        position: relative;
+      }
+      .diagram-line::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 0;
+        width: 1px;
+        height: var(--space-6);
+        background: var(--border);
+      }
+      .db-node {
+        border: 1px solid var(--fg);
+        border-radius: var(--radius-md);
+        padding: var(--space-5);
+        display: grid;
+        gap: var(--space-2);
+        background: var(--surface);
+      }
+      .arch-map {
+        display: grid;
+        gap: var(--space-4);
+      }
+      .arch-layer {
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        background: var(--surface);
+        padding: var(--space-5);
+      }
+      .arch-browser {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
+        gap: var(--space-4);
+        background: var(--code-bg);
+      }
+      .arch-layer strong,
+      .server-stack strong {
+        font-family: var(--font-display);
+      }
+      .arch-layer p,
+      .server-stack p {
+        margin: var(--space-2) 0 0;
+        color: var(--muted);
+        font-size: var(--text-sm);
+      }
+      .arch-chip {
+        font-family: var(--font-mono);
+        font-size: var(--text-xs);
+        color: var(--muted);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-pill);
+        padding: 6px 10px;
+        white-space: nowrap;
+      }
+      .arch-rails {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: var(--space-3);
+        position: relative;
+      }
+      .arch-rails::before,
+      .arch-rails::after {
+        content: "";
+        position: absolute;
+        left: 25%;
+        right: 25%;
+        height: var(--space-4);
+        border-inline: 1px solid var(--border);
+        pointer-events: none;
+      }
+      .arch-rails::before {
+        top: calc(var(--space-4) * -1);
+        border-top: 1px solid var(--border);
+        border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+      }
+      .arch-rails::after {
+        bottom: calc(var(--space-4) * -1);
+        border-bottom: 1px solid var(--border);
+        border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+      }
+      .rail {
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        background: var(--surface);
+        padding: var(--space-4);
+        display: grid;
+        gap: var(--space-2);
+        min-height: 112px;
+      }
+      .rail strong {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+      }
+      .rail strong::before {
+        content: "";
+        width: 10px;
+        height: 10px;
+        border-radius: var(--radius-pill);
+        background: var(--accent);
+      }
+      .rail-json {
+        background: color-mix(in oklch, var(--success) 8%, var(--surface));
+      }
+      .rail-json strong::before {
+        background: var(--success);
+      }
+      .rail-partial {
+        background: color-mix(in oklch, var(--accent) 8%, var(--surface));
+      }
+      .server-band {
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        background: var(--surface-warm);
+        padding: var(--space-5);
+        display: grid;
+        gap: var(--space-4);
+      }
+      .server-band-head {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: var(--space-4);
+      }
+      .server-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: var(--space-3);
+      }
+      .server-stack {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        padding: var(--space-4);
+      }
+      .db-layer {
+        border-color: var(--fg);
+      }
+      .contract-strip {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: var(--space-2);
+      }
+      .contract-strip span {
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        background: var(--code-bg);
+        padding: var(--space-3);
+        color: var(--fg-2);
+        font-family: var(--font-mono);
+        font-size: var(--text-xs);
+        text-align: center;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--space-2);
+        padding: 11px 18px;
+        border-radius: var(--radius-md);
+        border: 1px solid transparent;
+        font-size: var(--text-sm);
+        font-weight: 650;
+        transition:
+          transform var(--motion-fast) var(--ease-standard),
+          background var(--motion-fast) var(--ease-standard),
+          border-color var(--motion-fast) var(--ease-standard);
+      }
+      .btn:active {
+        transform: translateY(1px);
+      }
+      .btn-primary {
+        background: var(--accent);
+        color: var(--accent-on);
+        border-color: var(--accent);
+      }
+      .btn-primary:hover {
+        background: var(--accent-hover);
+      }
+      .btn-secondary {
+        background: var(--surface);
+        color: var(--fg);
+        border-color: var(--border);
+      }
+      .btn-secondary:hover {
+        border-color: var(--fg);
+      }
+      .btn-ghost {
+        background: transparent;
+        color: var(--fg);
+        padding-inline: 0;
+      }
+      .btn-ghost:hover {
+        color: var(--meta);
+      }
+      .btn-arrow::after {
+        content: "->";
+        font-family: var(--font-mono);
+        transition: transform var(--motion-fast) var(--ease-standard);
+      }
+      .btn-arrow:hover::after {
+        transform: translateX(2px);
+      }
+
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: var(--space-6);
+      }
+      .card-flat {
+        background: transparent;
+        border: 0;
+        padding: 0;
+      }
+      .card-rule {
+        border-top: 1px solid var(--fg);
+        padding-top: var(--space-5);
+      }
+      .pill,
+      .tag {
+        display: inline-flex;
+        align-items: center;
+        width: fit-content;
+        gap: var(--space-2);
+        border-radius: var(--radius-pill);
+        font-size: var(--text-xs);
+        font-family: var(--font-mono);
+        line-height: 1;
+        white-space: nowrap;
+      }
+      .pill {
+        padding: 6px 10px;
+        color: var(--fg);
+        background: var(--fg-soft);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+      .tag {
+        padding: 5px 10px;
+        color: var(--muted);
+        border: 1px solid var(--border);
+        background: var(--surface);
+      }
+      .feature-mark {
+        width: 44px;
+        height: 44px;
+        display: grid;
+        place-items: center;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        background: var(--surface);
+        color: var(--fg);
+        margin-bottom: var(--space-4);
+      }
+      .feature-mark svg {
+        width: 22px;
+        height: 22px;
+      }
+
+      .thesis-layout {
+        display: grid;
+        grid-template-columns: minmax(320px, 0.9fr) minmax(0, 1.1fr);
+        gap: var(--space-12);
+        align-items: stretch;
+      }
+      .thesis-intro {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        gap: var(--space-8);
+        min-height: 100%;
+      }
+      .thesis-statement {
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        background: var(--surface);
+        padding: var(--space-6);
+      }
+      .thesis-statement p {
+        margin: 0;
+        color: var(--fg);
+        font-size: var(--text-lg);
+        line-height: 1.45;
+        font-weight: 620;
+      }
+      .thesis-panel {
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        background: var(--surface);
+        padding: var(--space-6);
+        display: grid;
+        gap: var(--space-6);
+      }
+      .thesis-copy {
+        display: grid;
+        gap: var(--space-5);
+        color: var(--fg-2);
+      }
+      .thesis-copy p {
+        margin: 0;
+        max-width: 66ch;
+      }
+      .proof-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: var(--space-3);
+      }
+      .proof-item {
+        border-top: 1px solid var(--border);
+        padding-top: var(--space-4);
+        display: grid;
+        gap: var(--space-2);
+      }
+      .proof-item strong {
+        font-size: var(--text-sm);
+      }
+      .proof-item span {
+        color: var(--muted);
+        font-size: var(--text-sm);
+        line-height: 1.45;
+      }
+      .stack-card {
+        display: grid;
+        gap: var(--space-5);
+        min-height: 100%;
+      }
+      .mascot-frame {
+        aspect-ratio: 1 / 1;
+        width: 100%;
+        border: 0;
+        border-radius: calc(var(--radius-lg) - 4px);
+        background: var(--surface-warm);
+        color: var(--fg);
+        display: grid;
+        place-items: center;
+        overflow: hidden;
+        box-shadow: inset 0 0 0 1px var(--border-soft);
+      }
+      .mascot-frame span {
+        font-family: var(--font-display);
+        font-size: clamp(32px, 5vw, 54px);
+        font-weight: 800;
+        letter-spacing: var(--tracking-display);
+      }
+      .mascot-frame img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        object-position: center center;
+        padding: 0;
+      }
+      .stack-card p {
+        color: var(--muted);
+        margin: 0;
+      }
+      .stack-badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-2);
+      }
+      .table-wrap {
+        overflow-x: auto;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        background: var(--surface);
+      }
+      .ds-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: var(--text-sm);
+        min-width: 760px;
+      }
+      .ds-table th,
+      .ds-table td {
+        padding: 14px 16px;
+        text-align: left;
+        border-bottom: 1px solid var(--border);
+        vertical-align: top;
+      }
+      .ds-table th {
+        color: var(--muted);
+        font-family: var(--font-mono);
+        font-size: var(--text-xs);
+        font-weight: 650;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+      .ds-table tbody td:first-child {
+        color: var(--fg-2);
+        font-family: var(--font-mono);
+        font-size: var(--text-xs);
+        font-weight: 650;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+      .ds-table code,
+      .stack-card .meta,
+      .state-path span {
+        font-family: var(--font-mono);
+        font-size: var(--text-xs);
+      }
+      .ds-table tr:last-child td {
+        border-bottom: 0;
+      }
+      .ds-table tbody tr:hover {
+        background: var(--fg-soft);
+      }
+      .state-flow {
+        display: grid;
+        gap: var(--space-3);
+      }
+      .state-row {
+        display: grid;
+        grid-template-columns: 160px 1fr;
+        gap: var(--space-4);
+        align-items: center;
+        padding-block: var(--space-3);
+        border-bottom: 1px solid var(--border);
+      }
+      .state-row:last-child {
+        border-bottom: 0;
+      }
+      .state-path {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-2);
+        align-items: center;
+        color: var(--muted);
+      }
+      .state-path span {
+        padding: 5px 9px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-pill);
+        background: var(--surface);
+      }
+      .pagefoot {
+        padding-block: var(--space-8);
+        color: var(--muted);
+        border-top: 1px solid var(--border);
+        font-size: var(--text-sm);
+      }
+      .pagefoot a {
+        text-decoration: underline;
+        text-underline-offset: 3px;
+      }
+      .footer-grid {
+        display: grid;
+        grid-template-columns: 1.2fr 1fr;
+        gap: var(--space-8);
+      }
+      .footer-links {
+        display: grid;
+        gap: var(--space-3);
+        align-content: start;
+      }
+      .footer-links p {
+        margin: 0;
+      }
+      .footer-legal {
+        padding-top: var(--space-2);
+        color: color-mix(in oklch, var(--muted) 86%, transparent);
+        font-size: var(--text-xs);
+        line-height: 1.55;
+      }
+
+      @media (max-width: 1020px) {
+        :root {
+          --gutter: var(--container-gutter-tablet);
+        }
+        .hero-grid,
+        .grid-2,
+        .grid-3,
+        .grid-4,
+        .grid-2-1,
+        .grid-1-2,
+        .thesis-layout {
+          grid-template-columns: 1fr;
+        }
+        .hero-panel {
+          box-shadow: var(--elev-flat);
+        }
+        .proof-grid {
+          grid-template-columns: 1fr;
+        }
+        .server-grid,
+        .contract-strip {
+          grid-template-columns: 1fr;
+        }
+        .nav-links {
+          display: none;
+        }
+      }
+      @media (max-width: 620px) {
+        :root {
+          --gutter: var(--container-gutter-phone);
+        }
+        .topnav-inner {
+          min-height: auto;
+          padding-block: var(--space-3);
+          align-items: flex-start;
+        }
+        .nav-actions {
+          flex-wrap: wrap;
+          justify-content: flex-end;
+        }
+        .brand-lockup span {
+          display: none;
+        }
+        .hero {
+          padding-block: var(--section-y-phone);
+        }
+        .hero-cta {
+          flex-direction: column;
+        }
+        .btn {
+          width: 100%;
+        }
+        .theme-toggle button {
+          min-width: 34px;
+        }
+        .diagram-row {
+          grid-template-columns: 1fr;
+        }
+        .arch-browser,
+        .arch-rails {
+          grid-template-columns: 1fr;
+        }
+        .arch-rails::before,
+        .arch-rails::after {
+          display: none;
+        }
+        .server-band-head {
+          display: grid;
+        }
+        .state-row,
+        .footer-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          scroll-behavior: auto !important;
+          transition-duration: 0.01ms !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <a class="skip-link" href="#top">Skip to content</a>
+    <header class="topnav">
+      <div class="container topnav-inner">
+        <a href="#top" class="brand-lockup" aria-label="FieldMark home">
           <span class="brand-mark" aria-hidden="true">
-            <svg viewBox="0 0 32 32" fill="none"><path d="M16 3 29 16 16 29 3 16 16 3Z" fill="currentColor" fill-opacity="0.08" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M16 3v26M3 16h26" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-opacity="0.28"/><path d="m11 17.2 4 4L22.4 12" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <svg viewBox="0 0 32 32" fill="none">
+              <path
+                d="M16 3 29 16 16 29 3 16 16 3Z"
+                fill="currentColor"
+                fill-opacity="0.08"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linejoin="round"
+              />
+              <path
+                d="M16 3v26M3 16h26"
+                stroke="currentColor"
+                stroke-width="1.25"
+                stroke-linecap="round"
+                stroke-opacity="0.28"
+              />
+              <path
+                d="m11 17.2 4 4L22.4 12"
+                stroke="currentColor"
+                stroke-width="3"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
           </span>
           <span>FieldMark</span>
         </a>
-        <p>Server-authoritative architecture reference by Tim Goshinski. MIT licensed. Copyright 2026.</p>
+        <nav class="nav-links" aria-label="Primary navigation">
+          <a href="#thesis">Thesis</a>
+          <a href="#architecture">Architecture</a>
+          <a href="#stacks">Stacks</a>
+          <a href="#comparison">Comparison</a>
+          <a href="#domain">Domain</a>
+        </nav>
+        <div class="nav-actions">
+          <div class="theme-toggle" role="group" aria-label="Theme">
+            <button
+              type="button"
+              data-theme-choice="system"
+              aria-label="Use system theme"
+            >
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <rect x="3" y="4" width="18" height="12" rx="2" />
+                <path d="M8 20h8M12 16v4" />
+              </svg>
+            </button>
+            <button
+              type="button"
+              data-theme-choice="light"
+              aria-label="Use light theme"
+            >
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <circle cx="12" cy="12" r="4" />
+                <path
+                  d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"
+                />
+              </svg>
+            </button>
+            <button
+              type="button"
+              data-theme-choice="dark"
+              aria-label="Use dark theme"
+            >
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M21 13A8 8 0 1 1 11 3a6 6 0 0 0 10 10Z" />
+              </svg>
+            </button>
+          </div>
+          <a
+            class="github-link"
+            href="https://github.com/code-chimp/fieldmark"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="View FieldMark on GitHub"
+          >
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor">
+              <path
+                d="M12 .5A11.5 11.5 0 0 0 8.36 22.9c.58.11.79-.25.79-.56v-2.02c-3.22.7-3.9-1.38-3.9-1.38-.53-1.34-1.29-1.7-1.29-1.7-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.2 1.77 1.2 1.04 1.76 2.72 1.25 3.38.96.1-.75.4-1.25.73-1.54-2.57-.29-5.27-1.28-5.27-5.72 0-1.26.45-2.3 1.19-3.11-.12-.29-.52-1.47.11-3.07 0 0 .97-.31 3.17 1.19a10.9 10.9 0 0 1 5.78 0c2.2-1.5 3.17-1.19 3.17-1.19.63 1.6.23 2.78.11 3.07.74.81 1.19 1.85 1.19 3.11 0 4.45-2.71 5.43-5.29 5.71.42.36.78 1.07.78 2.16v3.02c0 .31.21.68.8.56A11.5 11.5 0 0 0 12 .5Z"
+              />
+            </svg>
+          </a>
+        </div>
       </div>
-      <div class="footer-links">
-        <p><a href="https://github.com/code-chimp/fieldmark" target="_blank" rel="noopener noreferrer">GitHub repository</a></p>
-        <p><span class="meta">Live stacks</span> · <a href="https://dotnet.fieldmark.dev" target="_blank" rel="noopener noreferrer">.NET</a> · <a href="https://django.fieldmark.dev" target="_blank" rel="noopener noreferrer">Django</a> · <a href="https://fiber.fieldmark.dev" target="_blank" rel="noopener noreferrer">Go/Fiber</a></p>
-        <p class="footer-legal">Go Gopher artwork by <a href="https://reneefrench.blogspot.com/" target="_blank" rel="noopener noreferrer">Renee French</a> (CC BY 4.0). .NET dotnet-bot illustrations by the .NET Foundation (CC0 1.0). HTMX logo (0-Clause BSD). Django is a registered trademark of the Django Software Foundation; pony mascot inspired by the Django community.</p>
+    </header>
+
+    <main id="top" tabindex="-1">
+      <section class="section hero" data-od-id="hero">
+        <div class="container hero-grid">
+          <div class="stack">
+            <p class="eyebrow">HTMX architecture reference</p>
+            <h1>
+              Server-authoritative architecture. Three stacks. One database.
+            </h1>
+            <p class="lead">
+              FieldMark asks whether a request-response application really needs
+              a client-side SPA by implementing the same inspection domain in
+              ASP.NET Core, Django, and Go/Fiber.
+            </p>
+            <div class="hero-cta">
+              <a class="btn btn-primary" href="#thesis">Read the thesis</a>
+              <a class="btn btn-secondary" href="#stacks">See the stacks</a>
+              <a
+                class="btn btn-ghost btn-arrow"
+                href="https://github.com/code-chimp/fieldmark"
+                target="_blank"
+                rel="noopener noreferrer"
+                >View on GitHub</a
+              >
+            </div>
+          </div>
+          <div class="hero-panel" aria-label="Architecture preview">
+            <div class="browser-bar" aria-hidden="true">
+              <span class="dot"></span><span class="dot"></span
+              ><span class="dot"></span>
+            </div>
+            <div class="diagram">
+              <div class="diagram-row">
+                <div class="diagram-node">
+                  <strong>.NET</strong><span class="meta">Razor Pages</span>
+                </div>
+                <div class="diagram-node">
+                  <strong>Django</strong><span class="meta">Templates</span>
+                </div>
+                <div class="diagram-node">
+                  <strong>Go/Fiber</strong><span class="meta">Fiber views</span>
+                </div>
+              </div>
+              <div class="diagram-line" aria-hidden="true"></div>
+              <div class="db-node">
+                <span class="pill">PostgreSQL</span>
+                <strong>domain schema + isolated auth schemas</strong>
+                <span class="meta"
+                  >domain · dotnet_auth · django_auth · fiber_auth</span
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="thesis" data-od-id="thesis">
+        <div class="container thesis-layout">
+          <div class="thesis-intro">
+            <div>
+              <p class="eyebrow">The thesis</p>
+              <h2>You may not need an SPA for this class of product.</h2>
+            </div>
+            <div class="thesis-statement">
+              <p>
+                The point is not nostalgia for server rendering. The point is
+                keeping business authority in one place while still delivering
+                responsive product interactions.
+              </p>
+            </div>
+          </div>
+          <div class="thesis-panel">
+            <div class="thesis-copy">
+              <p>
+                SPAs have become the default answer for applications that are
+                mostly request-response: forms, authorization checks, filtered
+                lists, detail panes, audit logs, and state transitions. The cost
+                shows up as duplicated validation, drift between client and
+                server rules, and UI paths that have to reconstruct the same
+                business decision twice.
+              </p>
+              <p>
+                FieldMark keeps the server authoritative without pretending the
+                browser should be inert. HTMX handles targeted interactivity, AG
+                Grid runs as a focused JavaScript island for rich enterprise
+                tables, and the server still decides which controls exist, which
+                transitions are valid, and which audit entry is appended.
+              </p>
+              <p>
+                The reference proves the idea by building one inspection and
+                compliance domain three times. Routes, HTMX targets, AG Grid
+                contracts, audit strings, and domain method names are treated as
+                a parity contract; divergence is a defect.
+              </p>
+            </div>
+            <div class="proof-grid" aria-label="FieldMark proof points">
+              <div class="proof-item">
+                <strong>One domain</strong>
+                <span
+                  >Project, inspection, violation, and corrective-action logic
+                  stays server-side.</span
+                >
+              </div>
+              <div class="proof-item">
+                <strong>Pragmatic islands</strong>
+                <span
+                  >AG Grid supplies familiar client-side table controls without
+                  moving domain authority into an SPA.</span
+                >
+              </div>
+              <div class="proof-item">
+                <strong>Parity as proof</strong>
+                <span
+                  >Routes, HTMX targets, grids, audit strings, and method names
+                  are compared directly.</span
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="architecture" data-od-id="architecture">
+        <div class="container stack" style="gap: var(--space-12)">
+          <div class="grid-2">
+            <div>
+              <p class="eyebrow">Architecture visual</p>
+              <h2>Parallel web stacks, one infrastructure-owned domain.</h2>
+            </div>
+            <p class="lead">
+              Each stack renders pages and HTMX partials against the same
+              PostgreSQL domain schema. Authentication data stays isolated per
+              ecosystem; domain user references remain opaque.
+            </p>
+          </div>
+          <div class="card">
+            <p id="architecture-summary" class="sr-only">
+              Architecture summary: the browser exchanges server-rendered HTML
+              partials and JSON payloads with one of three server
+              implementations: ASP.NET Core, Django, or Go/Fiber. Each server
+              follows shared routes, HTMX targets, AG Grid contracts, and audit
+              strings over one PostgreSQL domain schema.
+            </p>
+            <div
+              class="arch-map"
+              aria-label="FieldMark architecture diagram"
+              aria-describedby="architecture-summary"
+            >
+              <div class="arch-layer arch-browser">
+                <div>
+                  <strong>Browser</strong>
+                  <p>
+                    HTMX swaps server-rendered fragments while JavaScript
+                    islands provide focused rich controls.
+                  </p>
+                </div>
+                <span class="arch-chip">UX shell</span>
+              </div>
+              <div
+                class="arch-rails"
+                aria-label="Browser and server communication"
+              >
+                <div class="rail rail-partial">
+                  <strong>HTML partials</strong>
+                  <span class="meta"
+                    >Forms, validation messages, detail panels, and stable HTMX
+                    target IDs.</span
+                  >
+                </div>
+                <div class="rail rail-json">
+                  <strong>JSON payloads</strong>
+                  <span class="meta"
+                    >AG Grid contracts for filtering, sorting, pagination, and
+                    enterprise table behavior.</span
+                  >
+                </div>
+              </div>
+              <div class="server-band">
+                <div class="server-band-head">
+                  <strong>Server flavors</strong>
+                  <span class="meta"
+                    >Same application contract, three ecosystem
+                    implementations</span
+                  >
+                </div>
+                <div class="server-grid">
+                  <div class="server-stack">
+                    <strong>ASP.NET Core</strong>
+                    <p>Razor Pages + EF Core</p>
+                  </div>
+                  <div class="server-stack">
+                    <strong>Django</strong>
+                    <p>Templates + Django ORM</p>
+                  </div>
+                  <div class="server-stack">
+                    <strong>Go/Fiber</strong>
+                    <p>Fiber views + pgx SQL</p>
+                  </div>
+                </div>
+              </div>
+              <div class="arch-layer db-layer">
+                <strong>Shared PostgreSQL domain</strong>
+                <p>
+                  The <code>domain</code> schema is owned by infrastructure SQL
+                  init scripts, not by any single framework.
+                </p>
+              </div>
+              <div
+                class="contract-strip"
+                aria-label="Shared implementation contracts"
+              >
+                <span>Identical routes</span>
+                <span>HTMX targets</span>
+                <span>AG Grid contracts</span>
+                <span>Audit strings</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="stacks" data-od-id="stacks">
+        <div class="container stack" style="gap: var(--space-12)">
+          <div class="row-between">
+            <div style="max-width: 48ch">
+              <p class="eyebrow">Stack comparison</p>
+              <h2>Three implementations you can run and inspect.</h2>
+            </div>
+            <a
+              class="btn btn-secondary"
+              href="https://github.com/code-chimp/fieldmark"
+              target="_blank"
+              rel="noopener noreferrer"
+              >Open repository</a
+            >
+          </div>
+          <div class="grid-3">
+            <a
+              class="card stack-card"
+              href="https://dotnet.fieldmark.dev"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Open ASP.NET Core FieldMark implementation"
+            >
+              <div class="row-between">
+                <span class="pill">.NET</span>
+                <span class="meta">dotnet.fieldmark.dev</span>
+              </div>
+              <div class="mascot-frame">
+                <img
+                  src="static/img/fieldmark-stack-dotnet-mascot-400.png"
+                  alt=".NET robot riding an HTMX bison concept mascot"
+                  loading="lazy"
+                />
+              </div>
+              <div class="stack">
+                <h3>ASP.NET Core driven hypermedia</h3>
+                <p>
+                  Razor Pages + EF Core + HTMX, with symmetric route inventory
+                  and server-rendered partials.
+                </p>
+                <div class="stack-badges">
+                  <span class="tag">Razor Pages</span
+                  ><span class="tag">EF Core</span><span class="tag">HTMX</span>
+                </div>
+              </div>
+            </a>
+            <a
+              class="card stack-card"
+              href="https://django.fieldmark.dev"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Open Django FieldMark implementation"
+            >
+              <div class="row-between">
+                <span class="pill">Django</span>
+                <span class="meta">django.fieldmark.dev</span>
+              </div>
+              <div class="mascot-frame">
+                <img
+                  src="static/img/fieldmark-stack-django-mascot2-400.png"
+                  alt="Django pony with laser eyes concept mascot"
+                  loading="lazy"
+                />
+              </div>
+              <div class="stack">
+                <h3>Django driven hypermedia</h3>
+                <p>
+                  Django Templates + Django ORM + HTMX, sharing the same target
+                  IDs and audit action vocabulary.
+                </p>
+                <div class="stack-badges">
+                  <span class="tag">Templates</span
+                  ><span class="tag">Django ORM</span
+                  ><span class="tag">HTMX</span>
+                </div>
+              </div>
+            </a>
+            <a
+              class="card stack-card"
+              href="https://fiber.fieldmark.dev"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Open Go Fiber FieldMark implementation"
+            >
+              <div class="row-between">
+                <span class="pill">Go/Fiber</span>
+                <span class="meta">fiber.fieldmark.dev</span>
+              </div>
+              <div class="mascot-frame">
+                <img
+                  src="static/img/fieldmark-stack-fiber-mascot2-400.png"
+                  alt="Go gopher sharing coffee with an HTMX pickle concept mascot"
+                  loading="lazy"
+                />
+              </div>
+              <div class="stack">
+                <h3>Go/Fiber driven hypermedia</h3>
+                <p>
+                  Fiber + pgx + HTMX, using explicit SQL while preserving the
+                  same domain and interface contracts.
+                </p>
+                <div class="stack-badges">
+                  <span class="tag">Fiber</span><span class="tag">pgx</span
+                  ><span class="tag">HTMX</span>
+                </div>
+              </div>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="comparison" data-od-id="comparison">
+        <div class="container stack" style="gap: var(--space-8)">
+          <div style="max-width: 44ch">
+            <p class="eyebrow">Technical matrix</p>
+            <h2>The same app contract, compared side by side.</h2>
+          </div>
+          <div class="table-wrap">
+            <table class="ds-table">
+              <thead>
+                <tr>
+                  <th>Dimension</th>
+                  <th>.NET</th>
+                  <th>Django</th>
+                  <th>Go</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Runtime</td>
+                  <td class="num">.NET 10</td>
+                  <td class="num">Python 3.14+</td>
+                  <td class="num">Go 1.26+</td>
+                </tr>
+                <tr>
+                  <td>Web framework</td>
+                  <td>ASP.NET Core Razor Pages</td>
+                  <td>Django 6.x</td>
+                  <td>Fiber v3</td>
+                </tr>
+                <tr>
+                  <td>Data access</td>
+                  <td>EF Core 10</td>
+                  <td>Django ORM</td>
+                  <td>pgx/v5 explicit SQL</td>
+                </tr>
+                <tr>
+                  <td>Interactivity</td>
+                  <td>HTMX 4.x</td>
+                  <td>HTMX 4.x</td>
+                  <td>HTMX 4.x</td>
+                </tr>
+                <tr>
+                  <td>Data grids</td>
+                  <td>AG Grid Community 35.x</td>
+                  <td>AG Grid Community 35.x</td>
+                  <td>AG Grid Community 35.x</td>
+                </tr>
+                <tr>
+                  <td>Auth schema</td>
+                  <td><code>dotnet_auth</code></td>
+                  <td><code>django_auth</code></td>
+                  <td><code>fiber_auth</code></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="meta">
+            Shared Tailwind CSS is compiled once in
+            <code>fieldmark_shared/</code> and symlinked into all three stacks.
+          </p>
+        </div>
+      </section>
+
+      <section class="section" id="domain" data-od-id="domain">
+        <div class="container grid-1-2">
+          <div class="stack">
+            <p class="eyebrow">The domain</p>
+            <h2>Inspection workflows with real state.</h2>
+            <p class="lead">
+              FieldMark is deliberately more than a todo list. It carries nested
+              aggregates, compliance scoring, authorization, validation
+              failures, and audit trails.
+            </p>
+          </div>
+          <div class="card state-flow">
+            <div class="state-row">
+              <strong>Aggregate chain</strong>
+              <div class="state-path">
+                <span>Project</span><span>Inspection</span><span>Violation</span
+                ><span>CorrectiveAction</span>
+              </div>
+            </div>
+            <div class="state-row">
+              <strong>Project</strong>
+              <div class="state-path">
+                <span>Draft</span><span>Active</span><span>OnHold</span
+                ><span>Completed</span><span>Closed</span>
+              </div>
+            </div>
+            <div class="state-row">
+              <strong>Inspection</strong>
+              <div class="state-path">
+                <span>Scheduled</span><span>InProgress</span
+                ><span>Completed</span><span>Cancelled</span>
+              </div>
+            </div>
+            <div class="state-row">
+              <strong>Violation</strong>
+              <div class="state-path">
+                <span>Open</span><span>Assigned</span><span>Submitted</span
+                ><span>UnderReview</span><span>Approved</span>
+              </div>
+            </div>
+            <p class="meta">
+              Compliance score is recomputed after relevant state changes; every
+              valid mutation appends an audit entry in the same transaction.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section
+        class="section"
+        data-od-id="get-involved"
+        style="text-align: center"
+      >
+        <div class="container stack" style="max-width: 680px">
+          <p class="eyebrow">Get involved</p>
+          <h2>Read the thesis, run a stack, compare the code.</h2>
+          <p class="lead" style="margin-inline: auto">
+            FieldMark is MIT licensed and built as a durable reference for
+            server-authoritative HTMX architecture. Notes, articles, or
+            presentation material can be linked here when they are ready.
+          </p>
+          <div class="hero-cta" style="justify-content: center">
+            <a class="btn btn-primary" href="#thesis">Read the thesis</a>
+            <a
+              class="btn btn-secondary"
+              href="https://github.com/code-chimp/fieldmark"
+              target="_blank"
+              rel="noopener noreferrer"
+              >View source</a
+            >
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="pagefoot">
+      <div class="container footer-grid">
+        <div class="stack">
+          <a href="#top" class="brand-lockup">
+            <span class="brand-mark" aria-hidden="true">
+              <svg viewBox="0 0 32 32" fill="none">
+                <path
+                  d="M16 3 29 16 16 29 3 16 16 3Z"
+                  fill="currentColor"
+                  fill-opacity="0.08"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linejoin="round"
+                />
+                <path
+                  d="M16 3v26M3 16h26"
+                  stroke="currentColor"
+                  stroke-width="1.25"
+                  stroke-linecap="round"
+                  stroke-opacity="0.28"
+                />
+                <path
+                  d="m11 17.2 4 4L22.4 12"
+                  stroke="currentColor"
+                  stroke-width="3"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </span>
+            <span>FieldMark</span>
+          </a>
+          <p>
+            Server-authoritative architecture reference by Tim Goshinski. MIT
+            licensed. Copyright 2026.
+          </p>
+        </div>
+        <div class="footer-links">
+          <p>
+            <a
+              href="https://github.com/code-chimp/fieldmark"
+              target="_blank"
+              rel="noopener noreferrer"
+              >GitHub repository</a
+            >
+          </p>
+          <p>
+            <span class="meta">Live stacks</span> ·
+            <a
+              href="https://dotnet.fieldmark.dev"
+              target="_blank"
+              rel="noopener noreferrer"
+              >.NET</a
+            >
+            ·
+            <a
+              href="https://django.fieldmark.dev"
+              target="_blank"
+              rel="noopener noreferrer"
+              >Django</a
+            >
+            ·
+            <a
+              href="https://fiber.fieldmark.dev"
+              target="_blank"
+              rel="noopener noreferrer"
+              >Go/Fiber</a
+            >
+          </p>
+          <p class="footer-legal">
+            Go Gopher artwork by
+            <a
+              href="https://reneefrench.blogspot.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              >Renee French</a
+            >
+            (CC BY 4.0). .NET dotnet-bot illustrations by the .NET Foundation
+            (CC0 1.0). HTMX logo (0-Clause BSD). Django is a registered
+            trademark of the Django Software Foundation; pony mascot inspired by
+            the Django community.
+          </p>
+        </div>
       </div>
-    </div>
-  </footer>
+    </footer>
 
-  <script>
-    (function () {
-      var choices = Array.prototype.slice.call(document.querySelectorAll('[data-theme-choice]'));
+    <script>
+      (function () {
+        var choices = Array.prototype.slice.call(
+          document.querySelectorAll("[data-theme-choice]"),
+        );
 
-      function resolve(pref) {
-        if (pref !== 'system') return pref;
-        return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-      }
+        function resolve(pref) {
+          if (pref !== "system") return pref;
+          return window.matchMedia &&
+            window.matchMedia("(prefers-color-scheme: dark)").matches
+            ? "dark"
+            : "light";
+        }
 
-      function apply(pref) {
-        var resolved = resolve(pref);
-        document.documentElement.dataset.theme = resolved;
-        document.documentElement.dataset.themePref = pref;
-        try {
-          localStorage.setItem('fieldmark-theme', pref);
-        } catch (error) {}
-        choices.forEach(function (button) {
-          button.setAttribute('aria-pressed', button.dataset.themeChoice === pref ? 'true' : 'false');
-        });
-      }
-
-      choices.forEach(function (button) {
-        button.addEventListener('click', function () {
-          apply(button.dataset.themeChoice);
-        });
-      });
-
-      document.querySelectorAll('a[href^="#"]').forEach(function (link) {
-        link.addEventListener('click', function (event) {
-          var target = document.querySelector(link.getAttribute('href'));
-          if (!target) return;
-          event.preventDefault();
-          var y = target.getBoundingClientRect().top + window.pageYOffset - 78;
-          window.scrollTo({ top: y, behavior: 'smooth' });
-        });
-      });
-
-      var initialPref = document.documentElement.dataset.themePref || 'system';
-      try {
-        initialPref = localStorage.getItem('fieldmark-theme') || initialPref;
-      } catch (error) {}
-      apply(initialPref);
-
-      if (window.matchMedia) {
-        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function () {
-          var currentPref = 'system';
+        function apply(pref) {
+          var resolved = resolve(pref);
+          document.documentElement.dataset.theme = resolved;
+          document.documentElement.dataset.themePref = pref;
           try {
-            currentPref = localStorage.getItem('fieldmark-theme') || 'system';
+            localStorage.setItem("fieldmark-theme", pref);
           } catch (error) {}
-          if (currentPref === 'system') apply('system');
+          choices.forEach(function (button) {
+            button.setAttribute(
+              "aria-pressed",
+              button.dataset.themeChoice === pref ? "true" : "false",
+            );
+          });
+        }
+
+        choices.forEach(function (button) {
+          button.addEventListener("click", function () {
+            apply(button.dataset.themeChoice);
+          });
         });
-      }
-    })();
-  </script>
-</body>
+
+        document.querySelectorAll('a[href^="#"]').forEach(function (link) {
+          link.addEventListener("click", function (event) {
+            var target = document.querySelector(link.getAttribute("href"));
+            if (!target) return;
+            event.preventDefault();
+            var y =
+              target.getBoundingClientRect().top + window.pageYOffset - 78;
+            window.scrollTo({ top: y, behavior: "smooth" });
+          });
+        });
+
+        var initialPref =
+          document.documentElement.dataset.themePref || "system";
+        try {
+          initialPref = localStorage.getItem("fieldmark-theme") || initialPref;
+        } catch (error) {}
+        apply(initialPref);
+
+        if (window.matchMedia) {
+          window
+            .matchMedia("(prefers-color-scheme: dark)")
+            .addEventListener("change", function () {
+              var currentPref = "system";
+              try {
+                currentPref =
+                  localStorage.getItem("fieldmark-theme") || "system";
+              } catch (error) {}
+              if (currentPref === "system") apply("system");
+            });
+        }
+      })();
+    </script>
+  </body>
 </html>

@@ -53,6 +53,15 @@ Apps map to bounded contexts, not technical layers. Each app owns its models, vi
 - Use `select_related` / `prefetch_related` aggressively to avoid N+1 queries.
 - Class-based or function-based views are acceptable; stay consistent within an app.
 - Structured logging via `structlog`.
+- **`{% if value %}` is falsy for `"0"`, `0`, and `False`.** For properties that may legitimately be zero (numeric counts, scores, indices) AND must also reject whitespace-only strings, use `{% if value == 0 or value is not None and value|stringformat:"s"|slugify %}`. The `|slugify` filter returns `""` for whitespace-only input (falsy) and a non-empty string for any displayable value (truthy), while `value == 0` preserves integer zero. See `fieldmark_py/templates/components/_dashboard_tile.html` as the reference implementation. Note: `{% if value is not None and value != "" %}` is NOT sufficient — it passes for whitespace-only strings (`"   " != ""` is True). A zero-count tile rendering `—` instead of `0`, or a whitespace-only value rendering raw spaces, are both silent data-display bugs.
+
+## Django Component Template Rules
+
+These rules apply to every component template in `templates/components/` and were ratified after Story 2.4's five review rounds.
+
+**No `|safe` filter in component templates.** All user-visible strings render through Django's auto-escaping (`{{ variable }}`). `{{ variable|safe }}` bypasses auto-escaping and is an XSS vector. It is prohibited in component templates.
+
+**Every component test file must include a `|safe` grep guard.** When a component test module (`test_*_snapshot.py`) is written, it must include a test function asserting that `|safe` does not appear in the wrapper template file. This applies to every component — not just the first three written. A component test file without this guard is incomplete.
 
 ## Hard Rules (Django-specific)
 

@@ -152,6 +152,26 @@ Canonical snapshot reference: `fieldmark_shared/components/action_button.example
 - EF Core entities use private setters and parameter-validating constructors.
 - Domain entities receive infrastructure dependencies (e.g., `IClock`) via method parameters, not constructor DI.
 
+## Razor Component Rules
+
+These rules apply to every Razor partial in `Pages/Shared/Components/` and were ratified after Story 2.4's five review rounds.
+
+**Null-safety — always extract model properties through `S()` before use.** Never access `@Model.PropertyName` directly inside markup. Extract every model property to a local variable at the top of the partial:
+
+```razor
+@{
+    var title = S(Model.Title);
+    var message = S(Model.Message);
+    var tileId = S(Model.TileId);
+}
+```
+
+`S()` (the null-safety string helper in each partial) returns `""` for null or whitespace inputs, preventing `RuntimeBinderException` when a dynamic model omits a key. This applies to ALL model reads — including `Id`, label, and timestamp properties, not just user-visible strings.
+
+**No `Html.Raw` in component templates.** All user-visible strings flow through Razor's default HTML encoding (`@variable`). `@Html.Raw(...)` is prohibited in component wrappers — it bypasses auto-escaping and is an XSS vector.
+
+**Every component test file must include an `Html.Raw` grep guard.** When a component test suite (`*SnapshotTests.cs`) is written, it must include a `[Fact]` asserting that `Html.Raw` does not appear in the wrapper `.cshtml` file. This applies to every component — not just the first three written. A component test file without this guard is incomplete.
+
 ## Hard Rules (.NET-specific)
 
 Root `CLAUDE.md` covers the cross-stack rules (no CQRS/MediatR, no repositories, no AutoMapper, no client-side state, real PostgreSQL in tests). The .NET-specific rules are:

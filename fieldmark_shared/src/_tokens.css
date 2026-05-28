@@ -70,6 +70,27 @@
 .badge-severity-high     { color: var(--color-danger); outline: 1px solid var(--color-danger); }
 .badge-severity-medium   { color: var(--color-warning); }
 .badge-severity-low      { color: var(--color-neutral); }
+.badge-unknown {
+  color: var(--color-neutral);
+  border: 1px dashed var(--color-neutral);
+  background: color-mix(in oklab, var(--color-neutral) 8%, transparent);
+}
+
+.badge-audit-action {
+  color: var(--color-neutral);
+}
+
+.alert-unknown {
+  color: var(--color-neutral);
+  border: 1px dashed var(--color-neutral);
+  background: color-mix(in oklab, var(--color-neutral) 8%, transparent);
+}
+
+.text-success { color: var(--color-success); }
+.text-warning { color: var(--color-warning); }
+.text-danger { color: var(--color-danger); }
+.text-info { color: var(--color-info); }
+.text-neutral { color: var(--color-neutral); }
 
 /* ─── Compliance-score threshold mapping (UX-DR4) ────────────────────────── */
 /* Band assigned server-side; CSS only applies color.

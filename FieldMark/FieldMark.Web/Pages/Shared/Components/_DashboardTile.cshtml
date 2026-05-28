@@ -1,0 +1,31 @@
+@* Contract: docs/reference/component-canonical-examples.md *@
+@model dynamic
+@functions {
+    public record DashboardTileViewModel(
+        string TileId,
+        string Label,
+        string? Value,
+        string? Secondary,
+        string? ValueColor,
+        bool RoleStatus
+    );
+
+    private static string S(object? value) => Convert.ToString(value, System.Globalization.CultureInfo.InvariantCulture) ?? "";
+    private static bool B(object? value) => value is bool b && b;
+    private static string ColorClass(string color) => color is "success" or "warning" or "danger" or "info" or "neutral" ? $" text-{color}" : "";
+}
+@{
+    var tileId = S(Model.TileId);
+    var label = S(Model.Label);
+    var value = string.IsNullOrWhiteSpace(S(Model.Value)) ? "—" : S(Model.Value);
+    var secondary = S(Model.Secondary);
+    var colorClass = ColorClass(S(Model.ValueColor));
+}
+<section class="dashboard-tile" id="@tileId" role="@(B(Model.RoleStatus) ? "status" : null)">
+  <p class="dashboard-tile__label">@label</p>
+  <p class="dashboard-tile__value text-3xl font-bold tnum@(colorClass)">@value</p>
+  @if (!string.IsNullOrWhiteSpace(secondary))
+  {
+    <p class="dashboard-tile__secondary">@secondary</p>
+  }
+</section>

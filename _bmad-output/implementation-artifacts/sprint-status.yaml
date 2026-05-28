@@ -1,5 +1,19 @@
 # generated: 2026-05-11
-# last_updated: 2026-05-16
+# last_updated: 2026-05-28
+#   (2-4 round 7 review: 4 patch items applied directly by reviewer; all ACs satisfied; status set to done)
+#   (2-4 round 6 review patch items resolved: 4 patch items closed; status set to review)
+#   (2-4 round 5 review patch items resolved: 6 patch items closed, 2 items deferred; status set to review)
+#   (2-4 round 6 review found 4 patch items; status set to in-progress)
+#   (2-4 round 5 review patch items resolved: 6 patch items closed, 2 deferred; status set to review)
+#   (2-4 round 5 review found 6 patch items + 2 deferred; status set to in-progress)
+#   (2-4 round 4 review patch items resolved: 2 patch items closed; status set to review)
+#   (2-4 round 4 review found 2 patch items; status set to in-progress)
+#   (2-4 round 3 review patch items resolved: 3 patch items closed, 1 item deferred; status set to review)
+#   (2-4 round 3 review found 3 patch items + 1 deferred; status set to in-progress)
+#   (2-4 round 2 review patch items resolved: 3 patch items closed; status set to review)
+#   (2-4 round 2 review found 3 patch items; status set to in-progress)
+#   (2-4 round 1 review found 10 patch items; status set to in-progress)
+#   (2-4 round 1 review patch items resolved: 10 patch items closed; status set to review)
 #   (1-1 round 3 code review items resolved; story moved back to review)
 # project: FieldMark
 # project_key: NOKEY
@@ -37,6 +51,9 @@
 
 generated: 2026-05-11
 last_updated: 2026-05-28
+#   (2-4 implementation started by dev-story workflow; status set to in-progress)
+#   (2-4 implementation complete; full test gate and parity green; status set to review)
+#   (2-8 story created by create-story workflow; status set to ready-for-dev)
 #   (2-3 rerun code review clean; status set to done)
 #   (2-3 round 1 review patch items resolved: 3 patch items closed; status set to review)
 #   (2-3 round 1 review found 3 patch items; status set to in-progress)
@@ -145,11 +162,11 @@ development_status:
   2-1-map-domain-project-and-supporting-tables-into-each-stacks-data-layer: done
   2-2-map-domain-audit-entry-and-provide-a-per-stack-append-audit-entry-helper: done
   2-3-map-reference-data-tables-and-expose-a-read-api-per-stack: done
-  2-4-implement-phase-2-markup-only-components-statusbadge-inlinealert-auditrow-dashboardtile: ready-for-dev
+  2-4-implement-phase-2-markup-only-components-statusbadge-inlinealert-auditrow-dashboardtile: done
   2-5-implement-compliancetile-component-and-compliance-tile-oob-target: ready-for-dev
   2-6-implement-entityrail-component-with-responsive-collapse: ready-for-dev
   2-7-implement-tabstrip-component-with-arrow-key-navigation: ready-for-dev
-  2-8-project-create-form-pm-admin: backlog
+  2-8-project-create-form-pm-admin: ready-for-dev
   2-9-project-list-ag-grid-with-server-side-row-model: backlog
   2-10-compliance-dashboard-with-portfolio-tiles: backlog
   2-11-project-detail-anchor-screen-with-header-strip-tabstrip-and-entityrail: backlog

@@ -1,3 +1,7 @@
+## Deferred from: code review of 2-4-implement-phase-2-markup-only-components (2026-05-28)
+
+- `StatusBadgeVM.Severity` field (`fieldmark-go/internal/web/viewmodels/components.go`) is dead exported state — no template or resolver reads it; acceptable for the markup-only story scope since resolution logic (`(Entity, Value, Severity)` → `(ClassName, Label)`) will live in the first handler that constructs a `StatusBadgeVM` from domain values (Story 2.10 / 2.11). Address when that handler is written.
+
 ## Resolved by Story 1.14 (2026-05-21)
 
 All 2026-05-17 entries are accounted for below.
@@ -55,3 +59,7 @@ All 2026-05-17 entries are accounted for below.
 ## Deferred from: Story 2.1 (2026-05-26)
 
 - `make parity` routes diff is failing pre-existing Story 2.1 — Django and Fiber expose `/robots.txt` and `/.well-known/security.txt` but the .NET stack does not. Verified pre-existing by stashing 2.1 changes and re-running. Story 2.1 introduces zero new routes (AC4) so this is out of scope, but the routes-parity gate is currently red and needs a dedicated story to either land the two endpoints on .NET or formally exempt them from the diff.
+
+## Deferred from: Story 2.4 (2026-05-28)
+
+- Story 2.4-followup — unknown-token runtime warning logger per [component-edge-case-checklist.md §1](../../docs/reference/component-edge-case-checklist.md) canonical resolution; deferred from Story 2.4 per Dev Notes §"Decision — unknown-token handling". Story 2.4 shipped the user-visible fallback class and per-stack fallback assertions; request-scoped operator logging remains follow-up work.

@@ -115,21 +115,6 @@
   color: inherit;
 }
 
-/* ─── Forced-colors mode (Windows High Contrast) ─────────────────────────── */
-/* Ensure badge and score-band meaning is conveyed by text, not color alone.  */
-/* Text content is already the legibility surface — no aria-hidden on labels. */
-@media (forced-colors: active) {
-  .badge-danger, .badge-info, .badge-warning, .badge-neutral, .badge-success,
-  .badge-unknown, .badge:not([class*="badge-"]) {
-    forced-color-adjust: auto;
-    border: 1px solid ButtonText;
-  }
-  [data-score-band] {
-    forced-color-adjust: auto;
-    border: 1px solid ButtonText;
-  }
-}
-
 /* ─── Sidebar progressive-enhancement default (AC2.5 / Story 1.14) ─────────── */
 /* Without JS (data-sidebar-initialized absent), render sidebar visible and     */
 /* non-collapsible. Basecoat's compiled rule hides .sidebar at mobile widths    */

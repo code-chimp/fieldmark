@@ -1,0 +1,52 @@
+<!--
+AuditRow component canonical fixture.
+
+fixture:
+  action: ProjectCreated
+  actor_name: Aisha Stone
+  occurred_at: 2026-05-28T14:20:01Z
+  now: 2026-05-28T14:23:01Z
+-->
+
+<!-- variant: default (inputs: action=ProjectCreated, actor_name=Aisha Stone) -->
+<li class="audit-row" data-audit-action="ProjectCreated">
+  <span class="audit-row__action"><span class="badge badge-audit-action">ProjectCreated</span></span>
+  <span class="audit-row__actor">Aisha Stone</span>
+  <time class="audit-row__timestamp tnum" datetime="2026-05-28T14:20:01Z" title="2026-05-28 14:20:01 UTC">3 minutes ago</time>
+</li>
+
+<!-- variant: with-disclosure-collapsed (inputs: disclosure=collapsed) -->
+<li class="audit-row" data-audit-action="ProjectCreated">
+  <span class="audit-row__action"><span class="badge badge-audit-action">ProjectCreated</span></span>
+  <span class="audit-row__actor">Aisha Stone</span>
+  <time class="audit-row__timestamp tnum" datetime="2026-05-28T14:20:01Z" title="2026-05-28 14:20:01 UTC">3 minutes ago</time>
+  <details class="audit-row__disclosure">
+    <summary>Show change</summary>
+  </details>
+</li>
+
+<!-- variant: with-disclosure-expanded (inputs: disclosure=expanded) -->
+<li class="audit-row" data-audit-action="ProjectCreated">
+  <span class="audit-row__action"><span class="badge badge-audit-action">ProjectCreated</span></span>
+  <span class="audit-row__actor">Aisha Stone</span>
+  <time class="audit-row__timestamp tnum" datetime="2026-05-28T14:20:01Z" title="2026-05-28 14:20:01 UTC">3 minutes ago</time>
+  <details class="audit-row__disclosure" open>
+    <summary>Show change</summary>
+    <pre><code class="font-mono">{&quot;after&quot;:{&quot;status&quot;:&quot;ACTIVE&quot;},&quot;before&quot;:{&quot;status&quot;:&quot;DRAFT&quot;}}</code></pre>
+  </details>
+</li>
+
+<!-- variant: unknown-action (inputs: action=UnknownAction) -->
+<li class="audit-row" data-audit-action="UnknownAction">
+  <span class="audit-row__action"><span class="badge badge-unknown">UnknownAction</span></span>
+  <span class="audit-row__actor">Aisha Stone</span>
+  <time class="audit-row__timestamp tnum" datetime="2026-05-28T14:20:01Z" title="2026-05-28 14:20:01 UTC">3 minutes ago</time>
+</li>
+
+<!-- variant: empty-actor (inputs: actor_name=whitespace) -->
+<li class="audit-row" data-audit-action="ProjectCreated">
+  <span class="audit-row__action"><span class="badge badge-audit-action">ProjectCreated</span></span>
+  <span class="audit-row__actor">unnamed</span>
+  <span class="audit-row__initials">??</span>
+  <time class="audit-row__timestamp tnum" datetime="2026-05-28T14:20:01Z" title="2026-05-28 14:20:01 UTC">3 minutes ago</time>
+</li>

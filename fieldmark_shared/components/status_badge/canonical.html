@@ -1,0 +1,77 @@
+<!--
+StatusBadge component canonical fixture.
+
+fixture:
+  entity: Project|Inspection|Violation|CorrectiveAction|Severity
+  value: canonical state value
+  severity: optional severity for Violation Open state
+-->
+
+<!-- variant: project-active (inputs: entity=Project, value=Active) -->
+<span class="badge badge-project-active">Active</span>
+
+<!-- variant: project-on-hold (inputs: entity=Project, value=OnHold) -->
+<span class="badge badge-project-onhold">On Hold</span>
+
+<!-- variant: project-closed (inputs: entity=Project, value=Closed) -->
+<span class="badge badge-project-closed">Closed</span>
+
+<!-- variant: inspection-scheduled (inputs: entity=Inspection, value=Scheduled) -->
+<span class="badge badge-inspection-scheduled">Scheduled</span>
+
+<!-- variant: inspection-in-progress (inputs: entity=Inspection, value=InProgress) -->
+<span class="badge badge-inspection-inprogress">In Progress</span>
+
+<!-- variant: inspection-completed-pass (inputs: entity=Inspection, value=CompletedPass) -->
+<span class="badge badge-inspection-pass">Pass</span>
+
+<!-- variant: inspection-completed-conditional (inputs: entity=Inspection, value=CompletedConditional) -->
+<span class="badge badge-inspection-conditional">Conditional</span>
+
+<!-- variant: inspection-completed-fail (inputs: entity=Inspection, value=CompletedFail) -->
+<span class="badge badge-inspection-fail">Fail</span>
+
+<!-- variant: inspection-cancelled (inputs: entity=Inspection, value=Cancelled) -->
+<span class="badge badge-inspection-cancelled">Cancelled</span>
+
+<!-- variant: violation-open-critical-high (inputs: entity=Violation, value=Open, severity=Critical) -->
+<span class="badge badge-violation-open-high">Open</span>
+
+<!-- variant: violation-open-medium-low (inputs: entity=Violation, value=Open, severity=Medium) -->
+<span class="badge badge-violation-open-low">Open</span>
+
+<!-- variant: violation-in-progress (inputs: entity=Violation, value=InProgress) -->
+<span class="badge badge-violation-inprogress">In Progress</span>
+
+<!-- variant: violation-resolved (inputs: entity=Violation, value=Resolved) -->
+<span class="badge badge-violation-resolved">Resolved</span>
+
+<!-- variant: violation-voided (inputs: entity=Violation, value=Voided) -->
+<span class="badge badge-violation-voided">Voided</span>
+
+<!-- variant: corrective-action-submitted (inputs: entity=CorrectiveAction, value=Submitted) -->
+<span class="badge badge-ca-submitted">Submitted</span>
+
+<!-- variant: corrective-action-under-review (inputs: entity=CorrectiveAction, value=UnderReview) -->
+<span class="badge badge-ca-underreview">Under Review</span>
+
+<!-- variant: corrective-action-approved (inputs: entity=CorrectiveAction, value=Approved) -->
+<span class="badge badge-ca-approved">Approved</span>
+
+<!-- variant: corrective-action-rejected (inputs: entity=CorrectiveAction, value=Rejected) -->
+<span class="badge badge-ca-rejected">Rejected</span>
+
+<!-- variant: severity-critical (inputs: entity=Severity, value=Critical) -->
+<span class="badge badge-severity-critical badge-bump">Critical</span>
+
+<!-- variant: severity-high (inputs: entity=Severity, value=High) -->
+<span class="badge badge-severity-high badge-bump">High</span>
+
+<!-- variant: severity-medium (inputs: entity=Severity, value=Medium) -->
+<span class="badge badge-severity-medium">Medium</span>
+
+<!-- variant: severity-low (inputs: entity=Severity, value=Low) -->
+<span class="badge badge-severity-low">Low</span>
+
+<!-- variant: unknown (inputs: entity=Violation, value=Foobar) -->
+<span class="badge badge-unknown">Foobar</span>

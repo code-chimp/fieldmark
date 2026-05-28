@@ -119,10 +119,24 @@ This list exists because Epic 1 surfaced all nine categories *after* their stori
 
 **Canonical resolution:**
 - Documented deterministic fallback token (e.g., `"??"` for initials, `"unnamed"` for slugs).
-- Unit test for both empty string and whitespace-only string.
+- Unit test for **all three boundary cases**: empty string (`""`), whitespace-only (`"   "`), and `null`/`None`. Empty string alone is insufficient — whitespace-only is a distinct input that exposed regressions in Story 2.4 rounds 1 and 5.
+- For numeric-like properties (counts, scores, indices): also test zero (`0` / `"0"`) as a distinct non-empty valid value. A zero-value tile displaying `—` instead of `0` is a silent data-display bug (Story 2.4 round 2 — Django DashboardTile `{% if value %}` falsy-zero).
 - The fallback is **identical across stacks** — write it once in the canonical-example doc, then implement per stack against the same test fixture.
 
-**Reference:** Story 1.13 review-finding patch on `AvatarInitials` blank-input case.
+**Reference:** Story 1.13 review-finding patch on `AvatarInitials` blank-input case; Story 2.4 rounds 1, 2, and 5 AuditRow and DashboardTile patches.
+
+---
+
+## 10. Cross-component test parity within a story
+
+**Failure mode:** A story introduces N sibling components (e.g., StatusBadge, InlineAlert, AuditRow, DashboardTile). A security guard test, unknown-fallback assertion, or XSS round-trip is added to the first N−1 components but the last one is omitted. The reviewer catches it. This happened in every round of Story 2.4 — in rounds 1, 2, and 5 independently.
+
+**Canonical resolution:**
+- Before marking any component implementation complete, enumerate every special-purpose test pattern present in the *already-completed* sibling components: grep guards, unknown-fallback class assertions, XSS round-trip tests, empty-actor tests.
+- Apply each pattern to *all* sibling components in the same story, including the last one written.
+- A mental checklist: for each test type T in {grep-guard, unknown-fallback, xss-positive, xss-negative, edge-cases}, and for each component C in the story's component list, assert (T, C) is covered before submitting.
+
+**Reference:** Story 2.4 rounds 1, 2, and 5 (DashboardTile grep guards, StatusBadge Html.Raw guard, InlineAlert/AuditRow unknown-fallback assertions).
 
 ---
 

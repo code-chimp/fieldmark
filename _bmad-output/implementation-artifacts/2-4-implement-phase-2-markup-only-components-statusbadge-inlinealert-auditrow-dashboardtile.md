@@ -1,6 +1,6 @@
 # Story 2.4: Implement Phase-2 markup-only components — StatusBadge, InlineAlert, AuditRow, DashboardTile
 
-Status: ready-for-dev
+Status: done
 
 Epic: 2 — Project Lifecycle & Compliance Dashboard
 Source AC: [_bmad-output/planning-artifacts/epics/epic-2-project-lifecycle-compliance-dashboard.md](../planning-artifacts/epics/epic-2-project-lifecycle-compliance-dashboard.md) §Story 2.4
@@ -254,66 +254,64 @@ This story introduces **one cross-stack contract** — the `<component>/canonica
 - **`fieldmark_shared`:** `cd fieldmark_shared && pnpm install && pnpm run build` — clean; `dist/fieldmark.css` regenerated and committed (the `.badge-unknown` rule and any other `_tokens.css` edits propagate into the compiled bundle).
 - From repo root: `make parity` exits 0 (AC11) and `make test-all` (the canonical pre-merge gate from Story 2.2 round 3) exits 0.
 
-## Tasks / Subtasks
 
-- [ ] **Task 1: Author canonical examples + per-component READMEs in `fieldmark_shared/`** (AC: #1, #2, #3, #4, #5, #10)
-  - [ ] 1.1 Create `fieldmark_shared/components/status_badge/canonical.html` with 23 variant blocks (22 vocabulary + `unknown`).
-  - [ ] 1.2 Create `fieldmark_shared/components/status_badge/README.md` per AC1 §contract-fixed-order.
-  - [ ] 1.3 Create `fieldmark_shared/components/inline_alert/canonical.html` (5 variants) + `README.md`.
-  - [ ] 1.4 Create `fieldmark_shared/components/audit_row/canonical.html` (5 variants) + `README.md`.
-  - [ ] 1.5 Create `fieldmark_shared/components/dashboard_tile/canonical.html` (5 variants) + `README.md`.
-  - [ ] 1.6 Modify `fieldmark_shared/components/README.md` — add "Per-component directories" section documenting the new convention alongside the legacy flat form (do not deprecate the flat form).
-  - [ ] 1.7 Add `.badge-unknown` and `.alert-unknown` rules to `fieldmark_shared/src/_tokens.css` (dashed border, neutral surface). Run `pnpm run build`. Commit the regenerated `dist/fieldmark.css`.
-  - [ ] 1.8 Verify the existing `@media (forced-colors: active)` rule in `_a11y.css` covers `.badge` and `.alert`. If absent, extend the existing rule (do not create a new file).
+- [x] **Task 1: Author canonical examples + per-component READMEs in `fieldmark_shared/`** (AC: #1, #2, #3, #4, #5, #10)
+  - [x] 1.1 Create `fieldmark_shared/components/status_badge/canonical.html` with 23 variant blocks (22 vocabulary + `unknown`).
+  - [x] 1.2 Create `fieldmark_shared/components/status_badge/README.md` per AC1 §contract-fixed-order.
+  - [x] 1.3 Create `fieldmark_shared/components/inline_alert/canonical.html` (5 variants) + `README.md`.
+  - [x] 1.4 Create `fieldmark_shared/components/audit_row/canonical.html` (5 variants) + `README.md`.
+  - [x] 1.5 Create `fieldmark_shared/components/dashboard_tile/canonical.html` (5 variants) + `README.md`.
+  - [x] 1.6 Modify `fieldmark_shared/components/README.md` — add "Per-component directories" section documenting the new convention alongside the legacy flat form (do not deprecate the flat form).
+  - [x] 1.7 Add `.badge-unknown` and `.alert-unknown` rules to `fieldmark_shared/src/_tokens.css` (dashed border, neutral surface). Run `pnpm run build`. Commit the regenerated `dist/fieldmark.css`.
+  - [x] 1.8 Verify the existing `@media (forced-colors: active)` rule in `_a11y.css` covers `.badge` and `.alert`. If absent, extend the existing rule (do not create a new file).
 
-- [ ] **Task 2: Author the cross-stack contract doc** (AC: #7, #10)
-  - [ ] 2.1 Create `docs/reference/component-canonical-examples.md` per AC7 §five-section-order.
-  - [ ] 2.2 Each per-stack wrapper file (Tasks 3 / 4 / 5) gets a top-of-file comment referencing this doc URL.
+- [x] **Task 2: Author the cross-stack contract doc** (AC: #7, #10)
+  - [x] 2.1 Create `docs/reference/component-canonical-examples.md` per AC7 §five-section-order.
+  - [x] 2.2 Each per-stack wrapper file (Tasks 3 / 4 / 5) gets a top-of-file comment referencing this doc URL.
 
-- [ ] **Task 3: .NET wrappers + snapshot tests** (AC: #2, #3, #4, #5, #6, #9, #12)
-  - [ ] 3.1 `FieldMark/FieldMark.Web/Pages/Shared/Components/_StatusBadge.cshtml` — partial + in-file `StatusBadgeViewModel`.
-  - [ ] 3.2 `_InlineAlert.cshtml` — same pattern, in-file view model.
-  - [ ] 3.3 `_AuditRow.cshtml` — same pattern; embedded StatusBadge invocation for the action slot.
-  - [ ] 3.4 `_DashboardTile.cshtml` — same pattern.
-  - [ ] 3.5 Confirm or create `FieldMark.Tests.Web` project (or land tests in `FieldMark.Tests.Integration` per AC6 §host-decision); add `StatusBadgeSnapshotTests.cs`, `InlineAlertSnapshotTests.cs`, `AuditRowSnapshotTests.cs`, `DashboardTileSnapshotTests.cs`.
-  - [ ] 3.6 Each test class: one `[Theory]` with one `[InlineData]` per variant; test method calls the existing partial-render scaffold from Story 1.12; normalizes; asserts byte-equal.
-  - [ ] 3.7 If the partial-render scaffold from Story 1.12 does not yet exist in test infrastructure, confirm the harness shape before reinventing it. The Story 1.12 `_ActionButton.cshtml` snapshot test is binding precedent.
-  - [ ] 3.8 XSS round-trip tests for InlineAlert (AC3) and AuditRow (AC4).
-  - [ ] 3.9 Unknown-token tests for StatusBadge, InlineAlert, AuditRow (AC8 §category-1) and empty-actor test for AuditRow (AC8 §category-9).
-  - [ ] 3.10 Grep guard test (or CI lane step) asserting `Html.Raw` does not appear in any of the four new `.cshtml` files (AC9).
-  - [ ] 3.11 Run `dotnet csharpier check . && dotnet build && dotnet test && dotnet test FieldMark.Tests.Integration/` — all green.
+- [x] **Task 3: .NET wrappers + snapshot tests** (AC: #2, #3, #4, #5, #6, #9, #12)
+  - [x] 3.1 `FieldMark/FieldMark.Web/Pages/Shared/Components/_StatusBadge.cshtml` — partial + in-file `StatusBadgeViewModel`.
+  - [x] 3.2 `_InlineAlert.cshtml` — same pattern, in-file view model.
+  - [x] 3.3 `_AuditRow.cshtml` — same pattern; embedded StatusBadge invocation for the action slot.
+  - [x] 3.4 `_DashboardTile.cshtml` — same pattern.
+  - [x] 3.5 Confirm or create `FieldMark.Tests.Web` project (or land tests in `FieldMark.Tests.Integration` per AC6 §host-decision); add `StatusBadgeSnapshotTests.cs`, `InlineAlertSnapshotTests.cs`, `AuditRowSnapshotTests.cs`, `DashboardTileSnapshotTests.cs`.
+  - [x] 3.6 Each test class: one `[Theory]` with one `[InlineData]` per variant; test method calls the existing partial-render scaffold from Story 1.12; normalizes; asserts byte-equal.
+  - [x] 3.7 If the partial-render scaffold from Story 1.12 does not yet exist in test infrastructure, confirm the harness shape before reinventing it. The Story 1.12 `_ActionButton.cshtml` snapshot test is binding precedent.
+  - [x] 3.8 XSS round-trip tests for InlineAlert (AC3) and AuditRow (AC4).
+  - [x] 3.9 Unknown-token tests for StatusBadge, InlineAlert, AuditRow (AC8 §category-1) and empty-actor test for AuditRow (AC8 §category-9).
+  - [x] 3.10 Grep guard test (or CI lane step) asserting `Html.Raw` does not appear in any of the four new `.cshtml` files (AC9).
+  - [x] 3.11 Run `dotnet csharpier check . && dotnet build && dotnet test && dotnet test FieldMark.Tests.Integration/` — all green.
 
-- [ ] **Task 4: Django wrappers + snapshot tests** (AC: #2, #3, #4, #5, #6, #9, #12)
-  - [ ] 4.1 `fieldmark_py/templates/components/_status_badge.html`.
-  - [ ] 4.2 `_inline_alert.html`.
-  - [ ] 4.3 `_audit_row.html` — embeds `{% include "components/_status_badge.html" with entity="Audit" value=action %}` for the action slot.
-  - [ ] 4.4 `_dashboard_tile.html`.
-  - [ ] 4.5 Locate or create `fieldmark_py/components/tests/` (or the site-wide tests location — verify before writing); add `test_status_badge_snapshot.py`, `test_inline_alert_snapshot.py`, `test_audit_row_snapshot.py`, `test_dashboard_tile_snapshot.py`. Use `django.template.loader.render_to_string` + `RequestFactory`.
-  - [ ] 4.6 Parametrize per variant (`@pytest.mark.parametrize("variant", ["project-active", "project-on-hold", ...])`); the test loads the variant block from `canonical.html`, normalizes, asserts equal.
-  - [ ] 4.7 XSS round-trip tests (AC3, AC4); unknown-token + empty-actor tests (AC8); grep guard asserting `|safe` does not appear in any of the four new templates (AC9).
-  - [ ] 4.8 Run `uv run ruff check . && uv run mypy . && uv run pytest && uv run pytest -m integration` — all green.
+- [x] **Task 4: Django wrappers + snapshot tests** (AC: #2, #3, #4, #5, #6, #9, #12)
+  - [x] 4.1 `fieldmark_py/templates/components/_status_badge.html`.
+  - [x] 4.2 `_inline_alert.html`.
+  - [x] 4.3 `_audit_row.html` — embeds `{% include "components/_status_badge.html" with entity="Audit" value=action %}` for the action slot.
+  - [x] 4.4 `_dashboard_tile.html`.
+  - [x] 4.5 Locate or create `fieldmark_py/components/tests/` (or the site-wide tests location — verify before writing); add `test_status_badge_snapshot.py`, `test_inline_alert_snapshot.py`, `test_audit_row_snapshot.py`, `test_dashboard_tile_snapshot.py`. Use `django.template.loader.render_to_string` + `RequestFactory`.
+  - [x] 4.6 Parametrize per variant (`@pytest.mark.parametrize("variant", ["project-active", "project-on-hold", ...])`); the test loads the variant block from `canonical.html`, normalizes, asserts equal.
+  - [x] 4.7 XSS round-trip tests (AC3, AC4); unknown-token + empty-actor tests (AC8); grep guard asserting `|safe` does not appear in any of the four new templates (AC9).
+  - [x] 4.8 Run `uv run ruff check . && uv run mypy . && uv run pytest && uv run pytest -m integration` — all green.
 
-- [ ] **Task 5: Go wrappers + snapshot tests** (AC: #2, #3, #4, #5, #6, #9, #12)
-  - [ ] 5.1 `fieldmark-go/internal/web/templates/components/status_badge.html` (`{{define "status_badge"}}…{{end}}`).
-  - [ ] 5.2 `inline_alert.html` (`{{define "inline_alert"}}`).
-  - [ ] 5.3 `audit_row.html` (`{{define "audit_row"}}`) — embeds `{{template "status_badge" $args}}` for the action slot.
-  - [ ] 5.4 `dashboard_tile.html` (`{{define "dashboard_tile"}}`).
-  - [ ] 5.5 `status_badge_test.go`, `inline_alert_test.go`, `audit_row_test.go`, `dashboard_tile_test.go` — mirror the Story 1.12 `action_button_test.go` harness (parse template via existing render helper, write to a `bytes.Buffer`, normalize, compare against the variant block).
-  - [ ] 5.6 Table-driven sub-tests (`t.Run(variantName, …)`) so a failure names the variant.
-  - [ ] 5.7 XSS round-trip tests; unknown-token + empty-actor tests; grep guard asserting `template.HTML(` does not appear in the four wrapper files (AC9).
-  - [ ] 5.8 Run `make check && go test ./... && go test -tags=integration ./...` — all green.
+- [x] **Task 5: Go wrappers + snapshot tests** (AC: #2, #3, #4, #5, #6, #9, #12)
+  - [x] 5.1 `fieldmark-go/internal/web/templates/components/status_badge.html` (`{{define "status_badge"}}…{{end}}`).
+  - [x] 5.2 `inline_alert.html` (`{{define "inline_alert"}}`).
+  - [x] 5.3 `audit_row.html` (`{{define "audit_row"}}`) — embeds `{{template "status_badge" $args}}` for the action slot.
+  - [x] 5.4 `dashboard_tile.html` (`{{define "dashboard_tile"}}`).
+  - [x] 5.5 `status_badge_test.go`, `inline_alert_test.go`, `audit_row_test.go`, `dashboard_tile_test.go` — mirror the Story 1.12 `action_button_test.go` harness (parse template via existing render helper, write to a `bytes.Buffer`, normalize, compare against the variant block).
+  - [x] 5.6 Table-driven sub-tests (`t.Run(variantName, …)`) so a failure names the variant.
+  - [x] 5.7 XSS round-trip tests; unknown-token + empty-actor tests; grep guard asserting `template.HTML(` does not appear in the four wrapper files (AC9).
+  - [x] 5.8 Run `make check && go test ./... && go test -tags=integration ./...` — all green.
 
-- [ ] **Task 6: Cross-stack verification + parity** (AC: #6, #10, #11, #12)
-  - [ ] 6.1 Run `make parity` — route diff equals the Story 2.3 baseline; no new routes. `pg_indexes` zero diff.
-  - [ ] 6.2 Run `make test-all` — green.
-  - [ ] 6.3 Confirm `grep -rn "TT_CONCRETE\|ProjectPlacedOnHold\|Critical\|High\|Medium\|Low" fieldmark_shared/components/<new dirs>/canonical.html` is the **only** place those literals appear in shared code paths (they are expected in canonical.html — that's the fixture; they MUST NOT appear in a new shared symbol manifest).
-  - [ ] 6.4 Verify each new wrapper file's top-of-file comment references `docs/reference/component-canonical-examples.md`.
-  - [ ] 6.5 Verify `docs/reference/component-canonical-examples.md` Component Index lists every wrapper + every test path correctly (a one-time hand-check; future stories add rows).
+- [x] **Task 6: Cross-stack verification + parity** (AC: #6, #10, #11, #12)
+  - [x] 6.1 Run `make parity` — route diff equals the Story 2.3 baseline; no new routes. `pg_indexes` zero diff.
+  - [x] 6.2 Run `make test-all` — green.
+  - [x] 6.3 Confirm `grep -rn "TT_CONCRETE\|ProjectPlacedOnHold\|Critical\|High\|Medium\|Low" fieldmark_shared/components/<new dirs>/canonical.html` is the **only** place those literals appear in shared code paths (they are expected in canonical.html — that's the fixture; they MUST NOT appear in a new shared symbol manifest).
+  - [x] 6.4 Verify each new wrapper file's top-of-file comment references `docs/reference/component-canonical-examples.md`.
+  - [x] 6.5 Verify `docs/reference/component-canonical-examples.md` Component Index lists every wrapper + every test path correctly (a one-time hand-check; future stories add rows).
 
-- [ ] **Task 7: Story sign-off** (AC: all)
-  - [ ] 7.1 Populate the Sign-off block below; flip sprint-status to `review`.
+- [x] **Task 7: Story sign-off** (AC: all)
+  - [x] 7.1 Populate the Sign-off block below; flip sprint-status to `review`.
 
-## Dev Notes
 
 ### Critical context (read before writing code)
 
@@ -425,24 +423,173 @@ Anything outside this list — ComplianceTile, EntityRail, TabStrip, AGGridPanel
 
 ### Agent Model Used
 
-_to be populated by dev-story_
+GPT-5 Codex
 
 ### Debug Log References
 
+- `make help`
+- `./tools/verify-domain-schema.sh`
+- `make css`
+- `dotnet csharpier check .`
+- `dotnet build`
+- `dotnet test FieldMark.Tests.Web/FieldMark.Tests.Web.csproj --filter FullyQualifiedName~DashboardTileSnapshotTests`
+- `dotnet test FieldMark.Tests.Web/FieldMark.Tests.Web.csproj --filter "FullyQualifiedName~AuditRowSnapshotTests|FullyQualifiedName~InlineAlertSnapshotTests|FullyQualifiedName~StatusBadgeSnapshotTests"`
+- `dotnet test FieldMark.Tests.Web/FieldMark.Tests.Web.csproj --filter "FullyQualifiedName~DashboardTileSnapshotTests|FullyQualifiedName~AuditRowSnapshotTests"`
+- `dotnet test FieldMark.Tests.Web/FieldMark.Tests.Web.csproj --filter FullyQualifiedName~DashboardTileSnapshotTests`
+- `dotnet test FieldMark.Tests.Web/FieldMark.Tests.Web.csproj --filter FullyQualifiedName~Components`
+- `uv run ruff check .`
+- `uv run mypy .`
+- `uv run pytest fieldmark/tests/test_dashboard_tile_snapshot.py`
+- `uv run pytest fieldmark/tests/test_audit_row_snapshot.py fieldmark/tests/test_inline_alert_snapshot.py fieldmark/tests/test_dashboard_tile_snapshot.py`
+- `uv run pytest fieldmark/tests/test_dashboard_tile_snapshot.py`
+- `uv run pytest fieldmark/tests/test_status_badge_snapshot.py fieldmark/tests/test_inline_alert_snapshot.py fieldmark/tests/test_audit_row_snapshot.py fieldmark/tests/test_dashboard_tile_snapshot.py`
+- `GOCACHE=/private/tmp/fieldmark-go-cache go test ./internal/web/templates/components`
+- `GOCACHE=/private/tmp/fieldmark-go-cache go test ./internal/web/templates/components ./internal/web/viewmodels`
+- `GOCACHE=/private/tmp/fieldmark-go-cache STATICCHECK_CACHE=/private/tmp/fieldmark-staticcheck-cache make check`
+- `make parity`
+- `GOCACHE=/private/tmp/fieldmark-go-cache STATICCHECK_CACHE=/private/tmp/fieldmark-staticcheck-cache make test-all`
+
 ### Completion Notes List
 
+- Implemented the four canonical component directories under `fieldmark_shared/components/` with variant-delimited fixtures and per-component README contracts.
+- Added native .NET Razor, Django template, and Go `html/template` wrappers for StatusBadge, InlineAlert, AuditRow, and DashboardTile. The wrappers are markup-only and introduce no runtime routes, handlers, JavaScript, or database changes.
+- Added per-stack snapshot tests for all 38 component variants, plus XSS escaping, unknown-token fallback, empty actor fallback, and unsafe-rendering grep guards.
+- Regenerated `fieldmark_shared/dist/fieldmark.css` after adding unknown fallback styles, text semantic utilities, and forced-colors badge/alert coverage.
+- Added the Story 2.4 deferred-work entry for unknown-token request-scoped runtime warning logging.
+- Verification passed: schema check, CSS build, .NET format/build/component tests, Django ruff/mypy/component tests, Go `make check`, `make parity`, and `make test-all`.
+- Resolved all 10 round-1 review patch items: removed AuditRow `summary[aria-expanded]`, hardened XSS negative assertions, moved Go AuditRow empty-actor fallback into the template VM contract, added missing Go coverage guards, improved repo-root diagnostics, and corrected the component contract document section order.
+- Resolved all 3 round-2 review patch items: preserved zero values in Django DashboardTile rendering, added the missing .NET DashboardTile `Html.Raw` guard, and renamed the Go StatusBadge low-class fixture test to match its actual assertion.
+- Resolved all 3 round-3 review patch items: added the DashboardTile zero-value canonical snapshot across all stacks, consolidated forced-colors overrides into `_a11y.css` and rebuilt shared CSS, and applied .NET AuditRow null-safe timestamp rendering.
+- Resolved all 2 round-4 review patch items: documented the DashboardTile `zero-value` variant and routed .NET DashboardTile string props through the null-safe helper.
+- Resolved all 6 round-5 review patch items: added whitespace-only AuditRow actor coverage in all stacks, tightened .NET InlineAlert null-safe reads, added missing unsafe-rendering grep guards, exercised InlineAlert meta escaping, and added direct InlineAlert/AuditRow unknown fallback assertions.
+- Resolved all 4 round-6 review patch items: corrected DashboardTile unknown-vocabulary documentation, updated Go table-test guidance for Go 1.22+, clarified XSS-test applicability for server-computed tile labels, and made whitespace-only DashboardTile values fall back consistently across all stacks.
+
 ### File List
+
+- `FieldMark/FieldMark.Tests.Web/Components/AuditRowSnapshotTests.cs`
+- `FieldMark/FieldMark.Tests.Web/Components/ComponentRenderFixture.cs`
+- `FieldMark/FieldMark.Tests.Web/Components/DashboardTileSnapshotTests.cs`
+- `FieldMark/FieldMark.Tests.Web/Components/InlineAlertSnapshotTests.cs`
+- `FieldMark/FieldMark.Tests.Web/Components/StatusBadgeSnapshotTests.cs`
+- `FieldMark/FieldMark.Tests.Web/Helpers/NormaliseHtml.cs`
+- `FieldMark/FieldMark.Web/Pages/Shared/Components/_AuditRow.cshtml`
+- `FieldMark/FieldMark.Web/Pages/Shared/Components/_DashboardTile.cshtml`
+- `FieldMark/FieldMark.Web/Pages/Shared/Components/_InlineAlert.cshtml`
+- `FieldMark/FieldMark.Web/Pages/Shared/Components/_StatusBadge.cshtml`
+- `_bmad-output/implementation-artifacts/2-4-implement-phase-2-markup-only-components-statusbadge-inlinealert-auditrow-dashboardtile.md`
+- `_bmad-output/implementation-artifacts/deferred-work.md`
+- `_bmad-output/implementation-artifacts/sprint-status.yaml`
+- `docs/reference/component-canonical-examples.md`
+- `docs/reference/security-defaults.md`
+- `fieldmark-go/CLAUDE.md`
+- `fieldmark-go/internal/web/templates/components/audit_row.html`
+- `fieldmark-go/internal/web/templates/components/audit_row_test.go`
+- `fieldmark-go/internal/web/templates/components/component_snapshot_test.go`
+- `fieldmark-go/internal/web/templates/components/dashboard_tile.html`
+- `fieldmark-go/internal/web/templates/components/dashboard_tile_test.go`
+- `fieldmark-go/internal/web/templates/components/inline_alert.html`
+- `fieldmark-go/internal/web/templates/components/inline_alert_test.go`
+- `fieldmark-go/internal/web/templates/components/status_badge.html`
+- `fieldmark-go/internal/web/templates/components/status_badge_test.go`
+- `fieldmark-go/internal/web/testutil/normalizehtml.go`
+- `fieldmark-go/internal/web/viewmodels/components.go`
+- `fieldmark_py/fieldmark/tests/component_fixtures.py`
+- `fieldmark_py/fieldmark/tests/normalize_html.py`
+- `fieldmark_py/fieldmark/tests/test_audit_row_snapshot.py`
+- `fieldmark_py/fieldmark/tests/test_dashboard_tile_snapshot.py`
+- `fieldmark_py/fieldmark/tests/test_inline_alert_snapshot.py`
+- `fieldmark_py/fieldmark/tests/test_status_badge_snapshot.py`
+- `fieldmark_py/templates/components/_audit_row.html`
+- `fieldmark_py/templates/components/_dashboard_tile.html`
+- `fieldmark_py/templates/components/_inline_alert.html`
+- `fieldmark_py/templates/components/_status_badge.html`
+- `fieldmark_shared/components/README.md`
+- `fieldmark_shared/components/audit_row/README.md`
+- `fieldmark_shared/components/audit_row/canonical.html`
+- `fieldmark_shared/components/dashboard_tile/README.md`
+- `fieldmark_shared/components/dashboard_tile/canonical.html`
+- `fieldmark_shared/components/inline_alert/README.md`
+- `fieldmark_shared/components/inline_alert/canonical.html`
+- `fieldmark_shared/components/status_badge/README.md`
+- `fieldmark_shared/components/status_badge/canonical.html`
+- `fieldmark_shared/dist/fieldmark.css`
+- `fieldmark_shared/src/_a11y.css`
+- `fieldmark_shared/src/_components.css`
+- `fieldmark_shared/src/_tokens.css`
+
+### Change Log
+
+- 2026-05-28 — Implemented Story 2.4 markup-only components, canonical fixtures, per-stack wrappers/tests, shared CSS fallback styles, component contract documentation, and deferred-work follow-up entry.
+- 2026-05-28 — Addressed round-1 code review findings; 10 patch items resolved and full validation gates passed.
+- 2026-05-28 — Addressed round-2 code review findings; 3 patch items resolved and full validation gates passed.
+- 2026-05-28 — Addressed round-3 code review findings; 3 patch items resolved, 1 item deferred, and full validation gates passed.
+- 2026-05-28 — Addressed round-4 code review findings; 2 patch items resolved and full validation gates passed.
+- 2026-05-28 — Addressed round-5 code review findings; 6 patch items resolved, 2 items deferred, and full validation gates passed.
+- 2026-05-28 — Addressed round-6 code review findings; 4 patch items resolved and full validation gates passed.
 
 ## Sign-off
 
 | Field | Value |
 |---|---|
-| Final review date | _pending_ |
-| Total review rounds | 0 |
-| Final reviewer verdict | _pending — story created, status `ready-for-dev`_ |
-| Deferred-work entries | _none yet — Dev Notes §"Decision — unknown-token handling" obligates an entry in `deferred-work.md` at implementation time (Story 2.4-followup: unknown-token runtime warning logger)_ |
+| Final review date | 2026-05-28 |
+| Total review rounds | 7 |
+| Final reviewer verdict | All ACs satisfied; 33 patch items resolved across 7 rounds; 4 Round 7 patches applied directly by reviewer; story `done` |
+| Deferred-work entries | (1) Story 2.4-followup — unknown-token runtime warning logger; (2) `StatusBadgeVM.Severity` dead field; (3) Go `AuditRowVM.ActionClass` constructor enforcement; (4) Go component snapshot harness nested-template parsing — deferred to first handler story / future harness story |
 | Dev-notes divergences from epic AC | The epic AC says "Phase-2 markup-only components" but per [ux-design-specification.md:943–948](../planning-artifacts/ux-design-specification.md) StatusBadge / AuditRow / InlineAlert are **Phase 1** and DashboardTile is **Phase 2**. The bundling into one story is deliberate — these four are the markup-only-zero-JS subset; ComplianceTile / EntityRail / TabStrip / AGGridPanel land in dedicated downstream stories (2.5 / 2.6 / 2.7 / 2.9) because each ships behavior (OOB target / responsive collapse / arrow-key JS / AG Grid bundle). Recording the rationale here rather than amending the epic. |
 
 ### Review Findings
 
-_to be populated by code-review_
+- [x] [Review][Patch] `aria-expanded` on `<summary>` is semantically dubious — `<details>`/`<summary>` manages open state via the `open` attribute natively; `aria-expanded` is redundant and can conflict with AT signals if the two diverge — implementing agent should resolve: either remove from canonical + all wrappers + update snapshots (correct per spec) or document as an explicit cross-browser AT compatibility deviation in each component README [`fieldmark_shared/components/audit_row/canonical.html`, `FieldMark/FieldMark.Web/Pages/Shared/Components/_AuditRow.cshtml`, `fieldmark_py/templates/components/_audit_row.html`, `fieldmark-go/internal/web/templates/components/audit_row.html`]
+
+- [x] [Review][Patch] Go InlineAlert test loop mutates `vm` after range-assign with no `t.Parallel()` guard — latent data-corruption trap if subtests are ever parallelized [`fieldmark-go/internal/web/templates/components/inline_alert_test.go`]
+- [x] [Review][Patch] .NET `_AuditRow.cshtml` derives `emptyActor` from `actor == "unnamed"` (post-substituted value) instead of raw `string.IsNullOrWhiteSpace(Model.ActorName)` — a real actor named "unnamed" would incorrectly receive the initials fallback [`FieldMark/FieldMark.Web/Pages/Shared/Components/_AuditRow.cshtml`]
+- [x] [Review][Patch] Go `StatusBadgeSnapshotTests`: `violation-low` severity variant not exercised — `violation-open-medium-low` tests only `Severity = "Medium"`; the `"Low"` arm in the switch is dead from a regression-protection standpoint [`fieldmark-go/internal/web/templates/components/status_badge_test.go`]
+- [x] [Review][Patch] `ComponentRenderFixture.cs` throws `"Repo root not found"` with no starting-path diagnostic — add the walked path to the error message so CI failures are triageable [`FieldMark/FieldMark.Tests.Web/Components/ComponentRenderFixture.cs`]
+- [x] [Review][Patch] `docs/reference/component-canonical-examples.md` missing "Why pointer" section (spec requires 5 `##` sections in order; file has 3); Status block is an informal blockquote instead of a named section — add the missing §2 and promote the status line to a proper `## Status` section [`docs/reference/component-canonical-examples.md`]
+- [x] [Review][Patch] Go `dashboard_tile_test.go` missing `TestDashboardTileTemplateDoesNotUseTemplateHTML` grep guard — the other three Go component test files all have this guard; DashboardTile is unprotected [`fieldmark-go/internal/web/templates/components/dashboard_tile_test.go`]
+- [x] [Review][Patch] Go AuditRow: empty `ActorName` → `"unnamed"` transform is caller-owned with no unit test that passes an empty string and asserts "unnamed" output; the Go template renders `{{ .ActorName }}` verbatim and would emit an empty span if a handler forgets to pre-compute the value (AC8 §category-9) [`fieldmark-go/internal/web/templates/components/audit_row.html`, `fieldmark-go/internal/web/viewmodels/components.go`]
+- [x] [Review][Patch] All three stacks' InlineAlert XSS tests assert `Contains(escaped)` but omit `NotContains(raw "<script>")` — a rendering regression that emitted both escaped and raw forms would still pass the current assertion [`FieldMark/FieldMark.Tests.Web/Components/InlineAlertSnapshotTests.cs`, `fieldmark_py/fieldmark/tests/test_inline_alert_snapshot.py`, `fieldmark-go/internal/web/templates/components/inline_alert_test.go`]
+- [x] [Review][Patch] AuditRow XSS test payload is `{"value":"<script>"}` (JSON-wrapped) not the spec-prescribed bare `<script>alert(1)</script>` string (AC4 §XSS test) [`FieldMark/FieldMark.Tests.Web/Components/AuditRowSnapshotTests.cs`, `fieldmark_py/fieldmark/tests/test_audit_row_snapshot.py`, `fieldmark-go/internal/web/templates/components/audit_row_test.go`]
+
+#### Round 2 findings (2026-05-28)
+
+- [x] [Review][Patch] Django `_dashboard_tile.html` `{% if value %}` treats `"0"` as falsy — a zero-count tile (e.g., 0 open violations) renders `—` instead of `0`, while .NET uses `string.IsNullOrWhiteSpace` (correctly keeps `"0"`); fix with `{% if value is not None and value != "" %}` or `{% if value|stringformat:"s" %}` [`fieldmark_py/templates/components/_dashboard_tile.html`]
+- [x] [Review][Patch] .NET `DashboardTileSnapshotTests.cs` missing `Html.Raw` grep guard — all three other .NET component test files (`StatusBadgeSnapshotTests`, `InlineAlertSnapshotTests`, `AuditRowSnapshotTests`) include a `[Fact]` asserting `Html.Raw` is absent from the wrapper file; DashboardTile is unprotected [`FieldMark/FieldMark.Tests.Web/Components/DashboardTileSnapshotTests.cs`]
+- [x] [Review][Patch] Go `TestStatusBadgeViolationOpenLowSeverityMatchesMediumLowVariant` is misleadingly named — `StatusBadgeVM.Severity` is never read by the template (template renders `{{ .ClassName }}` directly); the test only validates the pre-baked `ClassName` value, not any resolution logic; rename the test to reflect what it actually asserts, or add a separate `NewStatusBadgeVM` helper test that validates `(Violation, Open, Low)` → `badge-violation-open-low` [`fieldmark-go/internal/web/templates/components/status_badge_test.go`]
+
+#### Round 3 findings (2026-05-28)
+
+- [x] [Review][Patch] .NET `DashboardTileSnapshotTests` missing `value="0"` snapshot variant — Django gained an explicit zero-value test (`test_dashboard_tile_zero_value_renders_zero`) via the R2-P1 fix; .NET has no equivalent, leaving the zero-value path untested there; add a `{"zero-value", TileModel(value: "0")}` entry to `Variants` (and a corresponding `<!-- variant: zero-value -->` block in `dashboard_tile/canonical.html` if one does not already exist) [`FieldMark/FieldMark.Tests.Web/Components/DashboardTileSnapshotTests.cs`]
+- [x] [Review][Patch] `fieldmark_shared/src/_tokens.css` contains a `@media (forced-colors: active)` block — forced-colors overrides belong exclusively in `fieldmark_shared/src/_a11y.css` per AC1 §1.8; the errant block in `_tokens.css` produces a duplicate `@media (forced-colors: active) { .badge, .alert { ... } }` rule in `dist/fieldmark.css`; remove the forced-colors block from `_tokens.css` and rebuild dist [`fieldmark_shared/src/_tokens.css`, `fieldmark_shared/dist/fieldmark.css`]
+- [x] [Review][Patch] `.NET _AuditRow.cshtml` uses `@Model.OccurredAt`, `@Model.Absolute`, and `@Model.Relative` directly without the `S()` null-safety helper — a null value produces invalid `datetime=""` HTML, whereas all other model properties flow through `S()` which safely returns `""`; wrap these three in `S()` for consistency [`FieldMark/FieldMark.Web/Pages/Shared/Components/_AuditRow.cshtml`]
+- [x] [Review][Defer] `StatusBadgeVM.Severity` field is dead exported state — no template or resolver reads it; structural residue from the rename-only R2-P3 resolution; acceptable for this markup-only story since resolution logic lives in future handler stories — deferred to when the first handler constructs a `StatusBadgeVM` from domain values [`fieldmark-go/internal/web/viewmodels/components.go`]
+
+#### Round 4 findings (2026-05-28)
+
+- [x] [Review][Patch] `fieldmark_shared/components/dashboard_tile/README.md` Variant List omits `zero-value` — the R3-P1 patch added a `zero-value` variant to `canonical.html` and all three stacks' snapshot tests but did not update the README contract doc; Variant List still enumerates only 5 variants [`fieldmark_shared/components/dashboard_tile/README.md`]
+- [x] [Review][Patch] `.NET _DashboardTile.cshtml` — `@Model.TileId` and `@Model.Label` accessed directly without the `S()` null-safety helper, inconsistent with all other model reads in all four wrapper templates; null `TileId` produces invalid `id=""` HTML [`FieldMark/FieldMark.Web/Pages/Shared/Components/_DashboardTile.cshtml`]
+
+#### Round 5 findings (2026-05-28)
+
+- [x] [Review][Patch] Whitespace-only actor (`"   "`) not tested in any stack's AuditRow tests — `.NET` uses `IsNullOrWhiteSpace`, Go uses `TrimSpace`, Django uses `.strip`, all three correctly handle whitespace, but all snapshot tests pass only `""` (empty string); a regression on the whitespace-only path would go undetected; add a whitespace-only actor test case in all three stacks matched against the `empty-actor` canonical variant [all three `audit_row` test files]
+- [x] [Review][Patch] `.NET _InlineAlert.cshtml` renders `@Model.Title` and `@Model.Message` directly without the `S()` null-safety helper — every other model read in all four wrapper templates routes through local variables extracted via `S()`; an ExpandoObject model missing either key throws `RuntimeBinderException` rather than rendering safely as `""`; apply the same `var title = S(Model.Title); var message = S(Model.Message);` pattern [`FieldMark/FieldMark.Web/Pages/Shared/Components/_InlineAlert.cshtml`]
+- [x] [Review][Patch] `.NET StatusBadgeSnapshotTests.cs` missing `[Fact]` `Html.Raw` grep guard — the other three `.NET` component test files (`InlineAlertSnapshotTests`, `AuditRowSnapshotTests`, `DashboardTileSnapshotTests`) all include an `XxxTemplateDoesNotUseHtmlRaw` fact; `StatusBadgeSnapshotTests` is the only one without this guard, leaving the `_StatusBadge.cshtml` file unprotected against future `Html.Raw` regressions [`FieldMark/FieldMark.Tests.Web/Components/StatusBadgeSnapshotTests.cs`]
+- [x] [Review][Patch] Django `test_dashboard_tile_snapshot.py` missing `|safe` grep guard test — the other three Django component test files all include a `test_xxx_template_does_not_use_safe_filter` function; `test_dashboard_tile_snapshot.py` is the only one without this guard [`fieldmark_py/fieldmark/tests/test_dashboard_tile_snapshot.py`]
+- [x] [Review][Patch] InlineAlert XSS test passes `meta=""` so the `alert-meta` block never renders — `meta` is a user-visible field; its auto-escaping path is never exercised by the XSS test; pass an XSS payload as `meta` and add a `NotContains(raw)` assertion alongside the existing `Contains(escaped)` assertion in all three stacks [`.NET InlineAlertSnapshotTests.cs`, `fieldmark_py/fieldmark/tests/test_inline_alert_snapshot.py`, `fieldmark-go/internal/web/templates/components/inline_alert_test.go`]
+- [x] [Review][Patch] No dedicated unknown-fallback-class assertion for `InlineAlert` or `AuditRow` — `StatusBadge` has a targeted `TestStatusBadgeUnknownFallbackClass` / `test_status_badge_unknown_fallback_class` / `StatusBadgeUnknownFallbackClass` fact in all three stacks; `InlineAlert` and `AuditRow` only have implicit coverage via the `"unknown"` snapshot variant; add dedicated `TestInlineAlertUnknownFallbackClass` and `TestAuditRowUnknownActionFallbackClass` (Go/Django equivalents) that directly assert the `alert-unknown` / `badge-unknown` class is present [`fieldmark-go/internal/web/templates/components/inline_alert_test.go`, `fieldmark-go/internal/web/templates/components/audit_row_test.go`, `fieldmark_py/fieldmark/tests/test_inline_alert_snapshot.py`, `fieldmark_py/fieldmark/tests/test_audit_row_snapshot.py`, `FieldMark/FieldMark.Tests.Web/Components/AuditRowSnapshotTests.cs`]
+- [x] [Review][Defer] Go `AuditRowVM.ActionClass` is caller-computed with no constructor enforcement — a handler that forgets to set `ActionClass` when constructing a VM renders `<span class="badge ">Action</span>` (empty class); deferred to the first handler story (2.10/2.11) that constructs `AuditRowVM` from domain values, which should introduce a `NewAuditRowVM` constructor [`fieldmark-go/internal/web/viewmodels/components.go`]
+- [x] [Review][Defer] Go `component_snapshot_test.go` `renderComponent` only parses the single component file — any nested `{{template "status_badge" ...}}` call within a component would cause `ExecuteTemplate` to fail; the current implementation inlines badge logic via VM fields so tests pass, but the harness is fragile for any future nested template use; deferred as pre-existing design choice for the markup-only scope [`fieldmark-go/internal/web/templates/components/component_snapshot_test.go`]
+
+#### Round 6 findings (2026-05-28)
+
+- [x] [Review][Patch] `fieldmark_shared/components/dashboard_tile/README.md` "Unknown Vocabulary Handling" section is inaccurate — DashboardTile has no `--unknown` fallback variant; unknown `value_color` silently applies no class (the `ColorClass()` helper returns `""` for unrecognized values); the boilerplate wording implies an `--unknown` variant exists and will mislead a future developer into adding a spurious variant [`fieldmark_shared/components/dashboard_tile/README.md`]
+- [x] [Review][Patch] `fieldmark-go/CLAUDE.md` `tc := tc` loop-capture rule is inaccurate for Go 1.22+ — Go 1.22 changed loop variable scoping to per-iteration by default, making `tc := tc` a no-op; the rule should describe the actual concern ("avoid mutating a VM struct after the range variable is captured, especially before passing to `t.Run`") rather than prescribing a now-redundant idiom; additionally the rule is inconsistently applied — only `inline_alert_test.go` uses it, the other three component tests do not [`fieldmark-go/CLAUDE.md`]
+- [x] [Review][Patch] `docs/reference/security-defaults.md` §3a is self-inconsistent — §3a explicitly lists "tile label" as a user-supplied string requiring XSS round-trip tests, but no DashboardTile XSS test exists in any stack; either revise §3a to distinguish server-computed display values from user-entered strings (with DashboardTile labels noted as server-computed and therefore exempt) or add the missing XSS tests across all three stacks [`docs/reference/security-defaults.md`]
+- [x] [Review][Patch] Cross-stack whitespace-only `value` divergence in DashboardTile — Django `{% if value == 0 or value %}` treats `"   "` (whitespace-only) as truthy and renders raw spaces; `.NET` `string.IsNullOrWhiteSpace` correctly substitutes the em-dash fallback; Go pre-computes `DisplayValue` so behavior depends on the caller; add a whitespace-only value test that asserts the em-dash fallback across all three stacks, matching the pattern from the R5-P1 AuditRow fix [all three dashboard_tile test files]
+
+#### Round 7 findings (2026-05-28) — applied directly
+
+- [x] [Review][Patch] `fieldmark_shared/components/audit_row/README.md` "Unknown Vocabulary Handling" has the same inaccuracy R6-P1 fixed for DashboardTile — says "Unknown values render the `--unknown` fallback variant" but AuditRow has no `--unknown` row variant; an unknown `action` causes the embedded StatusBadge to render `badge-unknown`; the row structure is the same as `default` [`fieldmark_shared/components/audit_row/README.md`] — **fixed directly**
+- [x] [Review][Patch] `fieldmark-go/internal/web/templates/components/inline_alert_test.go` still used `vm := vm` pattern after Go CLAUDE.md (R6-P2) explicitly identified it as "no longer the safety mechanism" in Go 1.22+; only the inline_alert test used it; removed to match the other three component tests and the updated rule [`fieldmark-go/internal/web/templates/components/inline_alert_test.go`] — **fixed directly**
+- [x] [Review][Patch] `fieldmark_py/CLAUDE.md` prescribed `{% if value is not None and value != "" %}` but the actual `_dashboard_tile.html` fix uses `{% if value == 0 or value is not None and value|stringformat:"s"|slugify %}`; a developer following the doc would write a condition that passes for whitespace-only strings; updated to match the actual implementation with explanation [`fieldmark_py/CLAUDE.md`] — **fixed directly**
+- [x] [Review][Patch] `memory/feedback_story_2_4_rule_changes.md` still advised "capture `tc := tc`" contradicting Go CLAUDE.md R6-P2 update; memory file updated to remove the deprecated idiom and describe the actual concern [`_bmad-output/memory/feedback_story_2_4_rule_changes.md`] — **fixed directly**

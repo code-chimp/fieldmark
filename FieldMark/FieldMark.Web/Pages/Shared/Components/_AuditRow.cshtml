@@ -1,0 +1,53 @@
+@* Contract: docs/reference/component-canonical-examples.md *@
+@model dynamic
+@functions {
+    public record AuditRowViewModel(
+        string Action,
+        string ActorName,
+        string OccurredAt,
+        string Absolute,
+        string Relative,
+        string? BeforeAfterJson,
+        bool Expanded
+    );
+
+    private static string S(object? value) => Convert.ToString(value, System.Globalization.CultureInfo.InvariantCulture) ?? "";
+    private static bool B(object? value) => value is bool b && b;
+    private static bool KnownAction(string action) => action is "ProjectCreated" or "ProjectPlacedOnHold" or "ProjectResumed" or "ProjectClosed" or "InspectionScheduled" or "InspectionStarted" or "InspectionCompleted" or "InspectionCancelled" or "ViolationOpened" or "ViolationAssigned" or "ViolationVoided" or "CorrectiveActionSubmitted" or "CorrectiveActionTakenForReview" or "CorrectiveActionApproved" or "CorrectiveActionRejected";
+}
+@{
+    var action = S(Model.Action);
+    var rawActor = S(Model.ActorName);
+    var emptyActor = string.IsNullOrWhiteSpace(rawActor);
+    var actor = emptyActor ? "unnamed" : rawActor;
+    var occurredAt = S(Model.OccurredAt);
+    var absolute = S(Model.Absolute);
+    var relative = S(Model.Relative);
+    var json = S(Model.BeforeAfterJson);
+    var expanded = B(Model.Expanded);
+}
+<li class="audit-row" data-audit-action="@action">
+  <span class="audit-row__action"><span class="badge @(KnownAction(action) ? "badge-audit-action" : "badge-unknown")">@action</span></span>
+  <span class="audit-row__actor">@actor</span>
+  @if (emptyActor)
+  {
+    <span class="audit-row__initials">??</span>
+  }
+  <time class="audit-row__timestamp tnum" datetime="@occurredAt" title="@absolute">@relative</time>
+  @if (!string.IsNullOrWhiteSpace(json))
+  {
+    @if (expanded)
+    {
+      <details class="audit-row__disclosure" open>
+        <summary>Show change</summary>
+        <pre><code class="font-mono">@json</code></pre>
+      </details>
+    }
+    else
+    {
+      <details class="audit-row__disclosure">
+        <summary>Show change</summary>
+      </details>
+    }
+  }
+</li>

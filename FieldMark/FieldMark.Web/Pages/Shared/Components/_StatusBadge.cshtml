@@ -1,0 +1,42 @@
+@* Contract: docs/reference/component-canonical-examples.md *@
+@model dynamic
+@functions {
+    public record StatusBadgeViewModel(string Entity, string Value, string? Severity);
+
+    private static string S(object? value) => Convert.ToString(value, System.Globalization.CultureInfo.InvariantCulture) ?? "";
+
+    private static (string ClassName, string Label) Resolve(string entity, string value, string severity)
+    {
+        var key = $"{entity}:{value}:{severity}".ToLowerInvariant().Replace(" ", "");
+        return key switch
+        {
+            "project:active:" => ("badge-project-active", "Active"),
+            "project:onhold:" => ("badge-project-onhold", "On Hold"),
+            "project:closed:" => ("badge-project-closed", "Closed"),
+            "inspection:scheduled:" => ("badge-inspection-scheduled", "Scheduled"),
+            "inspection:inprogress:" => ("badge-inspection-inprogress", "In Progress"),
+            "inspection:completedpass:" => ("badge-inspection-pass", "Pass"),
+            "inspection:completedconditional:" => ("badge-inspection-conditional", "Conditional"),
+            "inspection:completedfail:" => ("badge-inspection-fail", "Fail"),
+            "inspection:cancelled:" => ("badge-inspection-cancelled", "Cancelled"),
+            "violation:open:critical" or "violation:open:high" => ("badge-violation-open-high", "Open"),
+            "violation:open:medium" or "violation:open:low" or "violation:open:" => ("badge-violation-open-low", "Open"),
+            "violation:inprogress:" => ("badge-violation-inprogress", "In Progress"),
+            "violation:resolved:" => ("badge-violation-resolved", "Resolved"),
+            "violation:voided:" => ("badge-violation-voided", "Voided"),
+            "correctiveaction:submitted:" => ("badge-ca-submitted", "Submitted"),
+            "correctiveaction:underreview:" => ("badge-ca-underreview", "Under Review"),
+            "correctiveaction:approved:" => ("badge-ca-approved", "Approved"),
+            "correctiveaction:rejected:" => ("badge-ca-rejected", "Rejected"),
+            "severity:critical:" => ("badge-severity-critical badge-bump", "Critical"),
+            "severity:high:" => ("badge-severity-high badge-bump", "High"),
+            "severity:medium:" => ("badge-severity-medium", "Medium"),
+            "severity:low:" => ("badge-severity-low", "Low"),
+            _ => ("badge-unknown", value),
+        };
+    }
+}
+@{
+    var resolved = Resolve(S(Model.Entity), S(Model.Value), S(Model.Severity));
+}
+<span class="badge @resolved.Item1">@resolved.Item2</span>

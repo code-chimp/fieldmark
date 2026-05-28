@@ -1,0 +1,7 @@
+{% comment %}Contract: docs/reference/component-canonical-examples.md{% endcomment %}
+<div class="alert {% if severity == "danger" %}alert-danger{% elif severity == "warning" %}alert-warning{% elif severity == "info" %}alert-info{% elif severity == "success" %}alert-success{% else %}alert-unknown{% endif %}" role="{% if severity == "danger" or severity == "warning" %}alert{% else %}status{% endif %}">
+  {% if severity == "danger" or severity == "warning" %}<svg aria-hidden="true" class="alert-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><path d="M12 9v4"></path><path d="M12 17h.01"></path></svg>{% elif severity == "success" %}<svg aria-hidden="true" class="alert-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>{% else %}<svg aria-hidden="true" class="alert-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>{% endif %}
+  <strong class="alert-title">{{ title }}</strong>
+  <p class="alert-message">{{ message }}</p>
+  {% if meta %}<p class="alert-meta">{{ meta }}</p>{% endif %}
+</div>

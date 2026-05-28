@@ -13,6 +13,7 @@ _HIDDEN_INPUT_RE = re.compile(r'<input[^>]+type="hidden"[^>]*>', re.IGNORECASE)
 def normalise_component(html: str) -> str:
     """Strip HTML comments, collapse all whitespace to single spaces, trim."""
     html = _COMMENT_RE.sub("", html)
+    html = html.replace("&#34;", "&quot;")
     html = _WHITESPACE_RE.sub(" ", html).strip()
     return html
 
@@ -37,7 +38,7 @@ def extract_variant(example_content: str, variant_name: str) -> str:
 
     for line in lines:
         stripped = line.rstrip()
-        if stripped.startswith(start_marker):
+        if stripped == f"{start_marker} -->" or stripped.startswith(f"{start_marker} "):
             in_block = True
             continue
         if in_block and stripped.startswith("<!-- variant:"):

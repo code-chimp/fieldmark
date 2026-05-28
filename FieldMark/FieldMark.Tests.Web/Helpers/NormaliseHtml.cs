@@ -69,7 +69,10 @@ public static partial class NormaliseHtml
         foreach (var line in lines)
         {
             var trimmed = line.TrimEnd();
-            if (trimmed.StartsWith(startMarker, StringComparison.OrdinalIgnoreCase))
+            if (
+                string.Equals(trimmed, $"{startMarker} -->", StringComparison.OrdinalIgnoreCase)
+                || trimmed.StartsWith($"{startMarker} ", StringComparison.OrdinalIgnoreCase)
+            )
             {
                 inBlock = true;
                 continue;
@@ -90,6 +93,8 @@ public static partial class NormaliseHtml
     public static string NormaliseComponent(string html)
     {
         html = HtmlComment().Replace(html, "");
+        html = html.Replace("&#34;", "&quot;", StringComparison.Ordinal);
+        html = html.Replace("&#x2014;", "—", StringComparison.OrdinalIgnoreCase);
         html = WhitespaceRun().Replace(html, " ").Trim();
         return html;
     }

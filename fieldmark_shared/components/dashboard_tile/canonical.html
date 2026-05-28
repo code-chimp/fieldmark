@@ -1,0 +1,46 @@
+<!--
+DashboardTile component canonical fixture.
+
+fixture:
+  tile_id: open-violations-tile
+  label: Open Violations
+  value: 12
+  secondary: 3 critical
+-->
+
+<!-- variant: populated (inputs: label=Open Violations, value=12) -->
+<section class="dashboard-tile" id="open-violations-tile">
+  <p class="dashboard-tile__label">Open Violations</p>
+  <p class="dashboard-tile__value text-3xl font-bold tnum">12</p>
+</section>
+
+<!-- variant: zero-value (inputs: value=0) -->
+<section class="dashboard-tile" id="open-violations-tile">
+  <p class="dashboard-tile__label">Open Violations</p>
+  <p class="dashboard-tile__value text-3xl font-bold tnum">0</p>
+</section>
+
+<!-- variant: populated-with-secondary (inputs: secondary=3 critical) -->
+<section class="dashboard-tile" id="open-violations-tile">
+  <p class="dashboard-tile__label">Open Violations</p>
+  <p class="dashboard-tile__value text-3xl font-bold tnum">12</p>
+  <p class="dashboard-tile__secondary">3 critical</p>
+</section>
+
+<!-- variant: populated-with-color (inputs: value_color=danger) -->
+<section class="dashboard-tile" id="open-violations-tile">
+  <p class="dashboard-tile__label">Open Violations</p>
+  <p class="dashboard-tile__value text-3xl font-bold tnum text-danger">12</p>
+</section>
+
+<!-- variant: empty (inputs: value=None) -->
+<section class="dashboard-tile" id="open-violations-tile">
+  <p class="dashboard-tile__label">Open Violations</p>
+  <p class="dashboard-tile__value text-3xl font-bold tnum">—</p>
+</section>
+
+<!-- variant: status-region (inputs: role=status) -->
+<section class="dashboard-tile" id="open-violations-tile" role="status">
+  <p class="dashboard-tile__label">Open Violations</p>
+  <p class="dashboard-tile__value text-3xl font-bold tnum">12</p>
+</section>

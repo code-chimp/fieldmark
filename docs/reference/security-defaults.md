@@ -46,6 +46,25 @@ This list exists because Epic 1 stories shipped functionally-correct code that o
 
 **Reference:** Story 1.6 round 2 patches on theme-value sanitization; Story 1.10 Go seeder strict-validation patches.
 
+## 3a. XSS round-trip test completeness (output-escaping on render)
+
+**Applies when:** a component or page renders any user-supplied string — alert title/message/meta, actor name, JSON content, or any free-form prop entered by a user.
+
+Server-computed display strings such as DashboardTile labels are still escaped by the rendering engine, but they do not require dedicated XSS round-trip tests unless a story explicitly makes them user-entered or data-derived from untrusted free text.
+
+**Failure modes caught in Story 2.4 rounds 1 and 5:**
+- Test asserts only `Contains(escaped_form)` — a regression that emits both raw and escaped forms still passes.
+- Test passes an XSS payload only to the first user-visible prop — other props (e.g., `meta` in InlineAlert, `before_after_json` in AuditRow) are untested.
+- Test uses a JSON-wrapped payload (`{"value":"<script>"}`) instead of the bare string (`<script>alert(1)</script>`), so the assertion exercises JSON serialization rather than escaping.
+
+**Canonical resolution for every XSS round-trip test:**
+1. Use the bare payload `<script>alert(1)</script>` (not JSON-wrapped) as the input value.
+2. Assert `Contains("&lt;script&gt;alert(1)&lt;/script&gt;")` (escaped form present).
+3. Assert `NotContains("<script>")` (raw form absent) — both assertions are required; one without the other is an incomplete test.
+4. Repeat for **every user-visible string prop** the component accepts, not just the first one. If a prop renders conditionally (e.g., `meta` in InlineAlert), pass a non-empty XSS payload to force the branch to render.
+
+**Reference:** Story 2.4 review rounds 1 and 5 — InlineAlert XSS missing negative assertion; AuditRow XSS JSON-wrapped payload; InlineAlert `meta` prop untested.
+
 ---
 
 ## 4. No dynamic `RegExp` on untrusted input

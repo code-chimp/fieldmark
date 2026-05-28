@@ -64,3 +64,19 @@
     min-width: 44px;
   }
 }
+
+@media (forced-colors: active) {
+  .badge,
+  .alert,
+  .badge-danger,
+  .badge-info,
+  .badge-warning,
+  .badge-neutral,
+  .badge-success,
+  .badge-unknown,
+  .badge:not([class*="badge-"]),
+  [data-score-band] {
+    forced-color-adjust: auto;
+    border: 1px solid ButtonText;
+  }
+}

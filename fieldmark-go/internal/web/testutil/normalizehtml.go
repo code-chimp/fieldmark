@@ -18,6 +18,7 @@ var (
 // single space, and trims the result. Used for cross-stack snapshot comparison.
 func NormaliseComponent(html string) string {
 	html = commentRe.ReplaceAllString(html, "")
+	html = strings.ReplaceAll(html, "&#34;", "&quot;")
 	html = whitespaceRe.ReplaceAllString(html, " ")
 	return strings.TrimSpace(html)
 }
@@ -40,7 +41,7 @@ func ExtractVariant(exampleContent, variantName string) string {
 
 	for _, line := range lines {
 		trimmed := strings.TrimRight(line, " \t\r")
-		if strings.HasPrefix(trimmed, startMarker) {
+		if trimmed == startMarker+" -->" || strings.HasPrefix(trimmed, startMarker+" ") {
 			inBlock = true
 			continue
 		}

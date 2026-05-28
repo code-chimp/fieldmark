@@ -1,0 +1,10 @@
+{{ define "dashboard_tile" -}}
+{{/* Contract: docs/reference/component-canonical-examples.md */ -}}
+<section class="dashboard-tile" id="{{ .TileID }}"{{ if .RoleStatus }} role="status"{{ end }}>
+  <p class="dashboard-tile__label">{{ .Label }}</p>
+  <p class="dashboard-tile__value text-3xl font-bold tnum{{ .ValueClass }}">{{ .DisplayValueText }}</p>
+  {{- if .Secondary }}
+  <p class="dashboard-tile__secondary">{{ .Secondary }}</p>
+  {{- end }}
+</section>
+{{- end }}

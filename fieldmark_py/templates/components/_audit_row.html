@@ -1,0 +1,11 @@
+{% comment %}Contract: docs/reference/component-canonical-examples.md{% endcomment %}
+<li class="audit-row" data-audit-action="{{ action }}">
+  <span class="audit-row__action"><span class="badge {% if action == "ProjectCreated" or action == "ProjectPlacedOnHold" or action == "ProjectResumed" or action == "ProjectClosed" or action == "InspectionScheduled" or action == "InspectionStarted" or action == "InspectionCompleted" or action == "InspectionCancelled" or action == "ViolationOpened" or action == "ViolationAssigned" or action == "ViolationVoided" or action == "CorrectiveActionSubmitted" or action == "CorrectiveActionTakenForReview" or action == "CorrectiveActionApproved" or action == "CorrectiveActionRejected" %}badge-audit-action{% else %}badge-unknown{% endif %}">{{ action }}</span></span>
+  {% if actor_name.strip %}<span class="audit-row__actor">{{ actor_name }}</span>{% else %}<span class="audit-row__actor">unnamed</span>
+  <span class="audit-row__initials">??</span>{% endif %}
+  <time class="audit-row__timestamp tnum" datetime="{{ occurred_at }}" title="{{ absolute }}">{{ relative }}</time>
+  {% if before_after_json %}<details class="audit-row__disclosure"{% if expanded %} open{% endif %}>
+    <summary>Show change</summary>
+    {% if expanded %}<pre><code class="font-mono">{{ before_after_json }}</code></pre>{% endif %}
+  </details>{% endif %}
+</li>
