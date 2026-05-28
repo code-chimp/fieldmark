@@ -89,6 +89,9 @@ def _normalize(raw: str) -> str | None:
     if len(path) > 1:
         path = path.rstrip("/")
 
+    if path == "/admin/reference":
+        return path
+
     # Exclude framework internals.
     excluded_prefixes = ("/admin",)
     if any(path == p or path.startswith(p + "/") for p in excluded_prefixes):

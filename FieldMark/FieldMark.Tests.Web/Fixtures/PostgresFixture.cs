@@ -1,3 +1,4 @@
+using DotNet.Testcontainers.Configurations;
 using FieldMark.Data.Context;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Hosting;
@@ -16,11 +17,17 @@ namespace FieldMark.Tests.Web.Fixtures;
 /// </summary>
 public sealed class PostgresFixture : IAsyncLifetime
 {
-    private readonly PostgreSqlContainer _postgres = new PostgreSqlBuilder("postgres:17")
-        .WithDatabase("fieldmark_test")
-        .WithUsername("fieldmark_test")
-        .WithPassword("fieldmark_test")
-        .Build();
+    private readonly PostgreSqlContainer _postgres;
+
+    public PostgresFixture()
+    {
+        _postgres = new PostgreSqlBuilder("postgres:17")
+            .WithDatabase("fieldmark_test")
+            .WithUsername("fieldmark_test")
+            .WithPassword("fieldmark_test")
+            .WithBindMount(LocateInitDir(), "/docker-entrypoint-initdb.d", AccessMode.ReadOnly)
+            .Build();
+    }
 
     public string ConnectionString { get; private set; } = "";
 
@@ -84,6 +91,23 @@ public sealed class PostgresFixture : IAsyncLifetime
             services.Remove(optDescriptor);
 
         services.AddDbContext<T>(o => o.UseNpgsql(cs).UseSnakeCaseNamingConvention());
+    }
+
+    private static string LocateInitDir()
+    {
+        var dir = new DirectoryInfo(Directory.GetCurrentDirectory());
+        while (dir is not null)
+        {
+            var candidate = Path.Combine(dir.FullName, "docker", "postgres", "init");
+            if (Directory.Exists(candidate))
+            {
+                return candidate;
+            }
+            dir = dir.Parent;
+        }
+        throw new DirectoryNotFoundException(
+            "Could not locate docker/postgres/init relative to the test working directory."
+        );
     }
 }
 

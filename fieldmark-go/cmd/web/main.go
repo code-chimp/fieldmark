@@ -143,6 +143,15 @@ func registerRoutes(app *fiber.App, pool *pgxpool.Pool) {
 		return c.Render("fragments/compliance_tile", fiber.Map{}, "")
 	})
 
+	if pool != nil {
+		referenceHandlers := &handlers.AdminReferenceHandlers{
+			Reference: postgres.NewReferenceStore(pool),
+		}
+		app.Get("/admin/reference", auth.RequireAuth(), referenceHandlers.AdminReferenceIndex)
+	} else {
+		app.Get("/admin/reference", auth.RequireAuth(), func(c fiber.Ctx) error { return nil })
+	}
+
 	// POST /preferences/theme — exempt from RequireAuth so the toggle works on /login.
 	app.Post("/preferences/theme", func(c fiber.Ctx) error {
 		value := c.FormValue("value")

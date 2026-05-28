@@ -1,0 +1,86 @@
+<h1>Reference Data</h1>
+
+<section>
+    <h2>Trade Types</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Code</th>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Active</th>
+            </tr>
+        </thead>
+        <tbody>
+        {{range .TradeTypes}}
+            <tr>
+                <td>{{.Code}}</td>
+                <td>{{.Name}}</td>
+                <td>{{.Description}}</td>
+                <td>{{.Active}}</td>
+            </tr>
+        {{end}}
+        </tbody>
+    </table>
+</section>
+
+<section>
+    <h2>Violation Categories</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Code</th>
+                <th>Name</th>
+                <th>Trade Type ID</th>
+                <th>Default Severity</th>
+                <th>Description</th>
+                <th>Active</th>
+            </tr>
+        </thead>
+        <tbody>
+        {{range .ViolationCategories}}
+            <tr>
+                <td>{{.Code}}</td>
+                <td>{{.Name}}</td>
+                <td>{{.TradeTypeID}}</td>
+                <td>{{.DefaultSeverity}}</td>
+                <td>{{.Description}}</td>
+                <td>{{.Active}}</td>
+            </tr>
+        {{end}}
+        </tbody>
+    </table>
+</section>
+
+<section>
+    <h2>Compliance Rules</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Code</th>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Rule Kind</th>
+                <th>Parameters</th>
+                <th>Active</th>
+            </tr>
+        </thead>
+        <tbody>
+        {{range .ComplianceRules}}
+            <tr>
+                <td>{{.Code}}</td>
+                <td>{{.Name}}</td>
+                <td>{{.Description}}</td>
+                <td>{{.RuleKind}}</td>
+                <td>
+                    <details>
+                        <summary>parameters</summary>
+                        <pre><code class="font-mono">{{.ParametersJSON}}</code></pre>
+                    </details>
+                </td>
+                <td>{{.Active}}</td>
+            </tr>
+        {{end}}
+        </tbody>
+    </table>
+</section>

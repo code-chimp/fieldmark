@@ -29,6 +29,17 @@ echo "  dumping Django routes..."
 echo "  dumping Fiber routes..."
 "$SCRIPT_DIR/dump-routes-fiber.sh" > "$FIBER_FILE"
 
+filter_ignored_non_business_routes() {
+    local file="$1"
+    local tmp="$file.filtered"
+    grep -Ev '^(get|options) /(robots\.txt|\.well-known/security\.txt)$' "$file" > "$tmp" || true
+    mv "$tmp" "$file"
+}
+
+filter_ignored_non_business_routes "$NET_FILE"
+filter_ignored_non_business_routes "$DJANGO_FILE"
+filter_ignored_non_business_routes "$FIBER_FILE"
+
 FAIL=0
 
 diff_pair() {

@@ -1,4 +1,5 @@
 using FieldMark.Data.Context;
+using FieldMark.Data.Reference;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -78,6 +79,7 @@ builder.Services.AddScoped<
     FieldMark.Data.Auditing.IAuditAppender,
     FieldMark.Data.Auditing.AuditAppender
 >();
+builder.Services.AddScoped<IReferenceReader, ReferenceReader>();
 
 builder
     .Services.AddIdentityCore<IdentityUser<Guid>>(options =>
@@ -102,6 +104,13 @@ builder
             options.LoginPath = "/login";
             options.LogoutPath = "/logout";
             options.AccessDeniedPath = "/login";
+            options.Events.OnRedirectToAccessDenied = async context =>
+            {
+                context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                await context.Response.WriteAsync(
+                    "You do not have permission to access this page."
+                );
+            };
             options.ReturnUrlParameter = "return_url";
             options.ExpireTimeSpan = TimeSpan.FromDays(14);
             options.SlidingExpiration = true;

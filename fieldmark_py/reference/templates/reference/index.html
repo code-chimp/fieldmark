@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Reference Data{% endblock %}
+{% block content %}
+<h1>Reference Data</h1>
+
+<section>
+    <h2>Trade Types</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Code</th>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Active</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for trade_type in trade_types %}
+            <tr>
+                <td>{{ trade_type.code }}</td>
+                <td>{{ trade_type.name }}</td>
+                <td>{{ trade_type.description|default_if_none:"" }}</td>
+                <td>{{ trade_type.active }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</section>
+
+<section>
+    <h2>Violation Categories</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Code</th>
+                <th>Name</th>
+                <th>Trade Type ID</th>
+                <th>Default Severity</th>
+                <th>Description</th>
+                <th>Active</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for category in violation_categories %}
+            <tr>
+                <td>{{ category.code }}</td>
+                <td>{{ category.name }}</td>
+                <td>{{ category.trade_type }}</td>
+                <td>{{ category.default_severity }}</td>
+                <td>{{ category.description|default_if_none:"" }}</td>
+                <td>{{ category.active }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</section>
+
+<section>
+    <h2>Compliance Rules</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Code</th>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Rule Kind</th>
+                <th>Parameters</th>
+                <th>Active</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for rule in compliance_rules %}
+            <tr>
+                <td>{{ rule.code }}</td>
+                <td>{{ rule.name }}</td>
+                <td>{{ rule.description }}</td>
+                <td>{{ rule.rule_kind }}</td>
+                <td>
+                    <details>
+                        <summary>parameters</summary>
+                        <pre><code class="font-mono">{{ rule.parameters_json }}</code></pre>
+                    </details>
+                </td>
+                <td>{{ rule.active }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% endblock %}

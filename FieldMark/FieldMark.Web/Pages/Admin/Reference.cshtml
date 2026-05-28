@@ -1,0 +1,95 @@
+@page "/admin/reference"
+@model FieldMark.Web.Pages.Admin.ReferenceModel
+@{
+    ViewData["Title"] = "Reference Data";
+}
+
+<h1>Reference Data</h1>
+
+<section>
+    <h2>Trade Types</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Code</th>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Active</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var tradeType in Model.TradeTypes)
+        {
+            <tr>
+                <td>@tradeType.Code</td>
+                <td>@tradeType.Name</td>
+                <td>@tradeType.Description</td>
+                <td>@tradeType.Active</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</section>
+
+<section>
+    <h2>Violation Categories</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Code</th>
+                <th>Name</th>
+                <th>Trade Type ID</th>
+                <th>Default Severity</th>
+                <th>Description</th>
+                <th>Active</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var category in Model.ViolationCategories)
+        {
+            <tr>
+                <td>@category.Code</td>
+                <td>@category.Name</td>
+                <td>@category.TradeTypeId</td>
+                <td>@category.DefaultSeverity</td>
+                <td>@category.Description</td>
+                <td>@category.Active</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</section>
+
+<section>
+    <h2>Compliance Rules</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Code</th>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Rule Kind</th>
+                <th>Parameters</th>
+                <th>Active</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var rule in Model.ComplianceRules)
+        {
+            <tr>
+                <td>@rule.Code</td>
+                <td>@rule.Name</td>
+                <td>@rule.Description</td>
+                <td>@rule.RuleKind</td>
+                <td>
+                    <details>
+                        <summary>parameters</summary>
+                        <pre><code class="font-mono">@rule.ParametersJson</code></pre>
+                    </details>
+                </td>
+                <td>@rule.Active</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</section>
