@@ -69,4 +69,6 @@ def test_rollback_leaves_no_trace() -> None:
 def test_reference_seed_present(domain_db: psycopg.Cursor) -> None:
     domain_db.execute("SELECT count(*) FROM domain.trade_type WHERE active")
     row = domain_db.fetchone()
-    assert row is not None and row[0] > 0, "init scripts should have populated reference data"
+    assert row is not None and row[0] > 0, (
+        "init scripts should have populated reference data"
+    )

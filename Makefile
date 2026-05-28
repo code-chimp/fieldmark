@@ -1,4 +1,4 @@
-.PHONY: help up down reset run-net run-django run-go run-landing test-net test-django test-go test-integration test-net-integration test-django-integration test-go-integration e2e parity css
+.PHONY: help up down reset run-net run-django run-go run-landing test-net test-django test-go test-integration test-net-integration test-django-integration test-go-integration test-all e2e parity css
 
 help: ## Show available targets and descriptions
 	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n  make <target>\n\nTargets:\n"} /^[a-zA-Z0-9_-]+:.*##/ { printf "  %-12s %s\n", $$1, $$2 }' Makefile
@@ -24,13 +24,21 @@ run-go: ## Run the Go/Fiber stack on :3000
 run-landing: ## Serve the landing page on :8080
 	cd fieldmark-landing && python3 -m http.server 8080
 
-test-net: ## Run .NET tests (xUnit)
+test-net: ## Run .NET tests (xUnit) — fast-feedback only; for the full audit/transactional gate use test-all
 	cd FieldMark && dotnet test
 
-test-django: ## Run Django tests (pytest)
+# NOTE: `make test-django` runs the unit lane. Integration-marked tests
+# (AC5 audit transaction tests, Story 2.2) are gated by `-m integration` and
+# live in `make test-django-integration`. A green `test-django` alone does not
+# certify transactional behavior. Use `make test-all` as the pre-merge gate.
+test-django: ## Run Django tests (pytest) — unit lane only; integration in test-django-integration / test-all
 	cd fieldmark_py && uv run pytest
 
-test-go: ## Run Go tests
+# NOTE: `make test-go` skips files behind `//go:build integration` (AC5 audit
+# rollback/commit tests, Story 2.2). They live in `make test-go-integration`.
+# A green `test-go` alone does not certify transactional behavior. Use
+# `make test-all` as the pre-merge gate.
+test-go: ## Run Go tests — unit lane only; integration in test-go-integration / test-all
 	cd fieldmark-go && go test ./...
 
 # ── Real-DB integration tests (Epic 1 retro action item A3) ────────────────
@@ -51,6 +59,14 @@ test-go-integration: ## Run Go integration tests against the running `make up` P
 
 test-integration: test-net-integration test-django-integration test-go-integration ## Run integration tests for all three stacks
 	@echo "✓ Integration tests passed across .NET, Django, Go"
+
+# Canonical pre-merge gate. Runs the unit lane + the integration lane for
+# every stack so transactional contracts (FR39/FR57 — audit-in-same-transaction)
+# are exercised. Story 2.2's `-m integration` and `//go:build integration`
+# tests are silently absent from the bare `test-*` targets; this aggregate is
+# the only target that guarantees they ran.
+test-all: test-net test-django test-go test-integration ## Run unit + integration lanes for all three stacks (pre-merge gate)
+	@echo "✓ Full test gate passed: unit + integration for .NET, Django, Go"
 
 e2e: ## Run Playwright end-to-end tests (skips if e2e/ not scaffolded or deps not installed)
 	@if [ -f e2e/node_modules/.bin/playwright ]; then \

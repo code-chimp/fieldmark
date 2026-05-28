@@ -1,0 +1,19 @@
+{
+  "actions": [
+    "ProjectCreated",
+    "ProjectPlacedOnHold",
+    "ProjectResumed",
+    "ProjectClosed",
+    "InspectionScheduled",
+    "InspectionStarted",
+    "InspectionCompleted",
+    "InspectionCancelled",
+    "ViolationOpened",
+    "ViolationAssigned",
+    "ViolationVoided",
+    "CorrectiveActionSubmitted",
+    "CorrectiveActionTakenForReview",
+    "CorrectiveActionApproved",
+    "CorrectiveActionRejected"
+  ]
+}

@@ -37,6 +37,12 @@
 
 generated: 2026-05-11
 last_updated: 2026-05-27
+#   (2-2 rerun code review clean; status set to done)
+#   (2-2 round 3 review items resolved: 2 Makefile gating patches; status set to review)
+#   (2-2 round 2 review items resolved: 4 patch items closed; status set to review)
+#   (2-2 round 1 review items resolved: 3 patch items closed; status set to review)
+#   (2-2 implementation complete; all three stacks green; status set to review)
+#   (2-2 implementation started; status set to in-progress)
 #   (2-1 rerun review clean after 2 patch items resolved; status set to done)
 #   (2-1 rerun review items resolved: 2 patch items closed; status set to review)
 #   (2-1 rerun review found 2 patch items; status set to in-progress)
@@ -127,7 +133,7 @@ development_status:
   # ===== Epic 2: Project Lifecycle & Compliance Dashboard =====
   epic-2: in-progress
   2-1-map-domain-project-and-supporting-tables-into-each-stacks-data-layer: done
-  2-2-map-domain-audit-entry-and-provide-a-per-stack-append-audit-entry-helper: ready-for-dev
+  2-2-map-domain-audit-entry-and-provide-a-per-stack-append-audit-entry-helper: done
   2-3-map-reference-data-tables-and-expose-a-read-api-per-stack: backlog
   2-4-implement-phase-2-markup-only-components-statusbadge-inlinealert-auditrow-dashboardtile: backlog
   2-5-implement-compliancetile-component-and-compliance-tile-oob-target: backlog

@@ -71,6 +71,14 @@ builder.Services.AddDbContext<AuthDbContext>(options =>
     options.UseNpgsql(connectionString).UseSnakeCaseNamingConvention()
 );
 
+// Audit helper — shares the request-scoped FieldMarkDbContext so the Append
+// participates in the handler's transaction (FR39). No handler consumes it
+// until Story 2.8 (ProjectCreated emission).
+builder.Services.AddScoped<
+    FieldMark.Data.Auditing.IAuditAppender,
+    FieldMark.Data.Auditing.AuditAppender
+>();
+
 builder
     .Services.AddIdentityCore<IdentityUser<Guid>>(options =>
     {

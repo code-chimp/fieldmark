@@ -12,6 +12,7 @@ public class FieldMarkDbContext : DbContext
     public DbSet<JobSite> JobSites => Set<JobSite>();
     public DbSet<ProjectTradeScope> ProjectTradeScopes => Set<ProjectTradeScope>();
     public DbSet<ProjectInspector> ProjectInspectors => Set<ProjectInspector>();
+    public DbSet<AuditEntry> AuditEntries => Set<AuditEntry>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
