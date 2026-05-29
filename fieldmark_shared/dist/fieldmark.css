@@ -4095,6 +4095,7 @@
 :root {
   --color-success: oklch(59.6% .145 163.225);
   --color-warning: oklch(66.6% .179 58.318);
+  --color-warning-strong: oklch(55.5% .163 48.958);
   --color-danger: oklch(58.6% .209 16.833);
   --color-info: oklch(58.8% .158 231.824);
   --color-neutral: oklch(44.6% .043 257.281);
@@ -4103,6 +4104,7 @@
 .dark {
   --color-success: oklch(76.5% .177 163.223);
   --color-warning: oklch(82.8% .189 84.429);
+  --color-warning-strong: oklch(87.9% .169 91.605);
   --color-danger: oklch(71.2% .194 13.428);
   --color-info: oklch(74.6% .16 232.661);
   --color-neutral: oklch(70.4% .04 256.788);
@@ -4225,6 +4227,10 @@
   color: var(--color-warning);
 }
 
+.text-warning-strong {
+  color: var(--color-warning-strong);
+}
+
 .text-danger {
   color: var(--color-danger);
 }
@@ -4235,6 +4241,10 @@
 
 .text-neutral {
   color: var(--color-neutral);
+}
+
+.dashboard-tile__label, .compliance-tile__label {
+  text-transform: uppercase;
 }
 
 [data-score-band="healthy"] {

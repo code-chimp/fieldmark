@@ -1,0 +1,26 @@
+@* Contract: docs/reference/component-canonical-examples.md *@
+@using FieldMark.Web.ViewModels.Components
+@model dynamic
+@functions {
+    private static string S(object? value) =>
+        Convert.ToString(value, System.Globalization.CultureInfo.InvariantCulture) ?? "";
+
+    private static int? NullableInt(object? value) =>
+        value is int i
+            ? i
+            : value is long l && l >= int.MinValue && l <= int.MaxValue
+                ? (int)l
+                : null;
+}
+@{
+    var vm = new ComplianceTileViewModel(NullableInt(Model.Score), S(Model.Label), S(Model.Id));
+    var band = vm.Band;
+}
+<section aria-atomic="true" aria-live="polite" class="compliance-tile" id="@vm.Id" role="status">
+  <p class="compliance-tile__label">@vm.Label</p>
+  <p class="compliance-tile__value text-3xl font-bold tnum @band.ValueClass">@vm.DisplayValue</p>
+  @if (band.RenderP)
+  {
+    <p class="compliance-tile__threshold @band.ThresholdClass">@band.ThresholdWord</p>
+  }
+</section>

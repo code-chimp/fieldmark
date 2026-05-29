@@ -8,6 +8,8 @@
   --color-success: oklch(0.596 0.145 163.225);
   /* amber-600  — vs neutral-50: 3.14:1 (non-text UI component use; badge bg needs complementary text) */
   --color-warning: oklch(0.666 0.179 58.318);
+  /* amber-700  — one step darker than warning; used for 50–69 "Concern" compliance band (UX-DR4) */
+  --color-warning-strong: oklch(0.555 0.163 48.958);
   /* rose-600   — vs neutral-50: 4.52:1 ✓ */
   --color-danger:  oklch(0.586 0.209 16.833);
   /* sky-600    — vs neutral-50: 5.48:1 ✓ */
@@ -21,6 +23,8 @@
   --color-success: oklch(0.765 0.177 163.223);
   /* amber-400  — vs neutral-900: 11.6:1 ✓ */
   --color-warning: oklch(0.828 0.189 84.429);
+  /* amber-300  — one step from warning in dark palette; used for 50–69 "Concern" compliance band (UX-DR4) */
+  --color-warning-strong: oklch(0.879 0.169 91.605);
   /* rose-400   — vs neutral-900: 5.2:1 ✓ */
   --color-danger:  oklch(0.712 0.194 13.428);
   /* sky-400    — vs neutral-900: 8.6:1 ✓ */
@@ -88,9 +92,17 @@
 
 .text-success { color: var(--color-success); }
 .text-warning { color: var(--color-warning); }
+.text-warning-strong { color: var(--color-warning-strong); }
 .text-danger { color: var(--color-danger); }
 .text-info { color: var(--color-info); }
 .text-neutral { color: var(--color-neutral); }
+
+/* ─── Label uppercase — dashboard and compliance tiles (UX-DR4) ──────────── */
+/* Visual uppercasing via CSS; template inputs remain human-cased strings.    */
+.dashboard-tile__label,
+.compliance-tile__label {
+  text-transform: uppercase;
+}
 
 /* ─── Compliance-score threshold mapping (UX-DR4) ────────────────────────── */
 /* Band assigned server-side; CSS only applies color.

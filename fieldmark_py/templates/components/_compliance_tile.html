@@ -1,0 +1,8 @@
+{% comment %}Contract: docs/reference/component-canonical-examples.md{% endcomment %}
+{% load compliance_tile_tags %}
+{% compliance_band score as band %}
+<section aria-atomic="true" aria-live="polite" class="compliance-tile" id="{{ id }}" role="status">
+  <p class="compliance-tile__label">{{ label }}</p>
+  <p class="compliance-tile__value text-3xl font-bold tnum {{ band.value_class }}">{{ band.display_value }}</p>
+  {% if band.render_p %}<p class="compliance-tile__threshold {{ band.threshold_class }}">{{ band.threshold_word }}</p>{% endif %}
+</section>

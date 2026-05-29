@@ -62,4 +62,4 @@ All 2026-05-17 entries are accounted for below.
 
 ## Deferred from: Story 2.4 (2026-05-28)
 
-- Story 2.4-followup — unknown-token runtime warning logger per [component-edge-case-checklist.md §1](../../docs/reference/component-edge-case-checklist.md) canonical resolution; deferred from Story 2.4 per Dev Notes §"Decision — unknown-token handling". Story 2.4 shipped the user-visible fallback class and per-stack fallback assertions; request-scoped operator logging remains follow-up work.
+- Story 2.4-followup — unknown-token runtime warning logger per [component-edge-case-checklist.md §1](../../docs/reference/component-edge-case-checklist.md) canonical resolution; deferred from Story 2.4 per Dev Notes §"Decision — unknown-token handling". Story 2.4 shipped the user-visible fallback class and per-stack fallback assertions; request-scoped operator logging remains follow-up work. Extended by Story 2.5 to also cover ComplianceTile out-of-range scores (< 0 or > 100) — same per-stack resolution pattern applies (no-data variant rendered, no log this story).

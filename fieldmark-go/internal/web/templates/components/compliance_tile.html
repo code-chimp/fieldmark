@@ -1,0 +1,10 @@
+{{/* Contract: docs/reference/component-canonical-examples.md */}}
+{{ define "compliance_tile" -}}
+<section aria-atomic="true" aria-live="polite" class="compliance-tile" id="{{ .ID }}" role="status">
+  <p class="compliance-tile__label">{{ .Label }}</p>
+  <p class="compliance-tile__value text-3xl font-bold tnum {{ .Band.ValueClass }}">{{ .DisplayValue }}</p>
+  {{- if .Band.RenderP }}
+  <p class="compliance-tile__threshold {{ .Band.ThresholdClass }}">{{ .Band.ThresholdWord }}</p>
+  {{- end }}
+</section>
+{{- end }}

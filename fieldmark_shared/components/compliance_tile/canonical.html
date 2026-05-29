@@ -1,0 +1,92 @@
+<!--
+ComplianceTile component canonical fixture.
+
+fixture:
+  score: int? (0–100, null for no-data)
+  label: string
+  context: "project" | "portfolio"
+  id: string (caller-supplied)
+
+Threshold bands (UX-DR §"Compliance score thresholds"):
+  ≥ 90 → Healthy  (text-success)
+  70–89 → Watch    (text-warning)
+  50–69 → Concern  (text-warning-strong)
+  < 50  → Critical (text-danger)
+  null  → no-data  (text-neutral, threshold <p> omitted)
+-->
+
+<!-- variant: healthy-project (inputs: score=95, label=Compliance, context=project, id=compliance-tile) -->
+<section aria-atomic="true" aria-live="polite" class="compliance-tile" id="compliance-tile" role="status">
+  <p class="compliance-tile__label">Compliance</p>
+  <p class="compliance-tile__value text-3xl font-bold tnum text-success">95</p>
+  <p class="compliance-tile__threshold text-success">Healthy</p>
+</section>
+
+<!-- variant: watch-project (inputs: score=82, label=Compliance, context=project, id=compliance-tile) -->
+<section aria-atomic="true" aria-live="polite" class="compliance-tile" id="compliance-tile" role="status">
+  <p class="compliance-tile__label">Compliance</p>
+  <p class="compliance-tile__value text-3xl font-bold tnum text-warning">82</p>
+  <p class="compliance-tile__threshold text-warning">Watch</p>
+</section>
+
+<!-- variant: concern-project (inputs: score=58, label=Compliance, context=project, id=compliance-tile) -->
+<section aria-atomic="true" aria-live="polite" class="compliance-tile" id="compliance-tile" role="status">
+  <p class="compliance-tile__label">Compliance</p>
+  <p class="compliance-tile__value text-3xl font-bold tnum text-warning-strong">58</p>
+  <p class="compliance-tile__threshold text-warning-strong">Concern</p>
+</section>
+
+<!-- variant: critical-project (inputs: score=37, label=Compliance, context=project, id=compliance-tile) -->
+<section aria-atomic="true" aria-live="polite" class="compliance-tile" id="compliance-tile" role="status">
+  <p class="compliance-tile__label">Compliance</p>
+  <p class="compliance-tile__value text-3xl font-bold tnum text-danger">37</p>
+  <p class="compliance-tile__threshold text-danger">Critical</p>
+</section>
+
+<!-- variant: healthy-portfolio (inputs: score=91, label=Portfolio Compliance, context=portfolio, id=compliance-tile-portfolio) -->
+<section aria-atomic="true" aria-live="polite" class="compliance-tile" id="compliance-tile-portfolio" role="status">
+  <p class="compliance-tile__label">Portfolio Compliance</p>
+  <p class="compliance-tile__value text-3xl font-bold tnum text-success">91</p>
+  <p class="compliance-tile__threshold text-success">Healthy</p>
+</section>
+
+<!-- variant: critical-portfolio (inputs: score=42, label=Portfolio Compliance, context=portfolio, id=compliance-tile-portfolio) -->
+<section aria-atomic="true" aria-live="polite" class="compliance-tile" id="compliance-tile-portfolio" role="status">
+  <p class="compliance-tile__label">Portfolio Compliance</p>
+  <p class="compliance-tile__value text-3xl font-bold tnum text-danger">42</p>
+  <p class="compliance-tile__threshold text-danger">Critical</p>
+</section>
+
+<!-- variant: no-data-project (inputs: score=null, label=Compliance, context=project, id=compliance-tile) -->
+<section aria-atomic="true" aria-live="polite" class="compliance-tile" id="compliance-tile" role="status">
+  <p class="compliance-tile__label">Compliance</p>
+  <p class="compliance-tile__value text-3xl font-bold tnum text-neutral">—</p>
+</section>
+
+<!-- variant: boundary-90 (inputs: score=90, label=Compliance, context=project, id=compliance-tile) -->
+<section aria-atomic="true" aria-live="polite" class="compliance-tile" id="compliance-tile" role="status">
+  <p class="compliance-tile__label">Compliance</p>
+  <p class="compliance-tile__value text-3xl font-bold tnum text-success">90</p>
+  <p class="compliance-tile__threshold text-success">Healthy</p>
+</section>
+
+<!-- variant: boundary-70 (inputs: score=70, label=Compliance, context=project, id=compliance-tile) -->
+<section aria-atomic="true" aria-live="polite" class="compliance-tile" id="compliance-tile" role="status">
+  <p class="compliance-tile__label">Compliance</p>
+  <p class="compliance-tile__value text-3xl font-bold tnum text-warning">70</p>
+  <p class="compliance-tile__threshold text-warning">Watch</p>
+</section>
+
+<!-- variant: boundary-50 (inputs: score=50, label=Compliance, context=project, id=compliance-tile) -->
+<section aria-atomic="true" aria-live="polite" class="compliance-tile" id="compliance-tile" role="status">
+  <p class="compliance-tile__label">Compliance</p>
+  <p class="compliance-tile__value text-3xl font-bold tnum text-warning-strong">50</p>
+  <p class="compliance-tile__threshold text-warning-strong">Concern</p>
+</section>
+
+<!-- variant: boundary-49 (inputs: score=49, label=Compliance, context=project, id=compliance-tile) -->
+<section aria-atomic="true" aria-live="polite" class="compliance-tile" id="compliance-tile" role="status">
+  <p class="compliance-tile__label">Compliance</p>
+  <p class="compliance-tile__value text-3xl font-bold tnum text-danger">49</p>
+  <p class="compliance-tile__threshold text-danger">Critical</p>
+</section>
