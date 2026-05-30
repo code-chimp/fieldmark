@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>EntityRail fixture — debug only</title>
+  <link rel="stylesheet" href="/static/vendor/fieldmark.css">
+  <style>
+    /* Layout for sticky-position test: flex row with a tall list and the rail */
+    .fixture-layout {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      padding: 1rem;
+    }
+    .fixture-list {
+      flex: 1;
+      height: 1200px;
+      background: lightblue;
+    }
+    .fixture-rail {
+      width: 33%;
+    }
+    /* Below 1280px: stack list above rail so Playwright can assert layout order */
+    @media (max-width: 1279px) {
+      .fixture-layout {
+        flex-direction: column;
+      }
+      .fixture-list,
+      .fixture-rail {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="fixture-layout">
+    <ul class="fixture-list"><li>list item</li></ul>
+    <div class="fixture-rail">
+      {% include "components/_entity_rail.html" with id="violation-detail" entity_type_label="Violation" entity_loaded=False body_slot=None footer_slot=None %}
+    </div>
+  </div>
+</body>
+</html>

@@ -18,7 +18,7 @@ See [docs/reference/hard-rules.md](docs/reference/hard-rules.md). Stack-specific
 
 Each stack (.NET, Django, Go) is a self-contained, idiomatic application. A native developer opening one stack must see every enum, DTO, DAO, handler, and test in its expected location with no surprises.
 
-**Shared only via symlink:** the compiled design-system bundle (`fieldmark_shared/dist/fieldmark.css`) and vendored static assets (`htmx.min.js`, `ag-grid-community.min.js`, fonts). That is the full list.
+**Shared only via symlink:** the compiled design-system bundle (`fieldmark_shared/dist/fieldmark.css`) and vendored static assets (`htmx.min.js`, `ag-grid-enterprise.min.js`, fonts). That is the full list. (AG Grid **Enterprise** is used to demonstrate the true Server-Side Row Model; the demo runs without a license key and the "unlicensed" watermark is an accepted tradeoff.)
 
 **Cross-stack invariants live as documentation contracts**, not as shared code:
 - A spec page under `docs/reference/` (data contracts: audit actions, AG Grid SSRM wire format, role names, canonical HTMX target IDs, form field names for cross-stack forms) or `docs/how-to/` (orchestration patterns: three-region OOB, canonical request flow).

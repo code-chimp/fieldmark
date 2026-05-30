@@ -1,0 +1,28 @@
+{{/* Contract: docs/reference/component-canonical-examples.md */}}
+{{ define "entity_rail" -}}
+<aside
+  aria-label="{{ .EntityTypeLabel }} detail"
+  aria-live="polite"
+  class="entity-rail {{ if .EntityLoaded }}entity-rail--loaded{{ else }}entity-rail--empty{{ end }}"
+  id="{{ .ID }}"
+  role="region"
+  tabindex="-1">
+  {{- if not .EntityLoaded }}
+  <div aria-label="Empty entity rail" class="card entity-rail__empty">
+    <p>Select an entity to see its detail here.</p>
+  </div>
+  {{- else }}
+  <header class="entity-rail__header">
+    <span class="entity-rail__entity-type truncate">{{ .EntityTypeLabel }}</span>
+    <button
+      aria-label="Close {{ .EntityTypeLabel }} detail"
+      class="entity-rail__dismiss"
+      type="button">×</button>
+  </header>
+  <div class="entity-rail__body">{{ .BodySlot }}</div>
+  {{- if .FooterSlot }}
+  <div class="entity-rail__footer">{{ .FooterSlot }}</div>
+  {{- end }}
+  {{- end }}
+</aside>
+{{- end }}

@@ -1,0 +1,121 @@
+<!--
+EntityRail component canonical fixture.
+
+fixture:
+  id: string — the stable HTMX target id (e.g. "violation-detail")
+  entity_type_label: string — displayed in aria-label and header strip
+  entity_loaded: bool — selects empty vs loaded variant
+  body_slot: string? — caller-supplied inner HTML for body slot (loaded only)
+  footer_slot: string? — caller-supplied action-footer markup (loaded only)
+
+ARIA invariants:
+  role="region" (overrides <aside> implicit complementary)
+  aria-label="<entity_type_label> detail" (loaded) / "Violation detail" etc. (empty outer)
+  tabindex="-1" always — focus surface for post-swap .focus() calls
+  aria-live="polite" — screen reader announces HTMX-swapped content
+
+Allowed class vocabulary:
+  entity-rail, entity-rail--empty, entity-rail--loaded
+  entity-rail__header, entity-rail__entity-type, entity-rail__dismiss
+  entity-rail__body, entity-rail__footer, entity-rail__empty
+  card (Basecoat surface on empty-state inner card)
+
+Dismiss × character: U+00D7 MULTIPLICATION SIGN (UTF-8 bytes C3 97).
+Not ASCII x, not &times;, not &#x00D7;.
+-->
+
+<!-- variant: empty-violation (inputs: id=violation-detail, entity_type_label=Violation, entity_loaded=false) -->
+<aside
+  aria-label="Violation detail"
+  aria-live="polite"
+  class="entity-rail entity-rail--empty"
+  id="violation-detail"
+  role="region"
+  tabindex="-1">
+  <div aria-label="Empty entity rail" class="card entity-rail__empty">
+    <p>Select an entity to see its detail here.</p>
+  </div>
+</aside>
+
+<!-- variant: empty-inspection (inputs: id=inspection-detail, entity_type_label=Inspection, entity_loaded=false) -->
+<aside
+  aria-label="Inspection detail"
+  aria-live="polite"
+  class="entity-rail entity-rail--empty"
+  id="inspection-detail"
+  role="region"
+  tabindex="-1">
+  <div aria-label="Empty entity rail" class="card entity-rail__empty">
+    <p>Select an entity to see its detail here.</p>
+  </div>
+</aside>
+
+<!-- variant: empty-corrective-action (inputs: id=corrective-action-detail, entity_type_label=Corrective Action, entity_loaded=false) -->
+<aside
+  aria-label="Corrective Action detail"
+  aria-live="polite"
+  class="entity-rail entity-rail--empty"
+  id="corrective-action-detail"
+  role="region"
+  tabindex="-1">
+  <div aria-label="Empty entity rail" class="card entity-rail__empty">
+    <p>Select an entity to see its detail here.</p>
+  </div>
+</aside>
+
+<!-- variant: loaded-shell-violation (inputs: id=violation-detail, entity_type_label=Violation, entity_loaded=true, body_slot=__BODY__, footer_slot=__FOOTER__) -->
+<aside
+  aria-label="Violation detail"
+  aria-live="polite"
+  class="entity-rail entity-rail--loaded"
+  id="violation-detail"
+  role="region"
+  tabindex="-1">
+  <header class="entity-rail__header">
+    <span class="entity-rail__entity-type truncate">Violation</span>
+    <button
+      aria-label="Close Violation detail"
+      class="entity-rail__dismiss"
+      type="button">×</button>
+  </header>
+  <div class="entity-rail__body">__BODY__</div>
+  <div class="entity-rail__footer">__FOOTER__</div>
+</aside>
+
+<!-- variant: loaded-shell-inspection (inputs: id=inspection-detail, entity_type_label=Inspection, entity_loaded=true, body_slot=__BODY__, footer_slot=__FOOTER__) -->
+<aside
+  aria-label="Inspection detail"
+  aria-live="polite"
+  class="entity-rail entity-rail--loaded"
+  id="inspection-detail"
+  role="region"
+  tabindex="-1">
+  <header class="entity-rail__header">
+    <span class="entity-rail__entity-type truncate">Inspection</span>
+    <button
+      aria-label="Close Inspection detail"
+      class="entity-rail__dismiss"
+      type="button">×</button>
+  </header>
+  <div class="entity-rail__body">__BODY__</div>
+  <div class="entity-rail__footer">__FOOTER__</div>
+</aside>
+
+<!-- variant: loaded-shell-corrective-action (inputs: id=corrective-action-detail, entity_type_label=Corrective Action, entity_loaded=true, body_slot=__BODY__, footer_slot=__FOOTER__) -->
+<aside
+  aria-label="Corrective Action detail"
+  aria-live="polite"
+  class="entity-rail entity-rail--loaded"
+  id="corrective-action-detail"
+  role="region"
+  tabindex="-1">
+  <header class="entity-rail__header">
+    <span class="entity-rail__entity-type truncate">Corrective Action</span>
+    <button
+      aria-label="Close Corrective Action detail"
+      class="entity-rail__dismiss"
+      type="button">×</button>
+  </header>
+  <div class="entity-rail__body">__BODY__</div>
+  <div class="entity-rail__footer">__FOOTER__</div>
+</aside>

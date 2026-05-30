@@ -50,7 +50,13 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-05-11
-last_updated: 2026-05-29
+last_updated: 2026-05-30
+#   (2-6 rerun code review clean after round 2 action items resolved; status set to done)
+#   (2-6 round 2 review patch items resolved: 3 patch items closed; status set to review)
+#   (2-6 code review round 2 left 3 patch findings as action items; status set to in-progress)
+#   (2-6 code review found 2 action items; status set to in-progress)
+#   (2-10 story created by create-story workflow; status set to ready-for-dev)
+#   (2-9 story created by create-story workflow; status set to ready-for-dev)
 #   (2-4 implementation started by dev-story workflow; status set to in-progress)
 #   (2-4 implementation complete; full test gate and parity green; status set to review)
 #   (2-8 story created by create-story workflow; status set to ready-for-dev)
@@ -164,11 +170,11 @@ development_status:
   2-3-map-reference-data-tables-and-expose-a-read-api-per-stack: done
   2-4-implement-phase-2-markup-only-components-statusbadge-inlinealert-auditrow-dashboardtile: done
   2-5-implement-compliancetile-component-and-compliance-tile-oob-target: done
-  2-6-implement-entityrail-component-with-responsive-collapse: ready-for-dev
+  2-6-implement-entityrail-component-with-responsive-collapse: done
   2-7-implement-tabstrip-component-with-arrow-key-navigation: ready-for-dev
   2-8-project-create-form-pm-admin: ready-for-dev
-  2-9-project-list-ag-grid-with-server-side-row-model: backlog
-  2-10-compliance-dashboard-with-portfolio-tiles: backlog
+  2-9-project-list-ag-grid-with-server-side-row-model: ready-for-dev
+  2-10-compliance-dashboard-with-portfolio-tiles: ready-for-dev
   2-11-project-detail-anchor-screen-with-header-strip-tabstrip-and-entityrail: backlog
   2-12-place-on-hold-and-resume-transitions-with-three-region-oob-orchestration: backlog
   2-13-project-audit-log-tab: backlog

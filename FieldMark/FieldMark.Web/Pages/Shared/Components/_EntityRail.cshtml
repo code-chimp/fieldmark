@@ -1,0 +1,64 @@
+@* Contract: docs/reference/component-canonical-examples.md *@
+@model dynamic
+@functions {
+    public record EntityRailViewModel(
+        string Id,
+        string EntityTypeLabel,
+        bool EntityLoaded,
+        string? BodySlot,
+        string? FooterSlot
+    );
+
+    private static string S(object? value) =>
+        Convert.ToString(value, System.Globalization.CultureInfo.InvariantCulture) ?? "";
+    private static bool B(object? value) => value is bool b && b;
+}
+@{
+    var id = S(Model.Id);
+    var entityTypeLabel = S(Model.EntityTypeLabel);
+    var entityLoaded = B(Model.EntityLoaded);
+    string? bodySlot = null;
+    string? footerSlot = null;
+    // Slot keys are optional; guard against RuntimeBinderException when caller omits them.
+    try
+    {
+        bodySlot = Model.BodySlot as string;
+    }
+    catch (Microsoft.CSharp.RuntimeBinder.RuntimeBinderException) { }
+    try
+    {
+        footerSlot = Model.FooterSlot as string;
+    }
+    catch (Microsoft.CSharp.RuntimeBinder.RuntimeBinderException) { }
+    var ariaLabel = entityTypeLabel + " detail";
+    var variantClass = entityLoaded ? "entity-rail entity-rail--loaded" : "entity-rail entity-rail--empty";
+}
+<aside
+  aria-label="@ariaLabel"
+  aria-live="polite"
+  class="@variantClass"
+  id="@id"
+  role="region"
+  tabindex="-1">
+  @if (!entityLoaded)
+  {
+    <div aria-label="Empty entity rail" class="card entity-rail__empty">
+      <p>Select an entity to see its detail here.</p>
+    </div>
+  }
+  else
+  {
+    <header class="entity-rail__header">
+      <span class="entity-rail__entity-type truncate">@entityTypeLabel</span>
+      <button
+        aria-label="Close @entityTypeLabel detail"
+        class="entity-rail__dismiss"
+        type="button">×</button>
+    </header>
+    <div class="entity-rail__body">@Html.Raw(bodySlot ?? string.Empty)</div>
+    @if (!string.IsNullOrEmpty(footerSlot))
+    {
+      <div class="entity-rail__footer">@Html.Raw(footerSlot)</div>
+    }
+  }
+</aside>

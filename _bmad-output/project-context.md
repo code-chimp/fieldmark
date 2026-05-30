@@ -57,6 +57,7 @@ _This file contains critical rules and patterns that AI agents must follow when 
 - Domain exceptions → HTTP 409 + partial with error; validation → HTTP 422 + form + `aria-invalid`.
 
 **AG Grid Rules:**
+- **AG Grid Enterprise edition** — used for the true Server-Side Row Model (`rowModelType: 'serverSide'`). The demo runs **without a license key**; the "unlicensed" watermark is a deliberate, accepted tradeoff to showcase Enterprise functionality. There is no Community-only restriction.
 - Server-side row model only. Contract: `{ "rows": [...], "lastRow": N }`.
 - Row selection triggers HTMX detail load (no business logic in grid config).
 

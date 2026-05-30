@@ -82,3 +82,37 @@ body {
   font-size: 0.875rem; /* text-sm */
   line-height: 1.375;  /* leading-snug */
 }
+
+/* ─── EntityRail responsive collapse ─────────────────────────────────────────
+   Per UX-DR Layout-collapse rules (ux-design-specification.md §Responsive
+   Breakpoints). Owned by Story 2.6.
+
+   Desktop ≥ 1280px (Tailwind xl:): sticky right rail at the right one-third
+   of the content area; rail is `position: sticky` with `top` matching the
+   header strip height.
+
+   Below 1280px (tablet + mobile): rail un-fixes, stacks beneath the list
+   (no transform — CSS grid template change in the consuming page; the rail
+   itself simply releases `position: sticky`).
+   ─────────────────────────────────────────────────────────────────────── */
+
+.entity-rail {
+  width: 100%;
+  /* Empty rail and loaded rail share base layout; variant modifiers
+     (entity-rail--empty / entity-rail--loaded) carry the cosmetic differences
+     (the empty state uses a Basecoat .card surface; the loaded state uses
+     no surface so its inner header/body/footer can paint freely). */
+}
+
+@media (min-width: 1280px) {
+  .entity-rail {
+    position: sticky;
+    /* top offset = header strip height (3.5rem from _layout.css `header nav`)
+       + main padding-block (1.5rem from _layout.css `main`) = 5rem. */
+    top: 5rem;
+    /* Rail max-height fills the remaining viewport so its internal
+       body slot can scroll independently of the page. */
+    max-height: calc(100vh - 5rem - 1.5rem);
+    overflow-y: auto;
+  }
+}

@@ -1,8 +1,14 @@
 from dataclasses import dataclass
 
+from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_not_required
-from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest
+from django.http import (
+    HttpRequest,
+    HttpResponse,
+    HttpResponseBadRequest,
+    HttpResponseNotFound,
+)
 from django.shortcuts import redirect, render
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_http_methods, require_POST
@@ -120,3 +126,14 @@ def set_theme(request):
     response.set_cookie("fm_theme", value, max_age=31536000, path="/", samesite="Lax")
     response["HX-Trigger"] = "theme-changed"
     return response
+
+
+@login_not_required
+@require_http_methods(["GET"])
+def entity_rail_fixture(request: HttpRequest) -> HttpResponse:
+    """Debug-only fixture page for the EntityRail responsive-collapse Playwright test.
+    Gated behind DEBUG=True; excluded from make parity via dump_routes __test__ prefix rule.
+    """
+    if not settings.DEBUG:
+        return HttpResponseNotFound()
+    return render(request, "debug/entity_rail_fixture.html")

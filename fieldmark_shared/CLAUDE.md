@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working in the 
 `fieldmark_shared` is the single source of truth for all shared front-end assets in the FieldMark monorepo:
 
 - **CSS** — Tailwind v4 + Basecoat source compiled to `dist/fieldmark.css`
-- **Vendor JS** — `htmx.min.js`, `ag-grid-community.min.js`, and `theme-toggle/theme-toggle.js` live in `vendor/` and are symlinked into each stack's static directory
+- **Vendor JS** — `htmx.min.js`, `ag-grid-enterprise.min.js`, and `theme-toggle/theme-toggle.js` live in `vendor/` and are symlinked into each stack's static directory. AG Grid **Enterprise** is used to demonstrate the true Server-Side Row Model; the demo runs **without a license key** and the "unlicensed" watermark is an accepted, deliberate tradeoff.
 - **Vendor fonts** — Inter and JetBrains Mono woff2 files live in `vendor/fonts/` and are referenced by `_fonts.css`
 
 No stack has its own copy of these files. Adding a library here and symlinking it into the stacks is the only permitted way to introduce a shared JS dependency.
@@ -27,8 +27,8 @@ fieldmark_shared/
 │   └── fieldmark.css       Compiled output — commit this file
 ├── vendor/
 │   ├── ag-grid/
-│   │   └── 35.2.1/
-│   │       └── ag-grid-community.min.js
+│   │   └── 35.3.0/
+│   │       └── ag-grid-enterprise.min.js     Enterprise UMD bundle (includes Community); no license key — watermark accepted
 │   ├── htmx/
 │   │   └── htmx.min.js
 │   ├── theme-toggle/
@@ -69,7 +69,7 @@ The underscore-prefix convention signals partials imported by `fieldmark.css`.
 | LightningCSS | 1.32.0 (exact) | `devDependencies` |
 | Basecoat CSS | 0.3.11 (exact, pre-1.0) | `dependencies` |
 | HTMX | 4.0.0-beta2 | `vendor/htmx/htmx.min.js` |
-| AG Grid Community | 35.2.1 | `vendor/ag-grid/35.2.1/` |
+| AG Grid Enterprise | 35.3.0 | `vendor/ag-grid/35.3.0/` (Enterprise UMD bundle; no license key — "unlicensed" watermark is an accepted demo tradeoff for showing true SSRM) |
 | Inter font | 4.1 | `vendor/fonts/inter/InterVariable.woff2` |
 | JetBrains Mono | 2.304 | `vendor/fonts/jetbrains-mono/JetBrainsMono[wght].woff2` |
 

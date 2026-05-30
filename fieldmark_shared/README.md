@@ -13,7 +13,7 @@ The three consuming stacks are [`FieldMark/`](../FieldMark/README.md) (.NET Razo
 | `src/fieldmark.css` | Tailwind v4 source — the only file that imports Tailwind |
 | `dist/fieldmark.css` | Compiled output — **committed to the repo** |
 | `vendor/htmx/` | Vendored HTMX (pinned version) |
-| `vendor/ag-grid/` | Vendored AG Grid Community (pinned version) |
+| `vendor/ag-grid/` | Vendored AG Grid Enterprise (pinned version; no license key — watermark accepted) |
 
 ---
 
@@ -27,8 +27,8 @@ fieldmark_shared/
 │   └── fieldmark.css        Compiled output — commit this file
 ├── vendor/
 │   ├── ag-grid/
-│   │   └── 35.2.1/
-│   │       └── ag-grid-community.min.js
+│   │   └── 35.3.0/
+│   │       └── ag-grid-enterprise.min.js
 │   └── htmx/
 │       └── htmx.min.js
 ├── package.json
@@ -44,7 +44,7 @@ fieldmark_shared/
 | Tailwind CSS | Utility-first CSS framework | 4.x (pinned) |
 | Basecoat | Component vocabulary layered on Tailwind | pre-1.0 patch (pinned) |
 | HTMX | Hypermedia interactivity | 4.x (pinned) |
-| AG Grid Community | Server-side row model data grids | 35.x (pinned) |
+| AG Grid Enterprise | Server-side row model data grids (true SSRM; no license key — watermark accepted) | 35.3.0 (pinned) |
 | pnpm | Package manager | workspace root |
 
 Version pins are exact (no `^` or `~` ranges). Any upgrade is a coordinated three-stack story — bump the pin here, re-baseline visual regression snapshots, verify all three stacks.

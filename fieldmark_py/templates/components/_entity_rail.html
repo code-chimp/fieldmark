@@ -1,0 +1,24 @@
+{% comment %}Contract: docs/reference/component-canonical-examples.md{% endcomment %}
+<aside
+  aria-label="{{ entity_type_label }} detail"
+  aria-live="polite"
+  class="entity-rail {% if entity_loaded %}entity-rail--loaded{% else %}entity-rail--empty{% endif %}"
+  id="{{ id }}"
+  role="region"
+  tabindex="-1">
+  {% if not entity_loaded %}
+  <div aria-label="Empty entity rail" class="card entity-rail__empty">
+    <p>Select an entity to see its detail here.</p>
+  </div>
+  {% else %}
+  <header class="entity-rail__header">
+    <span class="entity-rail__entity-type truncate">{{ entity_type_label }}</span>
+    <button
+      aria-label="Close {{ entity_type_label }} detail"
+      class="entity-rail__dismiss"
+      type="button">×</button>
+  </header>
+  <div class="entity-rail__body">{{ body_slot|default:""|safe }}</div>
+  {% if footer_slot %}<div class="entity-rail__footer">{{ footer_slot|safe }}</div>{% endif %}
+  {% endif %}
+</aside>

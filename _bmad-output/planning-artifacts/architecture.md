@@ -82,7 +82,7 @@ _This document builds collaboratively through step-by-step discovery. Sections a
 **Locked technology choices** (by ADR / PRD; not negotiable without amendment):
 
 - **PostgreSQL 17** — sole datastore. SQLite forbidden in tests. Schemas: `domain` (infra-owned), `django_auth`, `dotnet_auth`, `fiber_auth`, `infra`. UUIDs generated in app code (not `gen_random_uuid()`). Enums stored as VARCHAR + CHECK constraints (not native PG ENUMs). All timestamps `TIMESTAMPTZ`.
-- **HTMX 4.x** + **AG Grid Community 35.x** — versions pinned identically across all stacks; mismatch is build-blocking.
+- **HTMX 4.x** + **AG Grid Enterprise 35.x** — versions pinned identically across all stacks; mismatch is build-blocking. Enterprise is used to demonstrate the true Server-Side Row Model; the demo runs without a license key and the "unlicensed" watermark is an accepted, deliberate tradeoff.
 - **Tailwind CSS v4** — single source `fieldmark_shared/src/fieldmark.css`; compiled `dist/` is committed and symlinked into all three apps.
 - **.NET 10 / Razor Pages / EF Core** — `EFCore.NamingConventions` for `snake_case`; `ToTable("...", "domain")` fluent config; rich domain entities; no AutoMapper. Skeleton already enforces `Nullable=enable`, `TreatWarningsAsErrors=true`, `AnalysisMode=Recommended`, `EnforceCodeStyleInBuild=true` via `Directory.Build.props`.
 - **Python 3.14+ / Django 6.x / Django ORM** — `Meta.managed = False` + `db_table = 'domain"."project'` for shared tables; `ruff` + `black` + `mypy` + `pytest-django`. Skeleton already pins these.
@@ -407,7 +407,7 @@ Architectural concerns the BMad architecture document needs to fill in over the 
 | Concern | Decision | Source |
 |---|---|---|
 | Interactivity | HTMX 4.x | PRD §Architectural Constraints |
-| JS islands | AG Grid Community 35.x only | PRD, FR48 |
+| JS islands | AG Grid Enterprise 35.x (true SSRM; unlicensed-watermark demo tradeoff) | PRD, FR48 |
 | Client state stores | Forbidden | PRD §Forbidden Patterns |
 | Routing | Server-driven (HTMX swaps) | PRD §Architectural Constraints |
 | Styling | Tailwind v4, single compiled CSS | PRD §Web App Specific Requirements |
@@ -420,7 +420,7 @@ Architectural concerns the BMad architecture document needs to fill in over the 
 - **D14 — AG Grid theming:** AG Grid Quartz theme compiled into `fieldmark_shared/dist/fieldmark.css` as part of the same Tailwind compile pass. Theme variables overridden in `fieldmark_shared/src/ag-grid-overrides.css` to align colors/spacing with the Tailwind palette.
 - **D15 — Asset loading:** vendor locally; no CDN.
   - HTMX: `fieldmark_shared/vendor/htmx/htmx.min.js` (committed). Pinned: `4.0.0-beta2`.
-  - AG Grid Community 35.x: `fieldmark_shared/vendor/ag-grid/35.2.1/ag-grid-community.min.js` (committed). Pinned: `35.2.1`.
+  - AG Grid Enterprise 35.x: `fieldmark_shared/vendor/ag-grid/35.3.0/ag-grid-enterprise.min.js` (committed; the Enterprise UMD bundle includes Community). Pinned: `35.3.0`. No license key is set — the "unlicensed" watermark is an accepted demo tradeoff for showing Enterprise features (true SSRM).
   - Basecoat CSS component library: installed via `pnpm` in `fieldmark_shared/`. Pinned: `basecoat-css@0.3.11` (exact; no `^` or `~`). Pre-1.0 — treat minor bumps as breaking.
   - Symlinked into each app's `vendor/` static dir.
   Vendoring makes the version-pinning rule auditable (you can't audit a CDN URL pinned to "@latest"; you can audit a committed file).
@@ -984,8 +984,8 @@ fieldmark/                                          # repo root
 │   │   ├── htmx/
 │   │   │   └── htmx.min.js
 │   │   └── ag-grid/
-│   │       └── 35.2.1/
-│   │           └── ag-grid-community.min.js
+│   │       └── 35.3.0/
+│   │           └── ag-grid-enterprise.min.js
 │   └── CLAUDE.md                                   # how to rebuild CSS; vendor symlink paths
 │
 ├── e2e/                                            # cross-stack Playwright + axe-core
@@ -1455,7 +1455,7 @@ No architectural decisions are missing. Every FR has a defined home; every NFR h
 1. **`docker/postgres/init/010_domain_tables.sql` and `020_domain_indexes.sql`** — specified as the canonical schema source but not yet authored. The `research/domain-model.md` §8 DDL is the seed; authoring as the first implementation story is the highest-leverage move. Status: *specification complete; implementation pending.*
 2. **`tools/parity/` shell scripts and per-stack route-dump subcommands** — specified (D19) but not authored. Without these, the cross-stack symmetry rule is aspirational. Should be the second implementation story (concurrent with the domain DDL).
 3. **`Makefile` at repo root** — specified (D20) but not present. Single-command developer experience depends on it.
-4. **`fieldmark_shared/vendor/` populated with HTMX and AG Grid 35.x** — ✅ resolved. `vendor/htmx/htmx.min.js` and `vendor/ag-grid/35.2.1/ag-grid-community.min.js` are committed; directory-symlinked into all three stacks' `vendor/` static directories.
+4. **`fieldmark_shared/vendor/` populated with HTMX and AG Grid 35.x** — ✅ resolved. `vendor/htmx/htmx.min.js` and `vendor/ag-grid/35.3.0/ag-grid-enterprise.min.js` (Enterprise bundle, includes Community) are committed; directory-symlinked into all three stacks' `vendor/` static directories.
 5. **AuditEntry `before_state` / `after_state` JSON shape convention** — `domain-model.md` §3.10 specifies the columns are `jsonb` but doesn't specify what the snapshot includes. Recommendation: per-entity snapshot of *mutable* fields only (status, score, due_at, etc.) — not full entity state, not derived fields. Document this as a §6.1 addendum to the canonical request flow.
 6. **HTMX OOB multi-partial response mechanism per stack** — Step 6's data-flow diagram shows three partials returned in one response (`#violation-detail` primary + `#compliance-tile` OOB + `#audit-log` OOB). The mechanism for composing this response differs per stack:
     - .NET: concatenated partial views with explicit `hx-swap-oob="true"` attributes on the OOB partials.

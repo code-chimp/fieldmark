@@ -3870,6 +3870,12 @@
     }
   }
 
+  .truncate {
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+
   .rounded {
     border-radius: .25rem;
   }
@@ -4334,6 +4340,19 @@ body {
   line-height: 1.375;
 }
 
+.entity-rail {
+  width: 100%;
+}
+
+@media (width >= 1280px) {
+  .entity-rail {
+    max-height: calc(100vh - 6.5rem);
+    position: sticky;
+    top: 5rem;
+    overflow-y: auto;
+  }
+}
+
 .skip-link {
   z-index: 9999;
   width: 1px;
@@ -4381,7 +4400,7 @@ body {
 }
 
 @media (forced-colors: active) {
-  .badge, .alert, .badge-danger, .badge-info, .badge-warning, .badge-neutral, .badge-success, .badge-unknown, .badge:not([class*="badge-"]), [data-score-band] {
+  .badge, .alert, .card, .badge-danger, .badge-info, .badge-warning, .badge-neutral, .badge-success, .badge-unknown, .badge:not([class*="badge-"]), [data-score-band] {
     forced-color-adjust: auto;
     border: 1px solid buttontext;
   }

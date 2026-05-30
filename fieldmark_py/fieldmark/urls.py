@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib import admin
 from django.contrib.auth.decorators import login_not_required
 from django.urls import path
@@ -20,3 +21,8 @@ urlpatterns = [
     path("fragments/compliance-tile/", views.compliance_tile, name="compliance_tile"),
     path("preferences/theme", views.set_theme, name="set_theme"),
 ]
+
+if settings.DEBUG:
+    urlpatterns += [
+        path("__test__/entity-rail-fixture/", views.entity_rail_fixture, name="entity_rail_fixture"),
+    ]

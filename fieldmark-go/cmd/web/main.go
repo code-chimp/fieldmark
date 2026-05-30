@@ -9,6 +9,8 @@ import (
 	"sort"
 	"strings"
 
+	htmltemplate "html/template"
+
 	"github.com/gofiber/fiber/v3"
 	"github.com/gofiber/fiber/v3/middleware/logger"
 	"github.com/gofiber/fiber/v3/middleware/static"
@@ -82,6 +84,8 @@ func buildApp(pool *pgxpool.Pool) *fiber.App {
 	// unless the handler passes an empty layout string explicitly.
 	engine := html.New("./internal/web/templates", ".html")
 	engine.AddFunc("noescape", func(s string) string { return s })
+	// safeHTML renders caller-supplied HTML verbatim; intended for component-slot pass-through. Caller is the trust boundary.
+	engine.AddFunc("safeHTML", func(s string) htmltemplate.HTML { return htmltemplate.HTML(s) })
 
 	app := fiber.New(fiber.Config{
 		Views:       engine,
