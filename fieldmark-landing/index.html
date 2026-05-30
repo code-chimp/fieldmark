@@ -851,6 +851,16 @@
         margin: 0;
         max-width: 66ch;
       }
+      .thesis-copy a {
+        color: var(--meta);
+        font-weight: 650;
+        text-decoration: underline;
+        text-decoration-thickness: 1px;
+        text-underline-offset: 3px;
+      }
+      .thesis-copy a:hover {
+        color: var(--accent-hover);
+      }
       .proof-grid {
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -955,6 +965,26 @@
       }
       .ds-table tbody tr:hover {
         background: var(--fg-soft);
+      }
+      .ds-table a {
+        color: var(--meta);
+        font-weight: 650;
+        text-decoration: underline;
+        text-decoration-thickness: 1px;
+        text-underline-offset: 3px;
+      }
+      .ds-table a:hover {
+        color: var(--accent-hover);
+      }
+      .table-note a {
+        color: var(--meta);
+        font-weight: 650;
+        text-decoration: underline;
+        text-decoration-thickness: 1px;
+        text-underline-offset: 3px;
+      }
+      .table-note a:hover {
+        color: var(--accent-hover);
       }
       .state-flow {
         display: grid;
@@ -1218,9 +1248,11 @@
               Server-authoritative architecture. Three stacks. One database.
             </h1>
             <p class="lead">
-              FieldMark asks whether a request-response application really needs
-              a client-side SPA by implementing the same inspection domain in
-              ASP.NET Core, Django, and Go/Fiber.
+              FieldMark is a teaching-oriented reference implementation of a
+              construction compliance system, built to test whether
+              server-authoritative HTMX can deliver SPA-equivalent interactivity
+              across realistic enterprise workflows in ASP.NET Core, Django, and
+              Go/Fiber.
             </p>
             <div class="hero-cta">
               <a class="btn btn-primary" href="#thesis">Read the thesis</a>
@@ -1291,10 +1323,26 @@
               </p>
               <p>
                 FieldMark keeps the server authoritative without pretending the
-                browser should be inert. HTMX handles targeted interactivity, AG
-                Grid runs as a focused JavaScript island for rich enterprise
-                tables, and the server still decides which controls exist, which
-                transitions are valid, and which audit entry is appended.
+                browser should be inert. HTMX handles targeted interactivity,
+                <a
+                  href="https://www.ag-grid.com/landing-pages/enterprise-data-grid/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  >AG Grid Enterprise</a
+                >
+                runs as a focused JavaScript island for server-side row model
+                data grids. SSRM keeps large-grid operations server-backed, so
+                sorting, filtering, and row loading can stay aligned with
+                authorization and domain rules. The enterprise build is used
+                unlicensed here intentionally for demonstration only; production
+                applications should pay the proper
+                <a
+                  href="https://www.ag-grid.com/landing-pages/enterprise-data-grid/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  >AG Grid Enterprise</a
+                >
+                licensing fees.
               </p>
               <p>
                 The reference proves the idea by building one inspection and
@@ -1314,8 +1362,9 @@
               <div class="proof-item">
                 <strong>Pragmatic islands</strong>
                 <span
-                  >AG Grid supplies familiar client-side table controls without
-                  moving domain authority into an SPA.</span
+                  >AG Grid Enterprise SSRM supplies rich table behavior while
+                  filtering, sorting, paging, authorization, and domain
+                  decisions remain server-owned.</span
                 >
               </div>
               <div class="proof-item">
@@ -1380,8 +1429,8 @@
                 <div class="rail rail-json">
                   <strong>JSON payloads</strong>
                   <span class="meta"
-                    >AG Grid contracts for filtering, sorting, pagination, and
-                    enterprise table behavior.</span
+                    >AG Grid Enterprise SSRM contracts for filtering, sorting,
+                    pagination, and server-backed row loading.</span
                   >
                 </div>
               </div>
@@ -1583,9 +1632,30 @@
                 </tr>
                 <tr>
                   <td>Data grids</td>
-                  <td>AG Grid Community 35.x</td>
-                  <td>AG Grid Community 35.x</td>
-                  <td>AG Grid Community 35.x</td>
+                  <td>
+                    <a
+                      href="https://www.ag-grid.com/landing-pages/enterprise-data-grid/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      >AG Grid Enterprise 35.x</a
+                    >, unlicensed demo use
+                  </td>
+                  <td>
+                    <a
+                      href="https://www.ag-grid.com/landing-pages/enterprise-data-grid/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      >AG Grid Enterprise 35.x</a
+                    >, unlicensed demo use
+                  </td>
+                  <td>
+                    <a
+                      href="https://www.ag-grid.com/landing-pages/enterprise-data-grid/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      >AG Grid Enterprise 35.x</a
+                    >, unlicensed demo use
+                  </td>
                 </tr>
                 <tr>
                   <td>Auth schema</td>
@@ -1596,9 +1666,25 @@
               </tbody>
             </table>
           </div>
-          <p class="meta">
+          <p class="meta table-note">
             Shared Tailwind CSS is compiled once in
             <code>fieldmark_shared/</code> and symlinked into all three stacks.
+            <a
+              href="https://www.ag-grid.com/landing-pages/enterprise-data-grid/"
+              target="_blank"
+              rel="noopener noreferrer"
+              >AG Grid Enterprise</a
+            >
+            is used unlicensed in this reference implementation only to
+            demonstrate SSRM in a hypermedia-centered architecture. A real
+            application should purchase and configure the appropriate
+            <a
+              href="https://www.ag-grid.com/landing-pages/enterprise-data-grid/"
+              target="_blank"
+              rel="noopener noreferrer"
+              >AG Grid Enterprise</a
+            >
+            license.
           </p>
         </div>
       </section>
@@ -1653,16 +1739,17 @@
 
       <section
         class="section"
-        data-od-id="get-involved"
+        data-od-id="explore-project"
         style="text-align: center"
       >
         <div class="container stack" style="max-width: 680px">
-          <p class="eyebrow">Get involved</p>
-          <h2>Read the thesis, run a stack, compare the code.</h2>
+          <p class="eyebrow">Explore the project</p>
+          <h2>Read the thesis, run a stack, inspect the code.</h2>
           <p class="lead" style="margin-inline: auto">
-            FieldMark is MIT licensed and built as a durable reference for
-            server-authoritative HTMX architecture. Notes, articles, or
-            presentation material can be linked here when they are ready.
+            FieldMark is a personal reference implementation for
+            server-authoritative HTMX architecture. It is MIT licensed and
+            shared publicly for anyone who wants to study, run, or adapt the
+            patterns.
           </p>
           <div class="hero-cta" style="justify-content: center">
             <a class="btn btn-primary" href="#thesis">Read the thesis</a>
@@ -1759,6 +1846,23 @@
             (CC0 1.0). HTMX logo (0-Clause BSD). Django is a registered
             trademark of the Django Software Foundation; pony mascot inspired by
             the Django community.
+          </p>
+          <p class="footer-legal">
+            <a
+              href="https://www.ag-grid.com/landing-pages/enterprise-data-grid/"
+              target="_blank"
+              rel="noopener noreferrer"
+              >AG Grid Enterprise</a
+            >
+            is used unlicensed for demonstration purposes only; production use
+            requires the appropriate
+            <a
+              href="https://www.ag-grid.com/landing-pages/enterprise-data-grid/"
+              target="_blank"
+              rel="noopener noreferrer"
+              >AG Grid Enterprise</a
+            >
+            license.
           </p>
         </div>
       </div>
