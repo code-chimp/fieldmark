@@ -8,4 +8,11 @@ public class ProjectInspector
     public Guid UserId { get; private set; }
 
     private ProjectInspector() { }
+
+    // Internal constructor for use by Project.Create factory only.
+    internal ProjectInspector(Guid projectId, Guid userId)
+    {
+        ProjectId = projectId;
+        UserId = userId;
+    }
 }

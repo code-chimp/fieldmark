@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% comment %}
+GET /projects/new — project create form (full page).
+See docs/reference/project-create-form-contract.md.
+{% endcomment %}
+
+{% block title %}Create Project{% endblock %}
+
+{% block content %}
+<h1>Create Project</h1>
+
+{% with n=form.errors|length %}
+{% include "projects/_create_form.html" with form=form trade_choices=trade_choices inspector_choices=inspector_choices error_count=n %}
+{% endwith %}
+{% endblock %}

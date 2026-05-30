@@ -1,0 +1,155 @@
+{{/* Named template: project_create_form — rendered without layout for 422 HTMX swap.
+     Also included by projects_create.html (GET /projects/new full page).
+     See docs/reference/project-create-form-contract.md for the field-name contract. */}}
+{{define "project_create_form"}}
+
+{{if gt .ErrorCount 0}}
+{{template "inline_alert" .Alert}}
+{{end}}
+
+<form method="post"
+      action="/projects/"
+      hx-post="/projects/"
+      hx-target="this"
+      hx-swap="outerHTML"
+      hx-disabled-elt="find button[type=submit]">
+
+    {{/* code */}}
+    <div class="form-field">
+        <label for="code" class="label">
+            Code <span class="form-required" aria-hidden="true">*</span>
+        </label>
+        <input
+            type="text"
+            id="code"
+            name="code"
+            class="input"
+            value="{{index .Values "code"}}"
+            maxlength="32"
+            required
+            autocapitalize="characters"
+            {{if index .Errors "code"}}aria-invalid="true" aria-describedby="code-error"{{end}}
+        />
+        {{if index .Errors "code"}}
+        <p id="code-error" class="form-error" role="alert">{{index .Errors "code"}}</p>
+        {{end}}
+    </div>
+
+    {{/* name */}}
+    <div class="form-field">
+        <label for="name" class="label">
+            Name <span class="form-required" aria-hidden="true">*</span>
+        </label>
+        <input
+            type="text"
+            id="name"
+            name="name"
+            class="input"
+            value="{{index .Values "name"}}"
+            maxlength="200"
+            required
+            {{if index .Errors "name"}}aria-invalid="true" aria-describedby="name-error"{{end}}
+        />
+        {{if index .Errors "name"}}
+        <p id="name-error" class="form-error" role="alert">{{index .Errors "name"}}</p>
+        {{end}}
+    </div>
+
+    {{/* description */}}
+    <div class="form-field">
+        <label for="description" class="label">Description</label>
+        <textarea
+            id="description"
+            name="description"
+            class="input"
+            rows="4"
+            maxlength="10000"
+            {{if index .Errors "description"}}aria-invalid="true" aria-describedby="description-error"{{end}}
+        >{{index .Values "description"}}</textarea>
+        {{if index .Errors "description"}}
+        <p id="description-error" class="form-error" role="alert">{{index .Errors "description"}}</p>
+        {{end}}
+    </div>
+
+    {{/* start_date */}}
+    <div class="form-field">
+        <label for="start_date" class="label">
+            Start date <span class="form-required" aria-hidden="true">*</span>
+        </label>
+        <input
+            type="date"
+            id="start_date"
+            name="start_date"
+            class="input"
+            value="{{index .Values "start_date"}}"
+            required
+            {{if index .Errors "start_date"}}aria-invalid="true" aria-describedby="start_date-error"{{end}}
+        />
+        {{if index .Errors "start_date"}}
+        <p id="start_date-error" class="form-error" role="alert">{{index .Errors "start_date"}}</p>
+        {{end}}
+    </div>
+
+    {{/* target_completion_date */}}
+    <div class="form-field">
+        <label for="target_completion_date" class="label">Target completion date</label>
+        <input
+            type="date"
+            id="target_completion_date"
+            name="target_completion_date"
+            class="input"
+            value="{{index .Values "target_completion_date"}}"
+            {{if index .Errors "target_completion_date"}}aria-invalid="true" aria-describedby="target_completion_date-error"{{end}}
+        />
+        {{if index .Errors "target_completion_date"}}
+        <p id="target_completion_date-error" class="form-error" role="alert">{{index .Errors "target_completion_date"}}</p>
+        {{end}}
+    </div>
+
+    {{/* trade_scope_ids */}}
+    <div class="form-field">
+        <label for="trade_scope_ids" class="label">
+            Trade scopes <span class="form-required" aria-hidden="true">*</span>
+        </label>
+        <select
+            id="trade_scope_ids"
+            name="trade_scope_ids"
+            class="input"
+            multiple
+            required
+            {{if index .Errors "trade_scope_ids"}}aria-invalid="true" aria-describedby="trade_scope_ids-error"{{end}}
+        >
+            {{range .TradeTypes}}
+            <option value="{{.ID}}" {{if index $.SelectedTradeIDs (printf "%s" .ID)}}selected{{end}}>{{.Name}}</option>
+            {{end}}
+        </select>
+        {{if index .Errors "trade_scope_ids"}}
+        <p id="trade_scope_ids-error" class="form-error" role="alert">{{index .Errors "trade_scope_ids"}}</p>
+        {{end}}
+    </div>
+
+    {{/* inspector_ids */}}
+    <div class="form-field">
+        <label for="inspector_ids" class="label">Inspectors</label>
+        <select
+            id="inspector_ids"
+            name="inspector_ids"
+            class="input"
+            multiple
+            {{if index .Errors "inspector_ids"}}aria-invalid="true" aria-describedby="inspector_ids-error"{{end}}
+        >
+            {{range .Inspectors}}
+            <option value="{{.ID}}" {{if index $.SelectedInspIDs (printf "%s" .ID)}}selected{{end}}>{{.DisplayName}}</option>
+            {{end}}
+        </select>
+        {{if index .Errors "inspector_ids"}}
+        <p id="inspector_ids-error" class="form-error" role="alert">{{index .Errors "inspector_ids"}}</p>
+        {{end}}
+    </div>
+
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Create Project</button>
+        <a href="/" class="btn btn-secondary">Cancel</a>
+    </div>
+</form>
+{{end}}

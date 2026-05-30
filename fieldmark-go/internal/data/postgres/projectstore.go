@@ -12,15 +12,17 @@ import (
 	"github.com/code-chimp/fieldmark-go/internal/domain/entities"
 )
 
-// ProjectStore is the narrow per-aggregate read interface for domain.project.
-// Write methods (Create, Save) land in Story 2.8 / 2.12 when consuming
-// handlers know the shape they need.
+// ProjectStore is the narrow per-aggregate interface for domain.project.
+// Write methods introduced by Story 2.8.
 type ProjectStore interface {
 	Load(ctx context.Context, id uuid.UUID) (*entities.Project, error)
 	LoadWithRelations(
 		ctx context.Context,
 		id uuid.UUID,
 	) (*entities.Project, []entities.JobSite, []entities.ProjectTradeScope, []entities.ProjectInspector, error)
+	// CreateInTx persists the project + join rows within the caller's open transaction.
+	// Callers own the transaction lifecycle (begin / commit / rollback).
+	CreateInTx(ctx context.Context, tx pgx.Tx, created *entities.CreatedProject) error
 }
 
 type projectStorePg struct {
@@ -129,6 +131,53 @@ func (s *projectStorePg) LoadWithRelations(
 	}
 
 	return project, sites, scopes, inspectors, nil
+}
+
+// CreateInTx persists the project + join rows in FK order:
+//  1. domain.project
+//  2. domain.project_trade_scope (one row per scope)
+//  3. domain.project_inspector   (one row per inspector; zero rows if empty)
+//
+// All writes share the caller's transaction so the entire create is atomic.
+func (s *projectStorePg) CreateInTx(
+	ctx context.Context,
+	tx pgx.Tx,
+	created *entities.CreatedProject,
+) error {
+	p := created.Project
+	_, err := tx.Exec(
+		ctx,
+		`INSERT INTO domain.project
+			(id, code, name, description, status, start_date, target_completion_date,
+			 compliance_score, created_at, updated_at)
+		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, DEFAULT, DEFAULT)`,
+		p.ID, p.Code, p.Name, p.Description, string(p.Status),
+		p.StartDate, p.TargetCompletionDate, p.ComplianceScore,
+	)
+	if err != nil {
+		return fmt.Errorf("projectstore: insert project: %w", err)
+	}
+
+	for _, sc := range created.Scopes {
+		if _, err = tx.Exec(
+			ctx,
+			`INSERT INTO domain.project_trade_scope (project_id, trade_type_id) VALUES ($1, $2)`,
+			sc.ProjectID, sc.TradeTypeID,
+		); err != nil {
+			return fmt.Errorf("projectstore: insert trade scope: %w", err)
+		}
+	}
+
+	for _, insp := range created.Inspectors {
+		if _, err = tx.Exec(
+			ctx,
+			`INSERT INTO domain.project_inspector (project_id, user_id) VALUES ($1, $2)`,
+			insp.ProjectID, insp.UserID,
+		); err != nil {
+			return fmt.Errorf("projectstore: insert inspector: %w", err)
+		}
+	}
+	return nil
 }
 
 func loadJobSites(ctx context.Context, r Querier, projectID uuid.UUID) ([]entities.JobSite, error) {

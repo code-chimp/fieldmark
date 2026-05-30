@@ -1,0 +1,158 @@
+{% comment %}
+Project-create form partial. Rendered as a 422 response body for HTMX swap.
+See docs/reference/project-create-form-contract.md for the field-name contract.
+{% endcomment %}
+{% if form.errors %}
+{% with n=form.errors|length %}
+{% include "components/_inline_alert.html" with severity="danger" title="Couldn't create the project" message=n|stringformat:"s"|add:" error"|add:"s must be resolved before this project can be created." meta="" %}
+{% endwith %}
+{% endif %}
+
+<form method="post"
+      action="/projects/"
+      hx-post="/projects/"
+      hx-target="this"
+      hx-swap="outerHTML"
+      hx-disabled-elt="find button[type=submit]">
+    {% csrf_token %}
+
+    {% comment %}code{% endcomment %}
+    <div class="form-field">
+        <label for="code" class="label">
+            Code <span class="form-required" aria-hidden="true">*</span>
+        </label>
+        <input
+            type="text"
+            id="code"
+            name="code"
+            class="input"
+            value="{{ form.code.value|default:'' }}"
+            maxlength="32"
+            required
+            autocapitalize="characters"
+            {% if form.code.errors %}aria-invalid="true" aria-describedby="code-error"{% endif %}
+        />
+        {% if form.code.errors %}
+        <p id="code-error" class="form-error" role="alert">{{ form.code.errors.0 }}</p>
+        {% endif %}
+    </div>
+
+    {% comment %}name{% endcomment %}
+    <div class="form-field">
+        <label for="name" class="label">
+            Name <span class="form-required" aria-hidden="true">*</span>
+        </label>
+        <input
+            type="text"
+            id="name"
+            name="name"
+            class="input"
+            value="{{ form.name.value|default:'' }}"
+            maxlength="200"
+            required
+            {% if form.name.errors %}aria-invalid="true" aria-describedby="name-error"{% endif %}
+        />
+        {% if form.name.errors %}
+        <p id="name-error" class="form-error" role="alert">{{ form.name.errors.0 }}</p>
+        {% endif %}
+    </div>
+
+    {% comment %}description{% endcomment %}
+    <div class="form-field">
+        <label for="description" class="label">Description</label>
+        <textarea
+            id="description"
+            name="description"
+            class="input"
+            rows="4"
+            maxlength="10000"
+            {% if form.description.errors %}aria-invalid="true" aria-describedby="description-error"{% endif %}
+        >{{ form.description.value|default:'' }}</textarea>
+        {% if form.description.errors %}
+        <p id="description-error" class="form-error" role="alert">{{ form.description.errors.0 }}</p>
+        {% endif %}
+    </div>
+
+    {% comment %}start_date{% endcomment %}
+    <div class="form-field">
+        <label for="start_date" class="label">
+            Start date <span class="form-required" aria-hidden="true">*</span>
+        </label>
+        <input
+            type="date"
+            id="start_date"
+            name="start_date"
+            class="input"
+            value="{{ form.start_date.value|default:'' }}"
+            required
+            {% if form.start_date.errors %}aria-invalid="true" aria-describedby="start_date-error"{% endif %}
+        />
+        {% if form.start_date.errors %}
+        <p id="start_date-error" class="form-error" role="alert">{{ form.start_date.errors.0 }}</p>
+        {% endif %}
+    </div>
+
+    {% comment %}target_completion_date{% endcomment %}
+    <div class="form-field">
+        <label for="target_completion_date" class="label">Target completion date</label>
+        <input
+            type="date"
+            id="target_completion_date"
+            name="target_completion_date"
+            class="input"
+            value="{{ form.target_completion_date.value|default:'' }}"
+            {% if form.target_completion_date.errors %}aria-invalid="true" aria-describedby="target_completion_date-error"{% endif %}
+        />
+        {% if form.target_completion_date.errors %}
+        <p id="target_completion_date-error" class="form-error" role="alert">{{ form.target_completion_date.errors.0 }}</p>
+        {% endif %}
+    </div>
+
+    {% comment %}trade_scope_ids{% endcomment %}
+    <div class="form-field">
+        <label for="trade_scope_ids" class="label">
+            Trade scopes <span class="form-required" aria-hidden="true">*</span>
+        </label>
+        <select
+            id="trade_scope_ids"
+            name="trade_scope_ids"
+            class="input"
+            multiple
+            required
+            {% if form.trade_scope_ids.errors %}aria-invalid="true" aria-describedby="trade_scope_ids-error"{% endif %}
+        >
+            {% for value, label in trade_choices %}
+            <option value="{{ value }}"
+                {% if value in form.trade_scope_ids.value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+        {% if form.trade_scope_ids.errors %}
+        <p id="trade_scope_ids-error" class="form-error" role="alert">{{ form.trade_scope_ids.errors.0 }}</p>
+        {% endif %}
+    </div>
+
+    {% comment %}inspector_ids{% endcomment %}
+    <div class="form-field">
+        <label for="inspector_ids" class="label">Inspectors</label>
+        <select
+            id="inspector_ids"
+            name="inspector_ids"
+            class="input"
+            multiple
+            {% if form.inspector_ids.errors %}aria-invalid="true" aria-describedby="inspector_ids-error"{% endif %}
+        >
+            {% for value, label in inspector_choices %}
+            <option value="{{ value }}"
+                {% if value in form.inspector_ids.value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+        {% if form.inspector_ids.errors %}
+        <p id="inspector_ids-error" class="form-error" role="alert">{{ form.inspector_ids.errors.0 }}</p>
+        {% endif %}
+    </div>
+
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Create Project</button>
+        <a href="/" class="btn btn-secondary">Cancel</a>
+    </div>
+</form>

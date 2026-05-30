@@ -40,6 +40,13 @@ internal static class DumpRoutes
                 if (path.Length > 1)
                     path = path.TrimEnd('/');
                 path = path.ToLowerInvariant();
+                // Normalize Razor Page path params {name:type} or {name} → :name
+                // for cross-stack parity with Django (<type:name>) and Fiber (:name).
+                path = System.Text.RegularExpressions.Regex.Replace(
+                    path,
+                    @"\{([a-z][a-z0-9_]*)(?::[^}]*)?\}",
+                    m => ":" + m.Groups[1].Value
+                );
 
                 // Suppress /index alias — root page already emitted as /.
                 if (path.EndsWith("/index", StringComparison.Ordinal))

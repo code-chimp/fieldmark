@@ -1,0 +1,9 @@
+@* GET /projects/{id} — minimal stub. Story 2.11 replaces this.
+   Exists so the HX-Redirect from Story 2.8 has a destination. *@
+@page "/projects/{id:guid}"
+@model DetailModel
+@{
+    ViewData["Title"] = Model.ProjectName;
+}
+
+<h1>@Model.ProjectName</h1>

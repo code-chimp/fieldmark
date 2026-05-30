@@ -1,0 +1,11 @@
+{% comment %}
+GET /projects/<id> — minimal stub. Story 2.11 replaces this.
+Exists so the HX-Redirect from Story 2.8 has a destination.
+{% endcomment %}
+{% extends "base.html" %}
+
+{% block title %}{{ project.name }}{% endblock %}
+
+{% block content %}
+<h1>{{ project.name }}</h1>
+{% endblock %}

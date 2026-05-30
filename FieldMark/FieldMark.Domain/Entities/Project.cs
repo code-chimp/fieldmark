@@ -2,8 +2,8 @@ using FieldMark.Domain.ValueObjects;
 
 namespace FieldMark.Domain.Entities;
 
-// Property bag for domain.project. Behavior methods (Create, place_on_hold,
-// resume, close, RecomputeComplianceScore) land in Stories 2.8 / 2.12 / 6.x.
+// Property bag + factory for domain.project.
+// See docs/reference/project-create-form-contract.md for the form contract.
 public class Project
 {
     public Guid Id { get; private set; }
@@ -19,4 +19,69 @@ public class Project
     public DateTimeOffset UpdatedAt { get; private set; }
 
     private Project() { }
+
+    /// <summary>
+    /// Creates a new Project with its join collections. Returns a
+    /// <see cref="CreatedProject"/> wrapper so the handler can persist all
+    /// four row-sets without guessing IDs.
+    /// </summary>
+    /// <exception cref="ArgumentException">Required string is null or empty.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">targetCompletionDate is before startDate, or tradeScopeIds is empty.</exception>
+    public static CreatedProject Create(
+        string code,
+        string name,
+        string? description,
+        DateOnly startDate,
+        DateOnly? targetCompletionDate,
+        IReadOnlyList<Guid> tradeScopeIds,
+        IReadOnlyList<Guid> inspectorIds
+    )
+    {
+        if (string.IsNullOrWhiteSpace(code))
+            throw new ArgumentException("Code is required.", nameof(code));
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException("Name is required.", nameof(name));
+        if (tradeScopeIds.Count == 0)
+            throw new ArgumentOutOfRangeException(
+                nameof(tradeScopeIds),
+                "At least one trade scope is required."
+            );
+        if (targetCompletionDate.HasValue && targetCompletionDate.Value < startDate)
+            throw new ArgumentOutOfRangeException(
+                nameof(targetCompletionDate),
+                "Target completion date must be on or after the start date."
+            );
+
+        var id = Guid.NewGuid();
+        var project = new Project
+        {
+            Id = id,
+            Code = code.Trim(),
+            Name = name.Trim(),
+            Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim(),
+            Status = ProjectStatus.Active,
+            StartDate = startDate,
+            TargetCompletionDate = targetCompletionDate,
+            ComplianceScore = 100,
+        };
+
+        var scopes = tradeScopeIds
+            .Select(tid => new ProjectTradeScope(id, tid))
+            .ToArray();
+
+        var inspectors = inspectorIds
+            .Select(uid => new ProjectInspector(id, uid))
+            .ToArray();
+
+        return new CreatedProject(project, scopes, inspectors);
+    }
 }
+
+/// <summary>Wrapper returned by <see cref="Project.Create"/> carrying the new
+/// aggregate root and its join-table rows so the handler can persist them as a
+/// single unit without reconstructing IDs.</summary>
+public sealed record CreatedProject(
+    Project Project,
+    ProjectTradeScope[] Scopes,
+    ProjectInspector[] Inspectors
+);

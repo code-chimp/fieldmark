@@ -6,4 +6,11 @@ public class ProjectTradeScope
     public Guid TradeTypeId { get; private set; }
 
     private ProjectTradeScope() { }
+
+    // Internal constructor for use by Project.Create factory only.
+    internal ProjectTradeScope(Guid projectId, Guid tradeTypeId)
+    {
+        ProjectId = projectId;
+        TradeTypeId = tradeTypeId;
+    }
 }

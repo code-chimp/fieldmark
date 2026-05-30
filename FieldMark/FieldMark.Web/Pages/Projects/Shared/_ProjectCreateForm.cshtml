@@ -1,0 +1,164 @@
+@* Project-create form partial. Used by Create.cshtml (GET /projects/new) and
+   the 422 re-render from Index.cshtml.cs (POST /projects/).
+   See docs/reference/project-create-form-contract.md for the field-name contract. *@
+@model FieldMark.Web.ViewModels.Projects.ProjectCreateFormVm
+@{
+    bool HasErr(string field) => Model.FieldErrors.ContainsKey(field);
+    string Err(string field) => Model.FieldErrors.TryGetValue(field, out var e) ? e : "";
+}
+
+@if (Model.HasErrors)
+{
+    <partial name="Components/_InlineAlert" model="@(new { Severity = "danger", Title = "Couldn't create the project", Message = $"{Model.ErrorCount} error{(Model.ErrorCount != 1 ? "s" : "")} must be resolved before this project can be created.", Meta = (string?)null })" />
+}
+
+<form method="post"
+      action="/projects/"
+      hx-post="/projects/"
+      hx-target="this"
+      hx-swap="outerHTML"
+      hx-disabled-elt="find button[type=submit]">
+    @Html.AntiForgeryToken()
+
+    @* code *@
+    <div class="form-field">
+        <label for="code" class="label">
+            Code <span class="form-required" aria-hidden="true">*</span>
+        </label>
+        <input
+            type="text"
+            id="code"
+            name="code"
+            class="input"
+            value="@Model.Code"
+            maxlength="32"
+            required
+            autocapitalize="characters"
+            @(HasErr("code") ? Html.Raw("aria-invalid=\"true\" aria-describedby=\"code-error\"") : Html.Raw("")) />
+        @if (HasErr("code"))
+        {
+            <p id="code-error" class="form-error" role="alert">@Err("code")</p>
+        }
+    </div>
+
+    @* name *@
+    <div class="form-field">
+        <label for="name" class="label">
+            Name <span class="form-required" aria-hidden="true">*</span>
+        </label>
+        <input
+            type="text"
+            id="name"
+            name="name"
+            class="input"
+            value="@Model.Name"
+            maxlength="200"
+            required
+            @(HasErr("name") ? Html.Raw("aria-invalid=\"true\" aria-describedby=\"name-error\"") : Html.Raw("")) />
+        @if (HasErr("name"))
+        {
+            <p id="name-error" class="form-error" role="alert">@Err("name")</p>
+        }
+    </div>
+
+    @* description *@
+    <div class="form-field">
+        <label for="description" class="label">Description</label>
+        <textarea
+            id="description"
+            name="description"
+            class="input"
+            rows="4"
+            maxlength="10000"
+            @(HasErr("description") ? Html.Raw("aria-invalid=\"true\" aria-describedby=\"description-error\"") : Html.Raw(""))>@Model.Description</textarea>
+        @if (HasErr("description"))
+        {
+            <p id="description-error" class="form-error" role="alert">@Err("description")</p>
+        }
+    </div>
+
+    @* start_date *@
+    <div class="form-field">
+        <label for="start_date" class="label">
+            Start date <span class="form-required" aria-hidden="true">*</span>
+        </label>
+        <input
+            type="date"
+            id="start_date"
+            name="start_date"
+            class="input"
+            value="@Model.StartDate"
+            required
+            @(HasErr("start_date") ? Html.Raw("aria-invalid=\"true\" aria-describedby=\"start_date-error\"") : Html.Raw("")) />
+        @if (HasErr("start_date"))
+        {
+            <p id="start_date-error" class="form-error" role="alert">@Err("start_date")</p>
+        }
+    </div>
+
+    @* target_completion_date *@
+    <div class="form-field">
+        <label for="target_completion_date" class="label">Target completion date</label>
+        <input
+            type="date"
+            id="target_completion_date"
+            name="target_completion_date"
+            class="input"
+            value="@Model.TargetCompletionDate"
+            @(HasErr("target_completion_date") ? Html.Raw("aria-invalid=\"true\" aria-describedby=\"target_completion_date-error\"") : Html.Raw("")) />
+        @if (HasErr("target_completion_date"))
+        {
+            <p id="target_completion_date-error" class="form-error" role="alert">@Err("target_completion_date")</p>
+        }
+    </div>
+
+    @* trade_scope_ids *@
+    <div class="form-field">
+        <label for="trade_scope_ids" class="label">
+            Trade scopes <span class="form-required" aria-hidden="true">*</span>
+        </label>
+        <select
+            id="trade_scope_ids"
+            name="trade_scope_ids"
+            class="input"
+            multiple
+            required
+            @(HasErr("trade_scope_ids") ? Html.Raw("aria-invalid=\"true\" aria-describedby=\"trade_scope_ids-error\"") : Html.Raw(""))>
+            @foreach (var tt in Model.AvailableTradeTypes)
+            {
+                var selected = Model.SelectedTradeTypeIds.Contains(tt.Id);
+                <option value="@tt.Id" @(selected ? Html.Raw("selected") : Html.Raw(""))>@tt.Name</option>
+            }
+        </select>
+        @if (HasErr("trade_scope_ids"))
+        {
+            <p id="trade_scope_ids-error" class="form-error" role="alert">@Err("trade_scope_ids")</p>
+        }
+    </div>
+
+    @* inspector_ids *@
+    <div class="form-field">
+        <label for="inspector_ids" class="label">Inspectors</label>
+        <select
+            id="inspector_ids"
+            name="inspector_ids"
+            class="input"
+            multiple
+            @(HasErr("inspector_ids") ? Html.Raw("aria-invalid=\"true\" aria-describedby=\"inspector_ids-error\"") : Html.Raw(""))>
+            @foreach (var insp in Model.AvailableInspectors)
+            {
+                var selected = Model.SelectedInspectorIds.Contains(insp.Id);
+                <option value="@insp.Id" @(selected ? Html.Raw("selected") : Html.Raw(""))>@insp.Label</option>
+            }
+        </select>
+        @if (HasErr("inspector_ids"))
+        {
+            <p id="inspector_ids-error" class="form-error" role="alert">@Err("inspector_ids")</p>
+        }
+    </div>
+
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Create Project</button>
+        <a href="/" class="btn btn-secondary">Cancel</a>
+    </div>
+</form>

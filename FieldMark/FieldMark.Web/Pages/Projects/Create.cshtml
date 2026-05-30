@@ -1,0 +1,11 @@
+@* GET /projects/new — project create form.
+   See docs/reference/project-create-form-contract.md. *@
+@page "/projects/new"
+@model CreateModel
+@{
+    ViewData["Title"] = "Create Project";
+}
+
+<h1>Create Project</h1>
+
+<partial name="Projects/Shared/_ProjectCreateForm" model="@Model.Form" />

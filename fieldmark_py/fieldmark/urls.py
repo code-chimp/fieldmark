@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.contrib import admin
 from django.contrib.auth.decorators import login_not_required
-from django.urls import path
+from django.urls import include, path
 from django.views.generic import TemplateView
 
 from reference.views import reference_index
@@ -20,6 +20,8 @@ urlpatterns = [
     path("privacy/", views.privacy, name="privacy"),
     path("fragments/compliance-tile/", views.compliance_tile, name="compliance_tile"),
     path("preferences/theme", views.set_theme, name="set_theme"),
+    # Projects app — Story 2.8.
+    path("", include("projects.urls")),
 ]
 
 if settings.DEBUG:

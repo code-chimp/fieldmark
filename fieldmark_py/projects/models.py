@@ -1,18 +1,24 @@
-"""Django mappings for the `domain.project` aggregate (Story 2.1).
+"""Django mappings for the `domain.project` aggregate (Stories 2.1 / 2.8).
 
 All models in this module are `Meta.managed = False` with schema-qualified
 `db_table` values that force Postgres to interpret `domain` as the schema.
 Django migrations never touch `domain.*` (ADR-014); the DDL at
 `docker/postgres/init/010_domain_tables.sql` is binding.
 
-Behavior methods (`place_on_hold`, `resume`, `close`, etc.) land in their
-consuming stories (2.8, 2.12, Epic 6). This story is mapping only.
+See docs/reference/project-create-form-contract.md for the form contract.
 """
 
 from __future__ import annotations
 
+import uuid
+from datetime import date
+from typing import TYPE_CHECKING
+
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
 
 
 class ProjectStatus(models.TextChoices):
@@ -51,6 +57,59 @@ class Project(models.Model):
 
     def __str__(self) -> str:
         return f"{self.code} ({self.name})"
+
+    @classmethod
+    def create(
+        cls,
+        *,
+        code: str,
+        name: str,
+        description: str | None,
+        start_date: date,
+        target_completion_date: date | None,
+        trade_scope_ids: Sequence[uuid.UUID],
+        inspector_ids: Sequence[uuid.UUID],
+    ) -> tuple[Project, list[ProjectTradeScope], list[ProjectInspector]]:
+        """Factory method — call inside ``transaction.atomic()`` in the handler.
+
+        Raises ``ValueError`` for invalid arguments. Request-level validation
+        (lengths, allowlists, CSRF) is the form's job; this method enforces
+        domain invariants.
+        """
+        code = (code or "").strip()
+        name = (name or "").strip()
+        description_value = (description or "").strip() or None
+
+        if not code:
+            raise ValueError("code is required")
+        if not name:
+            raise ValueError("name is required")
+        if not trade_scope_ids:
+            raise ValueError("at least one trade scope is required")
+        if target_completion_date is not None and target_completion_date < start_date:
+            raise ValueError("target_completion_date must be on or after start_date")
+
+        project_id = uuid.uuid4()
+        project = cls(
+            id=project_id,
+            code=code,
+            name=name,
+            description=description_value,
+            status=ProjectStatus.ACTIVE,
+            start_date=start_date,
+            target_completion_date=target_completion_date,
+            compliance_score=100,
+        )
+
+        scopes = [
+            ProjectTradeScope(project_id=project_id, trade_type_id=tid)
+            for tid in trade_scope_ids
+        ]
+        inspectors = [
+            ProjectInspector(project_id=project_id, user_id=uid)
+            for uid in inspector_ids
+        ]
+        return project, scopes, inspectors
 
 
 class JobSite(models.Model):

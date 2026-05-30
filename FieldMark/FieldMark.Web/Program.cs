@@ -1,5 +1,7 @@
 using FieldMark.Data.Context;
 using FieldMark.Data.Reference;
+using FieldMark.Domain.ValueObjects;
+using FieldMark.Web.Authorization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -124,6 +126,9 @@ builder.Services.AddAuthorization(options =>
 {
     options.FallbackPolicy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
 });
+
+// Register domain action → role permissions. Story 2.8: project.create.
+DomainPolicies.RegisterAction("project.create", Role.Admin);
 
 var app = builder.Build();
 

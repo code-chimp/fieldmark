@@ -8,8 +8,13 @@ Framework internals (admin, static assets) are excluded; only application
 routes participate in parity checking.
 """
 
+import re
+
 from django.core.management.base import BaseCommand
 from django.urls import URLPattern, URLResolver, get_resolver
+
+# Matches Django path converters like <uuid:project_id> or <int:pk>.
+_PATH_PARAM_RE = re.compile(r"<[^>:]+:([^>]+)>")
 
 
 class Command(BaseCommand):
@@ -84,6 +89,8 @@ def _normalize(raw: str) -> str | None:
     - No trailing slash (except root)
     - Returns None for excluded paths
     """
+    # Normalize Django path converters <type:name> → :name for cross-stack parity.
+    raw = _PATH_PARAM_RE.sub(r":\1", raw)
     path = "/" + raw.lstrip("/")
     path = path.lower()
     if len(path) > 1:

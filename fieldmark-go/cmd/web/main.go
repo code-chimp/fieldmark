@@ -123,6 +123,9 @@ func buildApp(pool *pgxpool.Pool) *fiber.App {
 }
 
 func registerRoutes(app *fiber.App, pool *pgxpool.Pool) {
+	// Register domain action → role permissions (Story 2.8).
+	auth.RegisterAction("project.create", domain.RoleAdmin)
+
 	// Auth routes — no RequireAuth; these are the public entry points.
 	if pool != nil {
 		h := &handlers.LoginHandlers{Pool: pool}
@@ -159,8 +162,29 @@ func registerRoutes(app *fiber.App, pool *pgxpool.Pool) {
 			Reference: postgres.NewReferenceStore(pool),
 		}
 		app.Get("/admin/reference", auth.RequireAuth(), referenceHandlers.AdminReferenceIndex)
+
+		// Project routes — Story 2.8.
+		projectsCreate := &handlers.ProjectsCreateHandlers{
+			Pool:      pool,
+			Reference: postgres.NewReferenceStore(pool),
+			Projects:  postgres.NewProjectStore(pool),
+			Audit:     postgres.NewAuditEntryStore(),
+		}
+		app.Get("/projects/new", auth.RequireAuth(), projectsCreate.GetProjectsNew)
+		app.Post("/projects/", auth.RequireAuth(), projectsCreate.PostProjectsCreate)
+
+		projectsDetail := &handlers.ProjectsDetailHandlers{
+			Projects: postgres.NewProjectStore(pool),
+		}
+		app.Get("/projects/:id", auth.RequireAuth(), projectsDetail.GetProjectsDetail)
 	} else {
 		app.Get("/admin/reference", auth.RequireAuth(), func(c fiber.Ctx) error { return nil })
+
+		// Stub route registration for dump-routes (no DB).
+		noop := func(c fiber.Ctx) error { return nil }
+		app.Get("/projects/new", auth.RequireAuth(), noop)
+		app.Post("/projects/", auth.RequireAuth(), noop)
+		app.Get("/projects/:id", auth.RequireAuth(), noop)
 	}
 
 	// POST /preferences/theme — exempt from RequireAuth so the toggle works on /login.
@@ -196,6 +220,10 @@ func runDumpRoutes() {
 		// Exclude HEAD auto-mirrors that Fiber adds for every GET.
 		if method == "head" {
 			continue
+		}
+		// Strip trailing slash for non-root paths (parity with Django dump_routes).
+		if len(path) > 1 {
+			path = strings.TrimRight(path, "/")
 		}
 		lines = append(lines, fmt.Sprintf("%s %s", method, path))
 	}
