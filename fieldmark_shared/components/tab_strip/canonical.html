@@ -1,0 +1,386 @@
+<!--
+TabStrip component canonical fixture.
+
+fixture:
+  id: string? — stable id for the outer <nav>; omit to render without id
+  aria_label: string — required; names the tablist for screen readers
+  tabs: list of TabSpec — ordered list of tab definitions
+  active_index: int — zero-based index of the active (selected) tab
+  hx_swap: string — default "innerHTML"; consumers may override per wrapper
+
+TabSpec:
+  id: string — tab button id (also used for aria-controls derivation)
+  label: string — visible tab label text
+  hx_get: string — HTMX request URL
+  hx_target: string — HTMX swap target CSS selector (e.g. "#project-detail-tab-content")
+  badge_count: int? — unread-count badge; null/None/absent = no badge rendered
+
+ARIA invariants:
+  <nav role="tablist" aria-label="..."> outer; carries data-tabstrip selector hook
+  per tab: role="tab", aria-selected="true"|"false", aria-controls="<panel-id>", id="<tab-id>"
+  roving tabindex: active tab tabindex="0"; all others tabindex="-1"
+  badge: <span class="badge tab-strip__badge" aria-label="<count> unread">N</span>
+  type="button" mandatory on every <button>
+
+Basecoat 0.3.11 note: Basecoat's .tabs class is an outer container wrapping BOTH the
+tablist AND the tabpanel (uses descendant selectors .tabs [role="tablist"] and
+.tabs [role="tab"]). The TabStrip wrapper renders only the <nav role="tablist"> portion;
+the consumer (Story 2.11) provides the .tabs outer wrapper. Accordingly, this component
+uses BEM-only classes (tab-strip, tab-strip__tab, tab-strip__label, tab-strip__badge).
+
+JS hook: data-tabstrip (boolean attribute; no value) on outer <nav>. The vendored
+fieldmark_shared/vendor/tabstrip/tabstrip.js attaches arrow-key navigation via
+document.querySelectorAll('nav[data-tabstrip]').
+
+Snapshot normaliser note: data-tabstrip may be rendered as data-tabstrip="" or
+data-tabstrip by different template engines — these are HTML5-equivalent. The
+normaliser treats both as equal.
+
+See: docs/reference/component-canonical-examples.md
+-->
+
+<!-- variant: project-detail-four-tabs-summary-active (inputs: id=project-detail-tabstrip, aria_label=Project Detail Tabs, active_index=0, tabs=[{id:tab-summary,label:Summary,hx_get:/projects/__ID__/summary,hx_target:#project-detail-tab-content},{id:tab-inspections,label:Inspections,hx_get:/projects/__ID__/inspections,hx_target:#project-detail-tab-content},{id:tab-violations,label:Violations,hx_get:/projects/__ID__/violations,hx_target:#project-detail-tab-content},{id:tab-audit,label:Audit,hx_get:/projects/__ID__/audit,hx_target:#project-detail-tab-content}], no badges) -->
+<nav
+  aria-label="Project Detail Tabs"
+  class="tab-strip"
+  data-tabstrip
+  id="project-detail-tabstrip"
+  role="tablist"
+>
+  <button
+    aria-controls="project-detail-tab-content"
+    aria-selected="true"
+    class="tab-strip__tab"
+    hx-get="/projects/__ID__/summary"
+    hx-swap="innerHTML"
+    hx-target="#project-detail-tab-content"
+    id="tab-summary"
+    role="tab"
+    tabindex="0"
+    type="button"
+  ><span class="tab-strip__label">Summary</span></button>
+  <button
+    aria-controls="project-detail-tab-content"
+    aria-selected="false"
+    class="tab-strip__tab"
+    hx-get="/projects/__ID__/inspections"
+    hx-swap="innerHTML"
+    hx-target="#project-detail-tab-content"
+    id="tab-inspections"
+    role="tab"
+    tabindex="-1"
+    type="button"
+  ><span class="tab-strip__label">Inspections</span></button>
+  <button
+    aria-controls="project-detail-tab-content"
+    aria-selected="false"
+    class="tab-strip__tab"
+    hx-get="/projects/__ID__/violations"
+    hx-swap="innerHTML"
+    hx-target="#project-detail-tab-content"
+    id="tab-violations"
+    role="tab"
+    tabindex="-1"
+    type="button"
+  ><span class="tab-strip__label">Violations</span></button>
+  <button
+    aria-controls="project-detail-tab-content"
+    aria-selected="false"
+    class="tab-strip__tab"
+    hx-get="/projects/__ID__/audit"
+    hx-swap="innerHTML"
+    hx-target="#project-detail-tab-content"
+    id="tab-audit"
+    role="tab"
+    tabindex="-1"
+    type="button"
+  ><span class="tab-strip__label">Audit</span></button>
+</nav>
+
+<!-- variant: project-detail-four-tabs-violations-active (inputs: id=project-detail-tabstrip, aria_label=Project Detail Tabs, active_index=2, same tabs as above, no badges) -->
+<nav
+  aria-label="Project Detail Tabs"
+  class="tab-strip"
+  data-tabstrip
+  id="project-detail-tabstrip"
+  role="tablist"
+>
+  <button
+    aria-controls="project-detail-tab-content"
+    aria-selected="false"
+    class="tab-strip__tab"
+    hx-get="/projects/__ID__/summary"
+    hx-swap="innerHTML"
+    hx-target="#project-detail-tab-content"
+    id="tab-summary"
+    role="tab"
+    tabindex="-1"
+    type="button"
+  ><span class="tab-strip__label">Summary</span></button>
+  <button
+    aria-controls="project-detail-tab-content"
+    aria-selected="false"
+    class="tab-strip__tab"
+    hx-get="/projects/__ID__/inspections"
+    hx-swap="innerHTML"
+    hx-target="#project-detail-tab-content"
+    id="tab-inspections"
+    role="tab"
+    tabindex="-1"
+    type="button"
+  ><span class="tab-strip__label">Inspections</span></button>
+  <button
+    aria-controls="project-detail-tab-content"
+    aria-selected="true"
+    class="tab-strip__tab"
+    hx-get="/projects/__ID__/violations"
+    hx-swap="innerHTML"
+    hx-target="#project-detail-tab-content"
+    id="tab-violations"
+    role="tab"
+    tabindex="0"
+    type="button"
+  ><span class="tab-strip__label">Violations</span></button>
+  <button
+    aria-controls="project-detail-tab-content"
+    aria-selected="false"
+    class="tab-strip__tab"
+    hx-get="/projects/__ID__/audit"
+    hx-swap="innerHTML"
+    hx-target="#project-detail-tab-content"
+    id="tab-audit"
+    role="tab"
+    tabindex="-1"
+    type="button"
+  ><span class="tab-strip__label">Audit</span></button>
+</nav>
+
+<!-- variant: project-detail-four-tabs-with-badges (inputs: id=project-detail-tabstrip, aria_label=Project Detail Tabs, active_index=0, tabs with badge_count=[null,12,3,147]) -->
+<nav
+  aria-label="Project Detail Tabs"
+  class="tab-strip"
+  data-tabstrip
+  id="project-detail-tabstrip"
+  role="tablist"
+>
+  <button
+    aria-controls="project-detail-tab-content"
+    aria-selected="true"
+    class="tab-strip__tab"
+    hx-get="/projects/__ID__/summary"
+    hx-swap="innerHTML"
+    hx-target="#project-detail-tab-content"
+    id="tab-summary"
+    role="tab"
+    tabindex="0"
+    type="button"
+  ><span class="tab-strip__label">Summary</span></button>
+  <button
+    aria-controls="project-detail-tab-content"
+    aria-selected="false"
+    class="tab-strip__tab"
+    hx-get="/projects/__ID__/inspections"
+    hx-swap="innerHTML"
+    hx-target="#project-detail-tab-content"
+    id="tab-inspections"
+    role="tab"
+    tabindex="-1"
+    type="button"
+  ><span class="tab-strip__label">Inspections</span><span aria-label="12 unread" class="badge tab-strip__badge">12</span></button>
+  <button
+    aria-controls="project-detail-tab-content"
+    aria-selected="false"
+    class="tab-strip__tab"
+    hx-get="/projects/__ID__/violations"
+    hx-swap="innerHTML"
+    hx-target="#project-detail-tab-content"
+    id="tab-violations"
+    role="tab"
+    tabindex="-1"
+    type="button"
+  ><span class="tab-strip__label">Violations</span><span aria-label="3 unread" class="badge tab-strip__badge">3</span></button>
+  <button
+    aria-controls="project-detail-tab-content"
+    aria-selected="false"
+    class="tab-strip__tab"
+    hx-get="/projects/__ID__/audit"
+    hx-swap="innerHTML"
+    hx-target="#project-detail-tab-content"
+    id="tab-audit"
+    role="tab"
+    tabindex="-1"
+    type="button"
+  ><span class="tab-strip__label">Audit</span><span aria-label="147 unread" class="badge tab-strip__badge">147</span></button>
+</nav>
+
+<!-- variant: two-tabs-minimal (inputs: id=two-tabs-strip, aria_label=Open Closed Tabs, active_index=0, tabs=[{id:tab-open,label:Open,hx_get:/__tab__/open,hx_target:#__panel__},{id:tab-closed,label:Closed,hx_get:/__tab__/closed,hx_target:#__panel__}], no badges) -->
+<nav
+  aria-label="Open Closed Tabs"
+  class="tab-strip"
+  data-tabstrip
+  id="two-tabs-strip"
+  role="tablist"
+>
+  <button
+    aria-controls="__panel__"
+    aria-selected="true"
+    class="tab-strip__tab"
+    hx-get="/__tab__/open"
+    hx-swap="innerHTML"
+    hx-target="#__panel__"
+    id="tab-open"
+    role="tab"
+    tabindex="0"
+    type="button"
+  ><span class="tab-strip__label">Open</span></button>
+  <button
+    aria-controls="__panel__"
+    aria-selected="false"
+    class="tab-strip__tab"
+    hx-get="/__tab__/closed"
+    hx-swap="innerHTML"
+    hx-target="#__panel__"
+    id="tab-closed"
+    role="tab"
+    tabindex="-1"
+    type="button"
+  ><span class="tab-strip__label">Closed</span></button>
+</nav>
+
+<!-- variant: single-tab (inputs: id=single-tab-strip, aria_label=Single Tab, active_index=0, tabs=[{id:tab-only,label:Only Tab,hx_get:/__tab__/only,hx_target:#__panel__}], no badge) -->
+<nav
+  aria-label="Single Tab"
+  class="tab-strip"
+  data-tabstrip
+  id="single-tab-strip"
+  role="tablist"
+>
+  <button
+    aria-controls="__panel__"
+    aria-selected="true"
+    class="tab-strip__tab"
+    hx-get="/__tab__/only"
+    hx-swap="innerHTML"
+    hx-target="#__panel__"
+    id="tab-only"
+    role="tab"
+    tabindex="0"
+    type="button"
+  ><span class="tab-strip__label">Only Tab</span></button>
+</nav>
+
+<!-- variant: badge-zero (inputs: id=project-detail-tabstrip, aria_label=Project Detail Tabs, active_index=0, tabs same as with-badges but Violations badge_count=0) -->
+<nav
+  aria-label="Project Detail Tabs"
+  class="tab-strip"
+  data-tabstrip
+  id="project-detail-tabstrip"
+  role="tablist"
+>
+  <button
+    aria-controls="project-detail-tab-content"
+    aria-selected="true"
+    class="tab-strip__tab"
+    hx-get="/projects/__ID__/summary"
+    hx-swap="innerHTML"
+    hx-target="#project-detail-tab-content"
+    id="tab-summary"
+    role="tab"
+    tabindex="0"
+    type="button"
+  ><span class="tab-strip__label">Summary</span></button>
+  <button
+    aria-controls="project-detail-tab-content"
+    aria-selected="false"
+    class="tab-strip__tab"
+    hx-get="/projects/__ID__/inspections"
+    hx-swap="innerHTML"
+    hx-target="#project-detail-tab-content"
+    id="tab-inspections"
+    role="tab"
+    tabindex="-1"
+    type="button"
+  ><span class="tab-strip__label">Inspections</span><span aria-label="12 unread" class="badge tab-strip__badge">12</span></button>
+  <button
+    aria-controls="project-detail-tab-content"
+    aria-selected="false"
+    class="tab-strip__tab"
+    hx-get="/projects/__ID__/violations"
+    hx-swap="innerHTML"
+    hx-target="#project-detail-tab-content"
+    id="tab-violations"
+    role="tab"
+    tabindex="-1"
+    type="button"
+  ><span class="tab-strip__label">Violations</span><span aria-label="0 unread" class="badge tab-strip__badge">0</span></button>
+  <button
+    aria-controls="project-detail-tab-content"
+    aria-selected="false"
+    class="tab-strip__tab"
+    hx-get="/projects/__ID__/audit"
+    hx-swap="innerHTML"
+    hx-target="#project-detail-tab-content"
+    id="tab-audit"
+    role="tab"
+    tabindex="-1"
+    type="button"
+  ><span class="tab-strip__label">Audit</span><span aria-label="147 unread" class="badge tab-strip__badge">147</span></button>
+</nav>
+
+<!-- variant: badge-large (inputs: id=project-detail-tabstrip, aria_label=Project Detail Tabs, active_index=0, tabs same but Inspections badge_count=9999, no other badges) -->
+<nav
+  aria-label="Project Detail Tabs"
+  class="tab-strip"
+  data-tabstrip
+  id="project-detail-tabstrip"
+  role="tablist"
+>
+  <button
+    aria-controls="project-detail-tab-content"
+    aria-selected="true"
+    class="tab-strip__tab"
+    hx-get="/projects/__ID__/summary"
+    hx-swap="innerHTML"
+    hx-target="#project-detail-tab-content"
+    id="tab-summary"
+    role="tab"
+    tabindex="0"
+    type="button"
+  ><span class="tab-strip__label">Summary</span></button>
+  <button
+    aria-controls="project-detail-tab-content"
+    aria-selected="false"
+    class="tab-strip__tab"
+    hx-get="/projects/__ID__/inspections"
+    hx-swap="innerHTML"
+    hx-target="#project-detail-tab-content"
+    id="tab-inspections"
+    role="tab"
+    tabindex="-1"
+    type="button"
+  ><span class="tab-strip__label">Inspections</span><span aria-label="9999 unread" class="badge tab-strip__badge">9999</span></button>
+  <button
+    aria-controls="project-detail-tab-content"
+    aria-selected="false"
+    class="tab-strip__tab"
+    hx-get="/projects/__ID__/violations"
+    hx-swap="innerHTML"
+    hx-target="#project-detail-tab-content"
+    id="tab-violations"
+    role="tab"
+    tabindex="-1"
+    type="button"
+  ><span class="tab-strip__label">Violations</span></button>
+  <button
+    aria-controls="project-detail-tab-content"
+    aria-selected="false"
+    class="tab-strip__tab"
+    hx-get="/projects/__ID__/audit"
+    hx-swap="innerHTML"
+    hx-target="#project-detail-tab-content"
+    id="tab-audit"
+    role="tab"
+    tabindex="-1"
+    type="button"
+  ><span class="tab-strip__label">Audit</span></button>
+</nav>

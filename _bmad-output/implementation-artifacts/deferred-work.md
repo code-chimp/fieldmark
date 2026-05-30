@@ -1,3 +1,7 @@
+## Deferred from: Story 2.7 — TabStrip component (2026-05-30)
+
+- **Story 2.7-followup — TabStrip badge semantic monoculture**: The badge `aria-label` is hard-coded to `"<count> unread"`. If a future consumer needs a different semantic (e.g., a "high priority count" badge), the wrapper needs an additional `badge_aria_template` prop per stack. Currently deferred; add when a non-unread-count consumer lands. Track: add `badge_aria_template: string?` prop to all three stack wrappers and the canonical fixture.
+
 ## Deferred from: code review of 2-4-implement-phase-2-markup-only-components (2026-05-28)
 
 - `StatusBadgeVM.Severity` field (`fieldmark-go/internal/web/viewmodels/components.go`) is dead exported state — no template or resolver reads it; acceptable for the markup-only story scope since resolution logic (`(Entity, Value, Severity)` → `(ClassName, Label)`) will live in the first handler that constructs a `StatusBadgeVM` from domain values (Story 2.10 / 2.11). Address when that handler is written.

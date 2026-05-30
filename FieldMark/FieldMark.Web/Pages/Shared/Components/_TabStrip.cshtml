@@ -1,0 +1,138 @@
+@* Contract: docs/reference/component-canonical-examples.md *@
+@model dynamic
+@functions {
+    public record TabStripViewModel(
+        string? Id,
+        string AriaLabel,
+        IReadOnlyList<TabSpec> Tabs,
+        int ActiveIndex
+    );
+    public record TabSpec(
+        string Id,
+        string Label,
+        string HxGet,
+        string HxTarget,
+        int? BadgeCount
+    );
+
+    private static string S(object? value) =>
+        Convert.ToString(value, System.Globalization.CultureInfo.InvariantCulture) ?? "";
+
+    private static int? NullableInt(object? value) =>
+        value is int i ? i : value is long l ? (int)l : null;
+
+    private static IReadOnlyList<TabSpec> ExtractTabs(dynamic model)
+    {
+        var rawTabs = model.Tabs as System.Collections.IEnumerable
+            ?? throw new InvalidOperationException("TabStrip: Tabs must be provided");
+        var result = new List<TabSpec>();
+        foreach (var t in rawTabs)
+        {
+            var id = S(t.Id);
+            var label = S(t.Label);
+            var hxGet = S(t.HxGet);
+            var hxTarget = S(t.HxTarget);
+            int? badge = null;
+            try { badge = NullableInt(t.BadgeCount); } catch { }
+            result.Add(new TabSpec(id, label, hxGet, hxTarget, badge));
+        }
+        return result;
+    }
+
+    private static string TabAriaControls(string hxTarget) =>
+        hxTarget.StartsWith("#") ? hxTarget.Substring(1) : hxTarget;
+
+    private static string TabHxTarget(string hxTarget) =>
+        hxTarget.StartsWith("#") ? hxTarget : "#" + hxTarget;
+}
+@{
+    var ariaLabel = S(Model.AriaLabel);
+    if (string.IsNullOrWhiteSpace(ariaLabel))
+        throw new InvalidOperationException(
+            "TabStrip: AriaLabel is required and must not be empty or whitespace"
+        );
+
+    string? navId = null;
+    try { navId = Model.Id as string; } catch (Microsoft.CSharp.RuntimeBinder.RuntimeBinderException) { }
+    if (string.IsNullOrEmpty(navId))
+    {
+        try
+        {
+            var rawId = Convert.ToString(
+                Model.Id,
+                System.Globalization.CultureInfo.InvariantCulture
+            );
+            navId = string.IsNullOrEmpty(rawId) ? null : rawId;
+        }
+        catch { navId = null; }
+    }
+
+    var tabs = ExtractTabs(Model);
+    int activeIndex = 0;
+    try
+    {
+        activeIndex = Convert.ToInt32(
+            Model.ActiveIndex,
+            System.Globalization.CultureInfo.InvariantCulture
+        );
+    }
+    catch { }
+    if (activeIndex < 0 || activeIndex >= tabs.Count) activeIndex = 0;
+}
+@if (!string.IsNullOrEmpty(navId))
+{
+<nav
+  aria-label="@ariaLabel"
+  class="tab-strip"
+  data-tabstrip
+  id="@navId"
+  role="tablist"
+>
+@for (int i = 0; i < tabs.Count; i++) {
+var tab = tabs[i];
+var isActive = i == activeIndex;
+var tabindex = isActive ? "0" : "-1";
+var ariaSelected = isActive ? "true" : "false";
+<button
+  aria-controls="@TabAriaControls(tab.HxTarget)"
+  aria-selected="@ariaSelected"
+  class="tab-strip__tab"
+  hx-get="@tab.HxGet"
+  hx-swap="innerHTML"
+  hx-target="@TabHxTarget(tab.HxTarget)"
+  id="@tab.Id"
+  role="tab"
+  tabindex="@tabindex"
+  type="button"
+><span class="tab-strip__label">@tab.Label</span>@if (tab.BadgeCount.HasValue){<span aria-label="@(tab.BadgeCount.Value) unread" class="badge tab-strip__badge">@tab.BadgeCount.Value</span>}</button>
+}
+</nav>
+}
+else
+{
+<nav
+  aria-label="@ariaLabel"
+  class="tab-strip"
+  data-tabstrip
+  role="tablist"
+>
+@for (int i = 0; i < tabs.Count; i++) {
+var tab = tabs[i];
+var isActive = i == activeIndex;
+var tabindex = isActive ? "0" : "-1";
+var ariaSelected = isActive ? "true" : "false";
+<button
+  aria-controls="@TabAriaControls(tab.HxTarget)"
+  aria-selected="@ariaSelected"
+  class="tab-strip__tab"
+  hx-get="@tab.HxGet"
+  hx-swap="innerHTML"
+  hx-target="@TabHxTarget(tab.HxTarget)"
+  id="@tab.Id"
+  role="tab"
+  tabindex="@tabindex"
+  type="button"
+><span class="tab-strip__label">@tab.Label</span>@if (tab.BadgeCount.HasValue){<span aria-label="@(tab.BadgeCount.Value) unread" class="badge tab-strip__badge">@tab.BadgeCount.Value</span>}</button>
+}
+</nav>
+}

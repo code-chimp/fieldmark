@@ -33,6 +33,8 @@ fieldmark_shared/
 │   │   └── htmx.min.js
 │   ├── theme-toggle/
 │   │   └── theme-toggle.js                    Client-side theme listener; syncs aria-pressed on 3-button pill
+│   ├── tabstrip/
+│   │   └── tabstrip.js                        Arrow-key navigation for <nav role="tablist" data-tabstrip>; ES5 IIFE; 23 LOC
 │   ├── fonts/
 │   │   ├── inter/
 │   │   │   └── InterVariable.woff2            Inter v4.1 variable font
@@ -115,11 +117,11 @@ Commit `dist/fieldmark.css`. Fresh checkouts need the compiled file to exist bef
 
 Each stack symlinks vendor directories (not individual files) into its own static tree:
 
-| Stack | ag-grid symlink | htmx symlink | theme-toggle symlink | img symlink |
-|---|---|---|---|---|
-| .NET | `wwwroot/vendor/ag-grid` → `../../../../fieldmark_shared/vendor/ag-grid` | `wwwroot/vendor/htmx` → `../../../../fieldmark_shared/vendor/htmx` | `wwwroot/vendor/theme-toggle` → `../../../../fieldmark_shared/vendor/theme-toggle` | `wwwroot/vendor/img` → `../../../../fieldmark_shared/vendor/img` |
-| Django | `static/vendor/ag-grid` → `../../../fieldmark_shared/vendor/ag-grid` | `static/vendor/htmx` → `../../../fieldmark_shared/vendor/htmx` | `static/vendor/theme-toggle` → `../../../fieldmark_shared/vendor/theme-toggle` | `static/vendor/img` → `../../../fieldmark_shared/vendor/img` |
-| Go/Fiber | `internal/web/static/vendor/ag-grid` → `../../../../../fieldmark_shared/vendor/ag-grid` | `internal/web/static/vendor/htmx` → `../../../../../fieldmark_shared/vendor/htmx` | `internal/web/static/vendor/theme-toggle` → `../../../../../fieldmark_shared/vendor/theme-toggle` | `internal/web/static/vendor/img` → `../../../../../fieldmark_shared/vendor/img` |
+| Stack | ag-grid symlink | htmx symlink | theme-toggle symlink | tabstrip symlink | img symlink |
+|---|---|---|---|---|---|
+| .NET | `wwwroot/vendor/ag-grid` → `../../../../fieldmark_shared/vendor/ag-grid` | `wwwroot/vendor/htmx` → `../../../../fieldmark_shared/vendor/htmx` | `wwwroot/vendor/theme-toggle` → `../../../../fieldmark_shared/vendor/theme-toggle` | `wwwroot/vendor/tabstrip` → `../../../../fieldmark_shared/vendor/tabstrip` | `wwwroot/vendor/img` → `../../../../fieldmark_shared/vendor/img` |
+| Django | `static/vendor/ag-grid` → `../../../fieldmark_shared/vendor/ag-grid` | `static/vendor/htmx` → `../../../fieldmark_shared/vendor/htmx` | `static/vendor/theme-toggle` → `../../../fieldmark_shared/vendor/theme-toggle` | `static/vendor/tabstrip` → `../../../fieldmark_shared/vendor/tabstrip` | `static/vendor/img` → `../../../fieldmark_shared/vendor/img` |
+| Go/Fiber | `internal/web/static/vendor/ag-grid` → `../../../../../fieldmark_shared/vendor/ag-grid` | `internal/web/static/vendor/htmx` → `../../../../../fieldmark_shared/vendor/htmx` | `internal/web/static/vendor/theme-toggle` → `../../../../../fieldmark_shared/vendor/theme-toggle` | `internal/web/static/vendor/tabstrip` → `../../../../../fieldmark_shared/vendor/tabstrip` | `internal/web/static/vendor/img` → `../../../../../fieldmark_shared/vendor/img` |
 
 All paths are relative so the repo works regardless of where it is cloned.
 
@@ -145,6 +147,7 @@ cd fieldmark-go && go run ./cmd/server
 - No stack has a Node or npm dependency. They consume `dist/fieldmark.css` and the vendor JS as plain static files via symlinks.
 - Do not add per-app stylesheets that reintroduce a CSS framework. All shared styles belong here.
 - To add a new vendor JS library: drop it in `vendor/`, create symlinks in all three stacks, update this doc and the root `CLAUDE.md`.
+- **HTMX 4.0 event names use colon-separated format, not camelCase.** Event listeners in vendor JS must use the new names: `htmx:after:swap` (not `htmx:afterSwap`), `htmx:before:swap` (not `htmx:beforeSwap`), etc. Events are dispatched on `document`, not `document.body` — use `document.addEventListener(...)`. This was discovered during Story 2.7's tabstrip.js OOB-swap re-attachment; the original code used the HTMX 1.x `htmx:afterSwap` on `document.body` which silently never fired under HTMX 4.0-beta2.
 - `node_modules/` is gitignored. `dist/fieldmark.css` and everything in `vendor/` are **not** — commit them.
 - All npm dependencies must use exact version pins — no `^` or `~` ranges.
 - CSS partials use underscore prefix (`_fonts.css`, `_tokens.css`, `_layout.css`, `_ag-grid.css`). They are imported into `fieldmark.css` only.

@@ -1,0 +1,34 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TabStrip fixture — debug only</title>
+  <link rel="stylesheet" href="{% static 'vendor/fieldmark.css' %}">
+  <script src="{% static 'vendor/htmx/htmx.min.js' %}"></script>
+  <script>htmx.config.implicitInheritance = true;</script>
+  <script src="{% static 'vendor/tabstrip/tabstrip.js' %}" defer></script>
+  <style>
+    .fixture-layout { padding: 2rem; }
+    #project-detail-tab-content { padding: 1rem; border: 1px solid #ccc; min-height: 100px; }
+  </style>
+</head>
+<body>
+<div class="fixture-layout">
+
+{% if variant == "single-tab" %}
+<div class="tabs">
+  {% include "components/_tab_strip.html" with id="single-tab-strip" aria_label="Single Tab" active_index=0 tabs=single_tab_tabs %}
+  <div id="__panel__" role="tabpanel" aria-labelledby="tab-only">Single-tab panel content</div>
+</div>
+{% else %}
+<div class="tabs">
+  {% include "components/_tab_strip.html" with id="project-detail-tabstrip" aria_label="Project Detail Tabs" active_index=0 tabs=project_tabs %}
+  <div id="project-detail-tab-content" role="tabpanel" aria-labelledby="tab-summary">Summary panel content</div>
+</div>
+{% endif %}
+
+</div>
+</body>
+</html>

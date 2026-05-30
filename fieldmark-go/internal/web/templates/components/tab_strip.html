@@ -1,0 +1,34 @@
+{{/* Contract: docs/reference/component-canonical-examples.md */}}
+{{ define "tab_strip" -}}
+{{- if .ID -}}
+<nav
+  aria-label="{{ tabRequired "AriaLabel" .AriaLabel }}"
+  class="tab-strip"
+  data-tabstrip
+  id="{{ .ID }}"
+  role="tablist"
+>
+{{- else -}}
+<nav
+  aria-label="{{ tabRequired "AriaLabel" .AriaLabel }}"
+  class="tab-strip"
+  data-tabstrip
+  role="tablist"
+>
+{{- end }}
+{{- range $i, $t := .Tabs }}
+<button
+  aria-controls="{{ tabAriaControls $t.HxTarget }}"
+  aria-selected="{{ if eq $i $.ActiveIndex }}true{{ else }}false{{ end }}"
+  class="tab-strip__tab"
+  hx-get="{{ $t.HxGet }}"
+  hx-swap="innerHTML"
+  hx-target="{{ $t.HxTarget }}"
+  id="{{ $t.ID }}"
+  role="tab"
+  tabindex="{{ tabTabindex $.ActiveIndex $i }}"
+  type="button"
+><span class="tab-strip__label">{{ $t.Label }}</span>{{ if $t.BadgeCount }}<span aria-label="{{ $t.BadgeCount }} unread" class="badge tab-strip__badge">{{ $t.BadgeCount }}</span>{{ end }}</button>
+{{- end }}
+</nav>
+{{- end }}

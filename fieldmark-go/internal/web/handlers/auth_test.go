@@ -2,6 +2,7 @@ package handlers_test
 
 import (
 	"bytes"
+	htmltemplate "html/template"
 	"io"
 	"net/http"
 	"testing"
@@ -11,6 +12,7 @@ import (
 
 	"github.com/code-chimp/fieldmark-go/internal/web/auth"
 	"github.com/code-chimp/fieldmark-go/internal/web/handlers"
+	components "github.com/code-chimp/fieldmark-go/internal/web/templates/components"
 )
 
 // newTestApp creates a Fiber app with the real template engine
@@ -18,6 +20,10 @@ import (
 func newTestApp() *fiber.App {
 	engine := html.New("../templates", ".html")
 	engine.AddFunc("noescape", func(s string) string { return s })
+	engine.AddFunc("safeHTML", func(s string) htmltemplate.HTML { return htmltemplate.HTML(s) })
+	engine.AddFunc("tabTabindex", components.TabTabindex)
+	engine.AddFunc("tabAriaControls", components.TabAriaControls)
+	engine.AddFunc("tabRequired", components.TabRequiredString)
 	return fiber.New(fiber.Config{Views: engine, ViewsLayout: "base"})
 }
 

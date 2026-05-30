@@ -58,6 +58,7 @@ func TestEntityRailOtherTemplatesDoNotUseTemplateHTMLCast(t *testing.T) {
 		"dashboard_tile.html",
 		"inline_alert.html",
 		"status_badge.html",
+		"tab_strip.html",
 	} {
 		b, err := os.ReadFile(filepath.Join(dir, filename))
 		if err != nil {

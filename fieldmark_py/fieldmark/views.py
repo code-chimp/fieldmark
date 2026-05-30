@@ -137,3 +137,27 @@ def entity_rail_fixture(request: HttpRequest) -> HttpResponse:
     if not settings.DEBUG:
         return HttpResponseNotFound()
     return render(request, "debug/entity_rail_fixture.html")
+
+
+@login_not_required
+@require_http_methods(["GET"])
+def tab_strip_fixture(request: HttpRequest) -> HttpResponse:
+    """Debug-only fixture page for the TabStrip keyboard-navigation Playwright test (AC6 / Story 2.7).
+    Gated behind DEBUG=True; excluded from make parity via dump_routes __test__ prefix rule.
+    Variant is selected via ?variant=<name> query string (defaults to summary-active).
+    """
+    if not settings.DEBUG:
+        return HttpResponseNotFound()
+    variant = request.GET.get("variant", "summary-active")
+    project_tabs = [
+        {"id": "tab-summary", "label": "Summary", "hx_get": "/projects/__ID__/summary", "hx_target": "#project-detail-tab-content", "badge_count": None},
+        {"id": "tab-inspections", "label": "Inspections", "hx_get": "/projects/__ID__/inspections", "hx_target": "#project-detail-tab-content", "badge_count": None},
+        {"id": "tab-violations", "label": "Violations", "hx_get": "/projects/__ID__/violations", "hx_target": "#project-detail-tab-content", "badge_count": None},
+        {"id": "tab-audit", "label": "Audit", "hx_get": "/projects/__ID__/audit", "hx_target": "#project-detail-tab-content", "badge_count": None},
+    ]
+    single_tab = [{"id": "tab-only", "label": "Only Tab", "hx_get": "/__tab__/only", "hx_target": "#__panel__", "badge_count": None}]
+    return render(request, "debug/tab_strip_fixture.html", {
+        "variant": variant,
+        "project_tabs": project_tabs,
+        "single_tab_tabs": single_tab,
+    })

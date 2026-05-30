@@ -1,0 +1,42 @@
+{% comment %}Contract: docs/reference/component-canonical-examples.md{% endcomment %}
+{% load component_tags %}
+{% if id %}<nav
+  aria-label="{{ aria_label|required_prop:"aria_label" }}"
+  class="tab-strip"
+  data-tabstrip
+  id="{{ id }}"
+  role="tablist"
+>{% else %}<nav
+  aria-label="{{ aria_label|required_prop:"aria_label" }}"
+  class="tab-strip"
+  data-tabstrip
+  role="tablist"
+>{% endif %}
+{% for tab in tabs %}
+{% if forloop.counter0 == active_index %}<button
+  aria-controls="{{ tab.hx_target|cut:'#' }}"
+  aria-selected="true"
+  class="tab-strip__tab"
+  hx-get="{{ tab.hx_get }}"
+  hx-swap="innerHTML"
+  hx-target="{{ tab.hx_target }}"
+  id="{{ tab.id }}"
+  role="tab"
+  tabindex="0"
+  type="button"
+><span class="tab-strip__label">{{ tab.label }}</span>{% if tab.badge_count is not None %}<span aria-label="{{ tab.badge_count }} unread" class="badge tab-strip__badge">{{ tab.badge_count }}</span>{% endif %}</button>
+{% else %}<button
+  aria-controls="{{ tab.hx_target|cut:'#' }}"
+  aria-selected="false"
+  class="tab-strip__tab"
+  hx-get="{{ tab.hx_get }}"
+  hx-swap="innerHTML"
+  hx-target="{{ tab.hx_target }}"
+  id="{{ tab.id }}"
+  role="tab"
+  tabindex="-1"
+  type="button"
+><span class="tab-strip__label">{{ tab.label }}</span>{% if tab.badge_count is not None %}<span aria-label="{{ tab.badge_count }} unread" class="badge tab-strip__badge">{{ tab.badge_count }}</span>{% endif %}</button>
+{% endif %}
+{% endfor %}
+</nav>

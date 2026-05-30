@@ -22,6 +22,7 @@ import (
 	"github.com/code-chimp/fieldmark-go/internal/domain"
 	"github.com/code-chimp/fieldmark-go/internal/web/auth"
 	"github.com/code-chimp/fieldmark-go/internal/web/handlers"
+	components "github.com/code-chimp/fieldmark-go/internal/web/templates/components"
 	"github.com/code-chimp/fieldmark-go/internal/web/viewmodels"
 )
 
@@ -86,6 +87,12 @@ func buildApp(pool *pgxpool.Pool) *fiber.App {
 	engine.AddFunc("noescape", func(s string) string { return s })
 	// safeHTML renders caller-supplied HTML verbatim; intended for component-slot pass-through. Caller is the trust boundary.
 	engine.AddFunc("safeHTML", func(s string) htmltemplate.HTML { return htmltemplate.HTML(s) })
+	// tabTabindex returns "0" for the active tab and "-1" for others (roving tabindex pattern).
+	engine.AddFunc("tabTabindex", components.TabTabindex)
+	// tabAriaControls strips a leading "#" from the hxTarget selector for aria-controls values.
+	engine.AddFunc("tabAriaControls", components.TabAriaControls)
+	// tabRequired returns the string value or errors if empty/whitespace — enforces required props.
+	engine.AddFunc("tabRequired", components.TabRequiredString)
 
 	app := fiber.New(fiber.Config{
 		Views:       engine,

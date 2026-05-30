@@ -164,6 +164,7 @@ def test_entity_rail_template_has_exactly_two_safe_filters() -> None:
         "_audit_row.html",
         "_dashboard_tile.html",
         "_compliance_tile.html",
+        "_tab_strip.html",
     ],
 )
 def test_other_component_wrappers_do_not_use_safe_filter(filename: str) -> None:

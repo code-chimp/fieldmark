@@ -25,4 +25,5 @@ urlpatterns = [
 if settings.DEBUG:
     urlpatterns += [
         path("__test__/entity-rail-fixture/", views.entity_rail_fixture, name="entity_rail_fixture"),
+        path("__test__/tab-strip-fixture/", views.tab_strip_fixture, name="tab_strip_fixture"),
     ]
