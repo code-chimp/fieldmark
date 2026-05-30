@@ -51,6 +51,7 @@
 
 generated: 2026-05-11
 last_updated: 2026-05-30
+#   (2-14 story created by create-story workflow; status set to ready-for-dev)
 #   (2-6 rerun code review clean after round 2 action items resolved; status set to done)
 #   (2-6 round 2 review patch items resolved: 3 patch items closed; status set to review)
 #   (2-6 code review round 2 left 3 patch findings as action items; status set to in-progress)
@@ -178,7 +179,7 @@ development_status:
   2-11-project-detail-anchor-screen-with-header-strip-tabstrip-and-entityrail: backlog
   2-12-place-on-hold-and-resume-transitions-with-three-region-oob-orchestration: backlog
   2-13-project-audit-log-tab: backlog
-  2-14-reference-data-read-pages-for-administrator: backlog
+  2-14-reference-data-read-pages-for-administrator: ready-for-dev
   epic-2-retrospective: optional
 
   # ===== Epic 3: Inspection Workflow & Violation Genesis =====
