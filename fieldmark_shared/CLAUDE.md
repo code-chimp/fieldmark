@@ -72,6 +72,7 @@ The underscore-prefix convention signals partials imported by `fieldmark.css`.
 | Basecoat CSS | 0.3.11 (exact, pre-1.0) | `dependencies` |
 | HTMX | 4.0.0-beta2 | `vendor/htmx/htmx.min.js` |
 | AG Grid Enterprise | 35.3.0 | `vendor/ag-grid/35.3.0/` (Enterprise UMD bundle; no license key — "unlicensed" watermark is an accepted demo tradeoff for showing true SSRM) |
+| AGGridPanel init JS | Story 2.9 | `vendor/ag-grid-panel/ag-grid-panel.js` (SSRM datasource init; parameterised via `data-*` attrs; ~50 lines including comments) |
 | Inter font | 4.1 | `vendor/fonts/inter/InterVariable.woff2` |
 | JetBrains Mono | 2.304 | `vendor/fonts/jetbrains-mono/JetBrainsMono[wght].woff2` |
 
@@ -117,11 +118,11 @@ Commit `dist/fieldmark.css`. Fresh checkouts need the compiled file to exist bef
 
 Each stack symlinks vendor directories (not individual files) into its own static tree:
 
-| Stack | ag-grid symlink | htmx symlink | theme-toggle symlink | tabstrip symlink | img symlink |
-|---|---|---|---|---|---|
-| .NET | `wwwroot/vendor/ag-grid` → `../../../../fieldmark_shared/vendor/ag-grid` | `wwwroot/vendor/htmx` → `../../../../fieldmark_shared/vendor/htmx` | `wwwroot/vendor/theme-toggle` → `../../../../fieldmark_shared/vendor/theme-toggle` | `wwwroot/vendor/tabstrip` → `../../../../fieldmark_shared/vendor/tabstrip` | `wwwroot/vendor/img` → `../../../../fieldmark_shared/vendor/img` |
-| Django | `static/vendor/ag-grid` → `../../../fieldmark_shared/vendor/ag-grid` | `static/vendor/htmx` → `../../../fieldmark_shared/vendor/htmx` | `static/vendor/theme-toggle` → `../../../fieldmark_shared/vendor/theme-toggle` | `static/vendor/tabstrip` → `../../../fieldmark_shared/vendor/tabstrip` | `static/vendor/img` → `../../../fieldmark_shared/vendor/img` |
-| Go/Fiber | `internal/web/static/vendor/ag-grid` → `../../../../../fieldmark_shared/vendor/ag-grid` | `internal/web/static/vendor/htmx` → `../../../../../fieldmark_shared/vendor/htmx` | `internal/web/static/vendor/theme-toggle` → `../../../../../fieldmark_shared/vendor/theme-toggle` | `internal/web/static/vendor/tabstrip` → `../../../../../fieldmark_shared/vendor/tabstrip` | `internal/web/static/vendor/img` → `../../../../../fieldmark_shared/vendor/img` |
+| Stack | ag-grid symlink | ag-grid-panel symlink | htmx symlink | theme-toggle symlink | tabstrip symlink | img symlink |
+|---|---|---|---|---|---|---|
+| .NET | `wwwroot/vendor/ag-grid` → `../../../../fieldmark_shared/vendor/ag-grid` | `wwwroot/vendor/ag-grid-panel` → `../../../../fieldmark_shared/vendor/ag-grid-panel` | `wwwroot/vendor/htmx` → `../../../../fieldmark_shared/vendor/htmx` | `wwwroot/vendor/theme-toggle` → `../../../../fieldmark_shared/vendor/theme-toggle` | `wwwroot/vendor/tabstrip` → `../../../../fieldmark_shared/vendor/tabstrip` | `wwwroot/vendor/img` → `../../../../fieldmark_shared/vendor/img` |
+| Django | `static/vendor/ag-grid` → `../../../fieldmark_shared/vendor/ag-grid` | `static/vendor/ag-grid-panel` → `../../../fieldmark_shared/vendor/ag-grid-panel` | `static/vendor/htmx` → `../../../fieldmark_shared/vendor/htmx` | `static/vendor/theme-toggle` → `../../../fieldmark_shared/vendor/theme-toggle` | `static/vendor/tabstrip` → `../../../fieldmark_shared/vendor/tabstrip` | `static/vendor/img` → `../../../fieldmark_shared/vendor/img` |
+| Go/Fiber | `internal/web/static/vendor/ag-grid` → `../../../../../fieldmark_shared/vendor/ag-grid` | `internal/web/static/vendor/ag-grid-panel` → `../../../../../fieldmark_shared/vendor/ag-grid-panel` | `internal/web/static/vendor/htmx` → `../../../../../fieldmark_shared/vendor/htmx` | `internal/web/static/vendor/theme-toggle` → `../../../../../fieldmark_shared/vendor/theme-toggle` | `internal/web/static/vendor/tabstrip` → `../../../../../fieldmark_shared/vendor/tabstrip` | `internal/web/static/vendor/img` → `../../../../../fieldmark_shared/vendor/img` |
 
 All paths are relative so the repo works regardless of where it is cloned.
 

@@ -50,7 +50,20 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-05-11
-last_updated: 2026-05-30
+last_updated: 2026-05-31
+#   (2-9 rerun 5 code review clean; status set to done)
+#   (2-9 rerun 4 review patch items resolved: 3 items closed; status set to review)
+#   (2-9 rerun 4 review left 3 patch findings as action items; status set to in-progress)
+#   (2-9 rerun 3 review patch items resolved: 5 items closed; status set to review)
+#   (2-9 rerun 3 review left 5 patch findings as action items; status set to in-progress)
+#   (2-9 rerun 2 review patch items resolved: 4 items closed; status set to review)
+#   (2-9 rerun 2 review left 4 patch findings as action items; status set to in-progress)
+#   (2-9 rerun review patch items resolved: 6 items closed; status set to review)
+#   (2-9 rerun review left 6 patch findings as action items; status set to in-progress)
+#   (2-9 round 1 review patch items resolved: 6 patch items closed; status set to review)
+#   (2-9 code review left 6 patch findings as action items; status set to in-progress)
+#   (2-9 implementation complete; Django+Go gates green; .NET blocked by pre-existing workload issue; status set to review)
+#   (2-9 implementation started by dev-story workflow; status set to in-progress)
 #   (2-8 round 5 review patch item resolved: 1 item closed; status set to review)
 #   (2-8 round 4 review patch items resolved: 4 items closed; status set to review)
 #   (2-8 round 3 review patch items resolved: 4 items closed; status set to review)
@@ -185,7 +198,7 @@ development_status:
   2-6-implement-entityrail-component-with-responsive-collapse: done
   2-7-implement-tabstrip-component-with-arrow-key-navigation: done
   2-8-project-create-form-pm-admin: done
-  2-9-project-list-ag-grid-with-server-side-row-model: ready-for-dev
+  2-9-project-list-ag-grid-with-server-side-row-model: done
   2-10-compliance-dashboard-with-portfolio-tiles: ready-for-dev
   2-11-project-detail-anchor-screen-with-header-strip-tabstrip-and-entityrail: backlog
   2-12-place-on-hold-and-resume-transitions-with-three-region-oob-orchestration: backlog

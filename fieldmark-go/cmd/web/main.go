@@ -123,8 +123,13 @@ func buildApp(pool *pgxpool.Pool) *fiber.App {
 }
 
 func registerRoutes(app *fiber.App, pool *pgxpool.Pool) {
-	// Register domain action → role permissions (Story 2.8).
+	// Register domain action → role permissions.
 	auth.RegisterAction("project.create", domain.RoleAdmin)
+	// Story 2.9: project.read granted to all five conceptual roles (portfolio list visible to any authenticated user).
+	auth.RegisterAction("project.read",
+		domain.RoleAdmin, domain.RoleComplianceOfficer, domain.RoleInspector,
+		domain.RoleSiteSupervisor, domain.RoleExecutive,
+	)
 
 	// Auth routes — no RequireAuth; these are the public entry points.
 	if pool != nil {
@@ -163,7 +168,7 @@ func registerRoutes(app *fiber.App, pool *pgxpool.Pool) {
 		}
 		app.Get("/admin/reference", auth.RequireAuth(), referenceHandlers.AdminReferenceIndex)
 
-		// Project routes — Story 2.8.
+		// Project routes — Story 2.8 (create) + Story 2.9 (list, grid endpoint).
 		projectsCreate := &handlers.ProjectsCreateHandlers{
 			Pool:      pool,
 			Reference: postgres.NewReferenceStore(pool),
@@ -172,6 +177,12 @@ func registerRoutes(app *fiber.App, pool *pgxpool.Pool) {
 		}
 		app.Get("/projects/new", auth.RequireAuth(), projectsCreate.GetProjectsNew)
 		app.Post("/projects/", auth.RequireAuth(), projectsCreate.PostProjectsCreate)
+
+		projectsList := &handlers.ProjectsListHandlers{}
+		app.Get("/projects", auth.RequireAuth(), projectsList.GetProjectsList)
+
+		gridProjects := &handlers.GridProjectsHandlers{Pool: pool}
+		app.Post("/grid/projects", auth.RequireAuth(), gridProjects.PostGridProjects)
 
 		projectsDetail := &handlers.ProjectsDetailHandlers{
 			Projects: postgres.NewProjectStore(pool),
@@ -184,6 +195,8 @@ func registerRoutes(app *fiber.App, pool *pgxpool.Pool) {
 		noop := func(c fiber.Ctx) error { return nil }
 		app.Get("/projects/new", auth.RequireAuth(), noop)
 		app.Post("/projects/", auth.RequireAuth(), noop)
+		app.Get("/projects", auth.RequireAuth(), noop)
+		app.Post("/grid/projects", auth.RequireAuth(), noop)
 		app.Get("/projects/:id", auth.RequireAuth(), noop)
 	}
 

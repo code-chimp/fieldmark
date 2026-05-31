@@ -1,0 +1,32 @@
+@* GET /projects — project list with AG Grid SSRM panel.
+   See docs/reference/ag-grid-ssrm-contract.md *@
+@page "/projects"
+@model ListModel
+@{
+    ViewData["Title"] = "Projects";
+}
+
+<h1>Projects</h1>
+
+@if (Model.CanCreate)
+{
+    <a href="/projects/new" class="btn btn-primary">New Project</a>
+}
+
+<noscript>
+  <p>JavaScript is required to view the projects grid.</p>
+</noscript>
+
+<div class="ag-theme-quartz"
+     data-grid-endpoint="/grid/projects"
+     data-grid-target="#project-detail"
+     style="height: 500px; width: 100%;">
+</div>
+
+<aside id="project-detail"
+       role="region"
+       aria-label="Project detail"
+       tabindex="-1">
+</aside>
+
+<script src="~/vendor/ag-grid-panel/ag-grid-panel.js"></script>

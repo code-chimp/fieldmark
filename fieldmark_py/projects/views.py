@@ -1,6 +1,7 @@
-"""Project views — Story 2.8.
+"""Project views — Story 2.8 (create) + Story 2.9 (list).
 
-See docs/reference/project-create-form-contract.md for the form contract.
+See docs/reference/project-create-form-contract.md for the create form contract.
+See docs/reference/ag-grid-ssrm-contract.md for the list page + grid contract.
 """
 
 from __future__ import annotations
@@ -26,8 +27,9 @@ from .models import Project, ProjectInspector, ProjectTradeScope
 
 User = get_user_model()
 
-# Register the project.create action for ADMIN role.
+# Register the project.create action for ADMIN role (Story 2.8).
 register_action("project.create", Role.ADMIN)
+# project.read registered in grid/views.py at import time (Story 2.9).
 
 
 def _get_reference_data():
@@ -232,6 +234,24 @@ def project_detail_stub(request: HttpRequest, id: uuid.UUID) -> HttpResponse:
         return HttpResponse("Not Found.", status=404)
 
     return render(request, "projects/detail.html", {"project": project})
+
+
+@require_GET
+@login_required
+def project_list(request: HttpRequest) -> HttpResponse:
+    """GET /projects — project list page with AG Grid SSRM panel.
+
+    See docs/reference/ag-grid-ssrm-contract.md
+    """
+    if not can(request.user, "project.read"):
+        return HttpResponseForbidden("You do not have permission to access this page.")
+
+    can_create = can(request.user, "project.create")
+    return render(
+        request,
+        "projects/index.html",
+        {"can_create": can_create},
+    )
 
 
 def _render_422(request, form, _stale_trade_choices=None, _stale_inspector_choices=None) -> HttpResponse:

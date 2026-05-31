@@ -22,6 +22,8 @@ urlpatterns = [
     path("preferences/theme", views.set_theme, name="set_theme"),
     # Projects app — Story 2.8.
     path("", include("projects.urls")),
+    # Grid endpoints — Story 2.9.
+    path("", include("grid.urls")),
 ]
 
 if settings.DEBUG:

@@ -1,0 +1,33 @@
+{# GET /projects — project list with AG Grid SSRM panel. #}
+{# See docs/reference/ag-grid-ssrm-contract.md #}
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Projects{% endblock %}
+
+{% block content %}
+<h1>Projects</h1>
+
+{% if can_create %}
+<a href="/projects/new" class="btn btn-primary">New Project</a>
+{% endif %}
+
+<noscript>
+  <p>JavaScript is required to view the projects grid.</p>
+</noscript>
+
+<div class="ag-theme-quartz"
+     data-grid-endpoint="/grid/projects"
+     data-grid-target="#project-detail"
+     data-can-create="{{ can_create|yesno:'true,false' }}"
+     style="height: 500px; width: 100%;">
+</div>
+
+<aside id="project-detail"
+       role="region"
+       aria-label="Project detail"
+       tabindex="-1">
+</aside>
+
+<script src="{% static 'vendor/ag-grid-panel/ag-grid-panel.js' %}"></script>
+{% endblock %}

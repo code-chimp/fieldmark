@@ -579,7 +579,7 @@ Junction tables: `<entity_a>_<entity_b>` with composite PK — `domain.project_t
       "open_violation_count": 1
     }
   ],
-  "last_row": 247
+  "lastRow": 247
 }
 ```
 

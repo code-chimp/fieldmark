@@ -127,8 +127,13 @@ builder.Services.AddAuthorization(options =>
     options.FallbackPolicy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
 });
 
-// Register domain action → role permissions. Story 2.8: project.create.
+// Register domain action → role permissions.
 DomainPolicies.RegisterAction("project.create", Role.Admin);
+// Story 2.9: project.read granted to all five roles (portfolio list visible to any authenticated user).
+DomainPolicies.RegisterAction(
+    "project.read",
+    Role.Admin, Role.ComplianceOfficer, Role.Inspector, Role.SiteSupervisor, Role.Executive
+);
 
 var app = builder.Build();
 

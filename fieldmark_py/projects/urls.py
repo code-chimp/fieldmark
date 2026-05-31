@@ -1,7 +1,9 @@
-"""URL configuration for the projects app (Story 2.8).
+"""URL configuration for the projects app (Story 2.8 + 2.9).
 
-See docs/reference/project-create-form-contract.md for the route contract.
+See docs/reference/project-create-form-contract.md for the create form contract.
+See docs/reference/ag-grid-ssrm-contract.md for the list page contract.
 
+  GET  /projects          → project_list      (Story 2.9)
   GET  /projects/new      → project_create_get
   POST /projects/         → project_create_post  (GET → 405 via @require_POST)
   GET  /projects/<uuid>   → project_detail_stub  (stub; Story 2.11 replaces)
@@ -12,6 +14,7 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
+    path("projects", views.project_list, name="project_list"),
     path("projects/new", views.project_create_get, name="project_create"),
     # @require_POST on project_create_post returns 405 with Allow: POST on GET.
     path("projects/", views.project_create_post, name="project_collection"),
