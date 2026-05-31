@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Compliance Dashboard{% endblock %}
+
+{% block content %}
+<h1>Compliance Dashboard</h1>
+
+<div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+  {% include "components/_compliance_tile.html" with score=portfolio_score label="Portfolio Compliance" id="compliance-tile-portfolio" %}
+  {% include "components/_dashboard_tile.html" with tile_id="overdue-violations-tile" label="Overdue Violations" value=overdue_violations secondary=overdue_breakdown value_color="danger" role_status=True %}
+  {% include "components/_dashboard_tile.html" with tile_id="active-projects-tile" label="Active Projects" value=active_projects secondary="" value_color="info" role_status=True %}
+  {% include "components/_dashboard_tile.html" with tile_id="inspections-week-tile" label="Inspections This Week" value=inspections_week secondary="" value_color="neutral" role_status=True %}
+</div>
+
+<div class="ag-theme-quartz mt-4"
+     data-grid-endpoint="/grid/projects"
+     data-grid-rowclick="navigate"
+     style="height: 500px; width: 100%;">
+</div>
+
+<noscript>
+  <p>JavaScript is required to view the projects grid.</p>
+</noscript>
+
+<script src="{% static 'vendor/ag-grid-panel/ag-grid-panel.js' %}"></script>
+{% endblock %}

@@ -130,6 +130,10 @@ func registerRoutes(app *fiber.App, pool *pgxpool.Pool) {
 		domain.RoleAdmin, domain.RoleComplianceOfficer, domain.RoleInspector,
 		domain.RoleSiteSupervisor, domain.RoleExecutive,
 	)
+	auth.RegisterAction("dashboard.view",
+		domain.RoleAdmin, domain.RoleComplianceOfficer, domain.RoleInspector,
+		domain.RoleSiteSupervisor, domain.RoleExecutive,
+	)
 
 	// Auth routes — no RequireAuth; these are the public entry points.
 	if pool != nil {
@@ -149,8 +153,14 @@ func registerRoutes(app *fiber.App, pool *pgxpool.Pool) {
 
 	// Business routes — protected by RequireAuth.
 	app.Get("/", auth.RequireAuth(), func(c fiber.Ctx) error {
-		return c.Render("pages/home", renderHomeContext(c))
+		return c.Redirect().To("/dashboard")
 	})
+	if pool != nil {
+		dashboard := &handlers.DashboardHandlers{Pool: pool}
+		app.Get("/dashboard", auth.RequireAuth(), dashboard.GetDashboard)
+	} else {
+		app.Get("/dashboard", auth.RequireAuth(), func(c fiber.Ctx) error { return nil })
+	}
 
 	app.Get("/privacy", auth.RequireAuth(), func(c fiber.Ctx) error {
 		m := baseMap(c)

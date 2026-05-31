@@ -1,6 +1,7 @@
 using FieldMark.Data.Context;
 using FieldMark.Data.Reference;
 using FieldMark.Domain.ValueObjects;
+using FieldMark.Web.Dashboard;
 using FieldMark.Web.Authorization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -82,6 +83,7 @@ builder.Services.AddScoped<
     FieldMark.Data.Auditing.AuditAppender
 >();
 builder.Services.AddScoped<IReferenceReader, ReferenceReader>();
+builder.Services.AddScoped<DashboardStatsReader>();
 
 builder
     .Services.AddIdentityCore<IdentityUser<Guid>>(options =>
@@ -132,6 +134,10 @@ DomainPolicies.RegisterAction("project.create", Role.Admin);
 // Story 2.9: project.read granted to all five roles (portfolio list visible to any authenticated user).
 DomainPolicies.RegisterAction(
     "project.read",
+    Role.Admin, Role.ComplianceOfficer, Role.Inspector, Role.SiteSupervisor, Role.Executive
+);
+DomainPolicies.RegisterAction(
+    "dashboard.view",
     Role.Admin, Role.ComplianceOfficer, Role.Inspector, Role.SiteSupervisor, Role.Executive
 );
 

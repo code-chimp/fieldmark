@@ -7,7 +7,8 @@
   document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('[data-grid-endpoint]').forEach(function (el) {
       var endpoint = el.getAttribute('data-grid-endpoint');
-      var target   = el.getAttribute('data-grid-target');
+      var target = el.getAttribute('data-grid-target');
+      var rowClick = el.getAttribute('data-grid-rowclick') || 'detail';
       // Overlay text is the same for all roles; the "New Project" create button is
       // a server-rendered element on the page (present/absent server-decided, per AC7).
       var noRowsTemplate = '<span class="ag-overlay-no-rows-center">No projects yet — create one to get started</span>';
@@ -42,7 +43,14 @@
         serverSideDatasource: datasource,
         overlayNoRowsTemplate: noRowsTemplate,
         onRowClicked: function (e) {
-          if (target && e.data && e.data.id) {
+          if (!e.data || !e.data.id) {
+            return;
+          }
+          if (rowClick === 'navigate') {
+            window.location.href = '/projects/' + encodeURIComponent(e.data.id);
+            return;
+          }
+          if (target) {
             htmx.ajax('GET', '/projects/' + e.data.id, { target: target, swap: 'innerHTML' });
           }
         }

@@ -1,0 +1,20 @@
+<h1>Compliance Dashboard</h1>
+
+<div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+  {{template "compliance_tile" .PortfolioTile}}
+  {{template "dashboard_tile" .OverdueTile}}
+  {{template "dashboard_tile" .ActiveProjectsTile}}
+  {{template "dashboard_tile" .InspectionsWeekTile}}
+</div>
+
+<div class="ag-theme-quartz mt-4"
+     data-grid-endpoint="/grid/projects"
+     data-grid-rowclick="navigate"
+     style="height: 500px; width: 100%;">
+</div>
+
+<noscript>
+  <p>JavaScript is required to view the projects grid.</p>
+</noscript>
+
+<script src="/static/vendor/ag-grid-panel/ag-grid-panel.js"></script>

@@ -1,0 +1,26 @@
+@page "/dashboard"
+@model FieldMark.Web.Pages.Dashboard.IndexModel
+@{
+    ViewData["Title"] = "Compliance Dashboard";
+}
+
+<h1>Compliance Dashboard</h1>
+
+<div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+  @await Html.PartialAsync("Shared/Components/_ComplianceTile", new { Score = Model.Stats.PortfolioScore, Label = "Portfolio Compliance", Id = "compliance-tile-portfolio" })
+  @await Html.PartialAsync("Shared/Components/_DashboardTile", new { TileId = "overdue-violations-tile", Label = "Overdue Violations", Value = Model.Stats.OverdueViolations?.ToString(), Secondary = Model.Stats.OverdueBreakdown, ValueColor = "danger", RoleStatus = true })
+  @await Html.PartialAsync("Shared/Components/_DashboardTile", new { TileId = "active-projects-tile", Label = "Active Projects", Value = Model.Stats.ActiveProjects?.ToString(), Secondary = "", ValueColor = "info", RoleStatus = true })
+  @await Html.PartialAsync("Shared/Components/_DashboardTile", new { TileId = "inspections-week-tile", Label = "Inspections This Week", Value = Model.Stats.InspectionsThisWeek?.ToString(), Secondary = "", ValueColor = "neutral", RoleStatus = true })
+</div>
+
+<div class="ag-theme-quartz mt-4"
+     data-grid-endpoint="/grid/projects"
+     data-grid-rowclick="navigate"
+     style="height: 500px; width: 100%;">
+</div>
+
+<noscript>
+  <p>JavaScript is required to view the projects grid.</p>
+</noscript>
+
+<script src="~/vendor/ag-grid-panel/ag-grid-panel.js"></script>

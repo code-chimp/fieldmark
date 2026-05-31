@@ -51,6 +51,15 @@
 
 generated: 2026-05-11
 last_updated: 2026-05-31
+#   (2-10 rerun 4 code review clean; status set to done)
+#   (2-10 rerun 3 review patch item resolved: 1 item closed; status set to review)
+#   (2-10 rerun 3 review left 1 patch finding as action item; status set to in-progress)
+#   (2-10 rerun 3 review patch items resolved: 5 items closed; status set to review)
+#   (2-10 rerun 2 review left 5 patch findings as action items; status set to in-progress)
+#   (2-10 rerun 2 review patch items resolved: 5 items closed; status set to review)
+#   (2-10 rerun review left 4 patch findings as action items; status set to in-progress)
+#   (2-10 rerun review patch items resolved: 10 items closed; status set to review)
+#   (2-10 code review left 11 patch findings as action items; status set to in-progress)
 #   (2-9 rerun 5 code review clean; status set to done)
 #   (2-9 rerun 4 review patch items resolved: 3 items closed; status set to review)
 #   (2-9 rerun 4 review left 3 patch findings as action items; status set to in-progress)
@@ -199,7 +208,7 @@ development_status:
   2-7-implement-tabstrip-component-with-arrow-key-navigation: done
   2-8-project-create-form-pm-admin: done
   2-9-project-list-ag-grid-with-server-side-row-model: done
-  2-10-compliance-dashboard-with-portfolio-tiles: ready-for-dev
+  2-10-compliance-dashboard-with-portfolio-tiles: done
   2-11-project-detail-anchor-screen-with-header-strip-tabstrip-and-entityrail: backlog
   2-12-place-on-hold-and-resume-transitions-with-three-region-oob-orchestration: backlog
   2-13-project-audit-log-tab: backlog

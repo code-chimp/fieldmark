@@ -32,8 +32,8 @@ def test_get_badge_token_empty_string_returns_unknown_string(caplog):
 
 
 @pytest.mark.django_db
-def test_home_page_no_role_renders_badge_unknown():
-    """User with no group assignment gets badge-unknown in the rendered home page."""
+def test_home_page_no_role_redirects_to_dashboard():
+    """Authenticated users land on the dashboard route via home redirect."""
     from django.contrib.auth.models import User
     from django.test import Client
 
@@ -42,7 +42,5 @@ def test_home_page_no_role_renders_badge_unknown():
     client.force_login(user)
     resp = client.get("/")
 
-    assert resp.status_code == 200
-    html = resp.content.decode()
-    assert "badge-unknown" in html, "user with no role must render badge-unknown"
-    assert "badge-neutral" not in html, "unknown token must not silently fallback to neutral"
+    assert resp.status_code == 302
+    assert resp["Location"] == "/dashboard"

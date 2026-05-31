@@ -1,3 +1,14 @@
+## Deferred from: code review rerun of 2-10-compliance-dashboard-with-portfolio-tiles.md (2026-05-31)
+
+- **AG Grid `detail` mode silently drops row-click when `data-grid-target` is absent** — the `if (target)` guard in `ag-grid-panel.js` silently no-ops when `data-grid-target` is missing, with no `console.warn`. This is pre-existing behavior from Story 2.9. Add a console warning in the `else` branch when a future story modifies this file.
+- **Go nil-pool pattern prevents authorized-200 integration test for `GET /dashboard`** — the `Pool: nil` test stub used in Go handler tests cannot reach `readStats`; an authorized-role 200 response is covered by the template test only. Address when the Go test harness gains a real Postgres pool.
+
+## Deferred from: code review of 2-10-compliance-dashboard-with-portfolio-tiles.md (2026-05-31)
+
+- **Go home chrome tests exercise dead test fixture** — `buildHomeApp` in `home_test.go` wires `pages/home` rendering rather than the redirect; tests pass but do not exercise the production `/` route. Refactoring the Go home test suite to use the real router is a larger task; address when the home-page test architecture is revisited.
+- **Go nil-pool `/dashboard` branch returns empty HTTP 200** — `main.go` stub wires a no-op handler for `GET /dashboard` when `pool == nil`, returning 200 with no body. Consistent with the project's existing no-pool stub pattern for other routes; address if the stub-mode UX becomes a concern.
+- **`make parity` route-dump check is a no-op** — the parity tooling was not scaffolded (Story 1.3 gap); `GET /dashboard` cannot be verified in all three stack route dumps until the tool lands.
+
 ## Deferred from: Story 2.7 — TabStrip component (2026-05-30)
 
 - **Story 2.7-followup — TabStrip badge semantic monoculture**: The badge `aria-label` is hard-coded to `"<count> unread"`. If a future consumer needs a different semantic (e.g., a "high priority count" badge), the wrapper needs an additional `badge_aria_template` prop per stack. Currently deferred; add when a non-unread-count consumer lands. Track: add `badge_aria_template: string?` prop to all three stack wrappers and the canonical fixture.

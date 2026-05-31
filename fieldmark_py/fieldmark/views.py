@@ -1,8 +1,11 @@
 from dataclasses import dataclass
+from datetime import UTC, datetime, timedelta
 
 from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_not_required
+from django.db import connection
+from django.db import models
 from django.http import (
     HttpRequest,
     HttpResponse,
@@ -13,7 +16,11 @@ from django.shortcuts import redirect, render
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_http_methods, require_POST
 
-from fieldmark.roles import LABELS, Role, get_badge_token
+from fieldmark.authz import can, register_action
+from fieldmark.roles import Role
+from projects.models import Project, ProjectStatus
+
+register_action("dashboard.view", Role.ADMIN, Role.COMPLIANCE_OFFICER, Role.INSPECTOR, Role.SITE_SUPERVISOR, Role.EXECUTIVE)
 
 _ALLOWED_THEMES = {"system", "light", "dark"}
 
@@ -82,30 +89,83 @@ def logout_view(request: HttpRequest) -> HttpResponse:
 
 
 def home(request: HttpRequest) -> HttpResponse:
-    # Two-key selection: prefer canonical roles over unknown ones so a user with
-    # both a canonical group (e.g. COMPLIANCE_OFFICER) and an unknown group
-    # (e.g. ANALYST) always displays the correct canonical badge. A pure lexical
-    # sort lets "ANALYST" outrank "COMPLIANCE_OFFICER" → badge-unknown regression.
-    # Within each tier (canonical / unknown), names are sorted alphabetically for
-    # stable selection. The warning branch in get_badge_token still fires when the
-    # selected role_name is unknown (i.e., the user has no canonical group at all).
-    all_names = list(request.user.groups.values_list("name", flat=True))
-    canonical_set = {r.value for r in Role}
-    canonical_sorted = sorted(n for n in all_names if n in canonical_set)
-    unknown_sorted = sorted(n for n in all_names if n not in canonical_set)
-    role_name = canonical_sorted[0] if canonical_sorted else (unknown_sorted[0] if unknown_sorted else "")
-    try:
-        role: Role | None = Role(role_name)
-    except ValueError:
-        role = None
-    return render(
-        request,
-        "pages/home.html",
-        {
-            "role_label": LABELS[role] if role is not None else "",
-            "role_badge_token": get_badge_token(role_name) if role_name else "unknown",
-        },
+    return redirect("/dashboard")
+
+
+def dashboard(request: HttpRequest) -> HttpResponse:
+    if not can(request.user, "dashboard.view"):
+        return HttpResponse("You do not have permission to access this page.", status=403)
+
+    portfolio_avg = Project.objects.exclude(status=ProjectStatus.CLOSED).aggregate(v=models.Avg("compliance_score"))["v"]
+    portfolio_score = None if portfolio_avg is None else round(float(portfolio_avg))
+
+    project_count = Project.objects.count()
+    active_count = Project.objects.filter(status=ProjectStatus.ACTIVE).count()
+
+    now_utc = datetime.now(UTC)
+    week_start = datetime.combine((now_utc - timedelta(days=now_utc.weekday())).date(), datetime.min.time(), tzinfo=UTC)
+    week_end = week_start + timedelta(days=7)
+
+    with connection.cursor() as cur:
+        cur.execute("SELECT count(*) FROM domain.violation")
+        violation_count = cur.fetchone()[0]
+        cur.execute("""SELECT severity, count(*) FROM domain.violation
+            WHERE status IN ('Open','InProgress') AND due_at < now()
+            GROUP BY severity""")
+        severity_counts = {row[0]: row[1] for row in cur.fetchall()}
+        overdue_total = sum(severity_counts.values())
+        cur.execute("SELECT count(*) FROM domain.inspection")
+        inspection_count = cur.fetchone()[0]
+        cur.execute(
+            """SELECT count(*) FROM domain.inspection
+            WHERE scheduled_for >= %s
+            AND scheduled_for < %s""",
+            [week_start, week_end],
+        )
+        week_count = cur.fetchone()[0]
+
+    overdue_violations = None if violation_count == 0 else overdue_total
+    inspections_week = None if inspection_count == 0 else week_count
+    breakdown_parts = []
+    for label in ("Critical", "High", "Medium", "Low"):
+        count = severity_counts.get(label, 0)
+        if count > 0:
+            breakdown_parts.append(f"{count} {label}")
+    overdue_breakdown = "" if overdue_violations in (None, 0) else ", ".join(breakdown_parts)
+    context = dashboard_context_from_raw(
+        portfolio_score=portfolio_score,
+        project_count=project_count,
+        active_count=active_count,
+        violation_count=violation_count,
+        overdue_total=overdue_total,
+        overdue_breakdown=overdue_breakdown,
+        inspection_count=inspection_count,
+        week_count=week_count,
     )
+    return render(request, "dashboard/index.html", context)
+
+
+def dashboard_context_from_raw(
+    *,
+    portfolio_score: int | None,
+    project_count: int,
+    active_count: int,
+    violation_count: int,
+    overdue_total: int,
+    overdue_breakdown: str,
+    inspection_count: int,
+    week_count: int,
+) -> dict[str, object]:
+    active_projects = None if project_count == 0 else active_count
+    overdue_violations = None if violation_count == 0 else overdue_total
+    inspections_week = None if inspection_count == 0 else week_count
+    return {
+        "portfolio_score": portfolio_score,
+        "overdue_violations": overdue_violations,
+        "overdue_breakdown": "" if overdue_violations in (None, 0) else overdue_breakdown,
+        "active_projects": active_projects,
+        "inspections_week": inspections_week,
+    }
 
 
 def privacy(request):

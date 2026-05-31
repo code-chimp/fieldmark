@@ -197,7 +197,7 @@ Root `CLAUDE.md` covers the cross-stack rules (no CQRS/MediatR, no repositories,
 
 The Home page lives at `FieldMark.Web/Pages/Index.cshtml` (`IndexModel` in `Index.cshtml.cs`) and is served at `/`.
 
-**This page is intentionally empty in Epic 1.** It renders `<h1>FieldMark</h1>`, the role badge, and a placeholder paragraph only. Story 2.10 replaces it with the real Compliance Dashboard.
+**Story 2.10 update:** `GET /` now redirects to `GET /dashboard` for authenticated users. The Compliance Dashboard is the landing page.
 
 **Chrome composition order (AC #2, Story 1.13 — all three stacks must match):**
 `<a class="fm-brand-lockup">` → `<div class="ml-auto flex items-center gap-3">` containing `_ThemeToggle` (3-button pill) then `_AvatarMenu`. Any new chrome control added to any stack must be added to all three in the same commit (FR58).
