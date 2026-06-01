@@ -63,6 +63,11 @@ func resetForTests() {
 	actionRoleMap = map[string]map[domain.Role]struct{}{}
 }
 
+// ResetForTests clears the action policy map for external package tests.
+func ResetForTests() {
+	resetForTests()
+}
+
 // RequireRole returns a middleware that 403s if the authenticated actor does
 // not hold the given conceptual role. Unauthenticated actors are redirected to
 // /login. Use the domain.Role* constants for the role argument.

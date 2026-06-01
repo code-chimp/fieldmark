@@ -51,6 +51,22 @@ public sealed class CanTests : IDisposable
         DomainPolicies.Can(admin, "test.unmapped").Should().BeFalse();
     }
 
+    [Theory]
+    [InlineData("project.place_on_hold")]
+    [InlineData("project.resume")]
+    [InlineData("project.close")]
+    public void ProjectActions_AreAdminOnly(string action)
+    {
+        DomainPolicies.RegisterAction(action, Role.Admin);
+        var admin = BuildPrincipal("ADMIN");
+        var executive = BuildPrincipal("EXECUTIVE");
+        var inspector = BuildPrincipal("INSPECTOR");
+
+        DomainPolicies.Can(admin, action).Should().BeTrue();
+        DomainPolicies.Can(executive, action).Should().BeFalse();
+        DomainPolicies.Can(inspector, action).Should().BeFalse();
+    }
+
     private static ClaimsPrincipal BuildPrincipal(string role)
     {
         var claims = new[]

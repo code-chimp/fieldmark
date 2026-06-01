@@ -1,0 +1,28 @@
+{{ define "project_detail_summary_panel" -}}
+<div id="project-detail-tab-content" role="tabpanel" aria-labelledby="tab-summary" tabindex="-1" autofocus>
+  <dl>
+    <dt>Code</dt><dd>{{.Summary.Code}}</dd>
+    <dt>Name</dt><dd>{{.Summary.Name}}</dd>
+    <dt>Start date</dt><dd>{{.Summary.StartDate}}</dd>
+    <dt>Target completion date</dt><dd>{{.Summary.TargetDate}}</dd>
+    <dt>Description</dt><dd>{{.Summary.Description}}</dd>
+    <dt>Assigned trades</dt><dd>{{if .Summary.TradeNames}}<ul>{{range .Summary.TradeNames}}<li>{{.}}</li>{{end}}</ul>{{else}}No trades assigned{{end}}</dd>
+    <dt>Assigned inspectors</dt><dd>{{if .Summary.InspectorNames}}<ul>{{range .Summary.InspectorNames}}<li>{{.}}</li>{{end}}</ul>{{else}}No inspectors assigned{{end}}</dd>
+  </dl>
+  <div class="mt-4 flex gap-2">
+    {{template "action_button" .Summary.PlaceOnHold}}
+    {{template "action_button" .Summary.Resume}}
+    {{template "action_button" .Summary.Close}}
+  </div>
+</div>
+{{- end }}
+
+{{ define "project_detail_inspections_panel" -}}
+<div id="project-detail-tab-content" role="tabpanel" aria-labelledby="tab-inspections" tabindex="-1" autofocus><div class="alert alert-info" role="status">Inspections appear here once the inspection workflow lands.</div></div>
+{{- end }}
+{{ define "project_detail_violations_panel" -}}
+<div id="project-detail-tab-content" role="tabpanel" aria-labelledby="tab-violations" tabindex="-1" autofocus><div class="alert alert-info" role="status">Violations appear here once the violation workflow lands.</div></div>
+{{- end }}
+{{ define "project_detail_audit_panel" -}}
+<div id="project-detail-tab-content" role="tabpanel" aria-labelledby="tab-audit" tabindex="-1" autofocus><div class="alert alert-info" role="status">Audit entries appear here once the audit tab story lands.</div></div>
+{{- end }}

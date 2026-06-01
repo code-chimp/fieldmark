@@ -130,6 +130,9 @@ func registerRoutes(app *fiber.App, pool *pgxpool.Pool) {
 		domain.RoleAdmin, domain.RoleComplianceOfficer, domain.RoleInspector,
 		domain.RoleSiteSupervisor, domain.RoleExecutive,
 	)
+	auth.RegisterAction("project.place_on_hold", domain.RoleAdmin)
+	auth.RegisterAction("project.resume", domain.RoleAdmin)
+	auth.RegisterAction("project.close", domain.RoleAdmin)
 	auth.RegisterAction("dashboard.view",
 		domain.RoleAdmin, domain.RoleComplianceOfficer, domain.RoleInspector,
 		domain.RoleSiteSupervisor, domain.RoleExecutive,
@@ -198,9 +201,12 @@ func registerRoutes(app *fiber.App, pool *pgxpool.Pool) {
 		app.Post("/grid/projects", auth.RequireAuth(), gridProjects.PostGridProjects)
 
 		projectsDetail := &handlers.ProjectsDetailHandlers{
+			Pool: pool,
 			Projects: postgres.NewProjectStore(pool),
+			Reference: postgres.NewReferenceStore(pool),
 		}
 		app.Get("/projects/:id", auth.RequireAuth(), projectsDetail.GetProjectsDetail)
+		app.Get("/projects/:id/tabs/:tab", auth.RequireAuth(), projectsDetail.GetProjectsDetail)
 	} else {
 		app.Get("/admin/reference", auth.RequireAuth(), func(c fiber.Ctx) error { return nil })
 		app.Get("/admin/reference/trade-types", auth.RequireAuth(), func(c fiber.Ctx) error { return nil })
@@ -214,6 +220,7 @@ func registerRoutes(app *fiber.App, pool *pgxpool.Pool) {
 		app.Get("/projects", auth.RequireAuth(), noop)
 		app.Post("/grid/projects", auth.RequireAuth(), noop)
 		app.Get("/projects/:id", auth.RequireAuth(), noop)
+		app.Get("/projects/:id/tabs/:tab", auth.RequireAuth(), noop)
 	}
 
 	// POST /preferences/theme — exempt from RequireAuth so the toggle works on /login.

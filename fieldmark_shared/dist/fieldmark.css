@@ -3758,8 +3758,16 @@
     inset-inline-start: var(--spacing);
   }
 
+  .start\! {
+    inset-inline-start: var(--spacing) !important;
+  }
+
   .end {
     inset-inline-end: var(--spacing);
+  }
+
+  .end\! {
+    inset-inline-end: var(--spacing) !important;
   }
 
   .container {
@@ -3788,6 +3796,10 @@
 
   .mt-1 {
     margin-top: calc(var(--spacing) * 1);
+  }
+
+  .mt-4 {
+    margin-top: calc(var(--spacing) * 4);
   }
 
   .mb-1 {
@@ -3830,12 +3842,20 @@
     display: none !important;
   }
 
+  .inline {
+    display: inline;
+  }
+
   .table {
     display: table;
   }
 
   .w-full {
     width: 100%;
+  }
+
+  .flex-shrink {
+    flex-shrink: 1;
   }
 
   .flex-grow {
@@ -3850,6 +3870,10 @@
     resize: both;
   }
 
+  .grid-cols-1 {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
+
   .flex-wrap {
     flex-wrap: wrap;
   }
@@ -3860,6 +3884,10 @@
 
   .gap-3 {
     gap: calc(var(--spacing) * 3);
+  }
+
+  .gap-4 {
+    gap: calc(var(--spacing) * 4);
   }
 
   .space-y-4 {
@@ -3961,7 +3989,29 @@
     font-style: italic;
   }
 
-  .shadow, .shadow-sm {
+  .italic\! {
+    font-style: italic !important;
+  }
+
+  .underline {
+    text-decoration-line: underline;
+  }
+
+  .underline\! {
+    text-decoration-line: underline !important;
+  }
+
+  .shadow {
+    --tw-shadow: 0 1px 3px 0 var(--tw-shadow-color, #0000001a), 0 1px 2px -1px var(--tw-shadow-color, #0000001a);
+    box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+  }
+
+  .shadow\! {
+    --tw-shadow: 0 1px 3px 0 var(--tw-shadow-color, #0000001a), 0 1px 2px -1px var(--tw-shadow-color, #0000001a) !important;
+    box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow) !important;
+  }
+
+  .shadow-sm {
     --tw-shadow: 0 1px 3px 0 var(--tw-shadow-color, #0000001a), 0 1px 2px -1px var(--tw-shadow-color, #0000001a);
     box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
   }
@@ -3971,8 +4021,32 @@
     outline-width: 1px;
   }
 
+  .outline\! {
+    outline-style: var(--tw-outline-style) !important;
+    outline-width: 1px !important;
+  }
+
+  .blur {
+    --tw-blur: blur(8px);
+    filter: var(--tw-blur, ) var(--tw-brightness, ) var(--tw-contrast, ) var(--tw-grayscale, ) var(--tw-hue-rotate, ) var(--tw-invert, ) var(--tw-saturate, ) var(--tw-sepia, ) var(--tw-drop-shadow, );
+  }
+
+  .grayscale {
+    --tw-grayscale: grayscale(100%);
+    filter: var(--tw-blur, ) var(--tw-brightness, ) var(--tw-contrast, ) var(--tw-grayscale, ) var(--tw-hue-rotate, ) var(--tw-invert, ) var(--tw-saturate, ) var(--tw-sepia, ) var(--tw-drop-shadow, );
+  }
+
+  .sepia {
+    --tw-sepia: sepia(100%);
+    filter: var(--tw-blur, ) var(--tw-brightness, ) var(--tw-contrast, ) var(--tw-grayscale, ) var(--tw-hue-rotate, ) var(--tw-invert, ) var(--tw-saturate, ) var(--tw-sepia, ) var(--tw-drop-shadow, );
+  }
+
   .filter {
     filter: var(--tw-blur, ) var(--tw-brightness, ) var(--tw-contrast, ) var(--tw-grayscale, ) var(--tw-hue-rotate, ) var(--tw-invert, ) var(--tw-saturate, ) var(--tw-sepia, ) var(--tw-drop-shadow, );
+  }
+
+  .filter\! {
+    filter: var(--tw-blur, ) var(--tw-brightness, ) var(--tw-contrast, ) var(--tw-grayscale, ) var(--tw-hue-rotate, ) var(--tw-invert, ) var(--tw-saturate, ) var(--tw-sepia, ) var(--tw-drop-shadow, ) !important;
   }
 
   .transition {
@@ -3989,6 +4063,18 @@
   .ease-out {
     --tw-ease: var(--ease-out);
     transition-timing-function: var(--ease-out);
+  }
+
+  .md\:grid-cols-2 {
+    @media (width >= 48rem) {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  .xl\:grid-cols-4 {
+    @media (width >= 80rem) {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
   }
 }
 
@@ -4350,6 +4436,20 @@ body {
     position: sticky;
     top: 5rem;
     overflow-y: auto;
+  }
+}
+
+.project-detail-grid {
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  display: grid;
+}
+
+@media (width >= 1280px) {
+  .project-detail-grid {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    align-items: start;
+    gap: 1.5rem;
   }
 }
 

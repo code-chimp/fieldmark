@@ -21,6 +21,23 @@ public class Project
     private Project() { }
 
     /// <summary>
+    /// Status-only gate for Story 2.11 action affordances.
+    /// Epic 6 adds additional closure gate checks (open violations / required inspections).
+    /// </summary>
+    public bool CanPlaceOnHold() => Status == ProjectStatus.Active;
+
+    /// <summary>
+    /// Status-only gate for Story 2.11 action affordances.
+    /// </summary>
+    public bool CanResume() => Status == ProjectStatus.OnHold;
+
+    /// <summary>
+    /// Status-only gate for Story 2.11 action affordances.
+    /// Epic 6 adds additional closure gate checks (open violations / required inspections).
+    /// </summary>
+    public bool CanClose() => Status == ProjectStatus.Active;
+
+    /// <summary>
     /// Creates a new Project with its join collections. Returns a
     /// <see cref="CreatedProject"/> wrapper so the handler can persist all
     /// four row-sets without guessing IDs.

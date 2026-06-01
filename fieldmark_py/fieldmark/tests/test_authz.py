@@ -47,3 +47,24 @@ def test_can_unknown_action_returns_false():
     user = User.objects.create_user(username="test_admin_unknown")
     user.groups.set([admin_group])
     assert can(user, "test.unmapped") is False
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("action", ["project.place_on_hold", "project.resume", "project.close"])
+def test_project_actions_admin_only(action: str):
+    register_action(action, Role.ADMIN)
+
+    admin_group, _ = Group.objects.get_or_create(name="ADMIN")
+    executive_group, _ = Group.objects.get_or_create(name="EXECUTIVE")
+    inspector_group, _ = Group.objects.get_or_create(name="INSPECTOR")
+
+    admin = User.objects.create_user(username=f"admin_{action}")
+    executive = User.objects.create_user(username=f"exec_{action}")
+    inspector = User.objects.create_user(username=f"insp_{action}")
+    admin.groups.set([admin_group])
+    executive.groups.set([executive_group])
+    inspector.groups.set([inspector_group])
+
+    assert can(admin, action) is True
+    assert can(executive, action) is False
+    assert can(inspector, action) is False

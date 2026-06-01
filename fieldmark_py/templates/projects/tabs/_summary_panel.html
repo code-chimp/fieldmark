@@ -1,0 +1,30 @@
+<div id="project-detail-tab-content" role="tabpanel" aria-labelledby="tab-summary" tabindex="-1" autofocus>
+  <dl>
+    <dt>Code</dt><dd>{{ project.code }}</dd>
+    <dt>Name</dt><dd>{{ project.name }}</dd>
+    <dt>Start date</dt><dd>{{ project.start_date }}</dd>
+    <dt>Target completion date</dt><dd>{% if project.target_completion_date %}{{ project.target_completion_date }}{% else %}—{% endif %}</dd>
+    <dt>Description</dt><dd>{% if project.description and project.description.strip %}{{ project.description }}{% else %}—{% endif %}</dd>
+    <dt>Assigned trades</dt>
+    <dd>
+      {% if trade_names %}
+      <ul>{% for trade_name in trade_names %}<li>{{ trade_name }}</li>{% endfor %}</ul>
+      {% else %}
+      No trades assigned
+      {% endif %}
+    </dd>
+    <dt>Assigned inspectors</dt>
+    <dd>
+      {% if inspector_names %}
+      <ul>{% for inspector_name in inspector_names %}<li>{{ inspector_name }}</li>{% endfor %}</ul>
+      {% else %}
+      No inspectors assigned
+      {% endif %}
+    </dd>
+  </dl>
+  <div class="mt-4 flex gap-2">
+    {% include "components/_action_button.html" with id="place-on-hold-btn" permission=can_place_on_hold state_allows=state_can_place_on_hold label="Place on Hold" hx_post="/projects/{{ project.id }}/place-on-hold" hx_target="#project-detail" disabled_reason="Project is already on hold" %}
+    {% include "components/_action_button.html" with id="resume-btn" permission=can_resume state_allows=state_can_resume label="Resume" hx_post="/projects/{{ project.id }}/resume" hx_target="#project-detail" disabled_reason="Project is not on hold" %}
+    {% include "components/_action_button.html" with id="close-btn" permission=can_close state_allows=state_can_close label="Close" hx_post="/projects/{{ project.id }}/close" hx_target="#project-detail" disabled_reason="Only active projects can be closed" %}
+  </div>
+</div>

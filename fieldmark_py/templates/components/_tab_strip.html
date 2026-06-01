@@ -4,6 +4,7 @@
   aria-label="{{ aria_label|required_prop:"aria_label" }}"
   class="tab-strip"
   data-tabstrip
+  {% if oob %}hx-swap-oob="outerHTML"{% endif %}
   id="{{ id }}"
   role="tablist"
 >{% else %}<nav

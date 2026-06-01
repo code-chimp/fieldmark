@@ -50,7 +50,12 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-05-11
-last_updated: 2026-05-31
+last_updated: 2026-06-01
+#   (2-11 round 3 review: 1 patch applied by reviewer; all ACs satisfied; status set to done)
+#   (2-11 round 2 review found 1 decision + 4 patch items; status set to in-progress)
+#   (2-11 round 1 review found 1 decision + 18 patch items; status set to in-progress)
+#   (2-12 story created by create-story workflow; status set to ready-for-dev)
+#   (2-11 story created by create-story workflow; status set to ready-for-dev)
 #   (2-14 round 3 rerun code review clean; status set to done)
 #   (2-14 round 2 review patch items resolved; status set to review)
 #   (2-14 round 2 review found 2 patch items; status set to in-progress)
@@ -214,8 +219,8 @@ development_status:
   2-8-project-create-form-pm-admin: done
   2-9-project-list-ag-grid-with-server-side-row-model: done
   2-10-compliance-dashboard-with-portfolio-tiles: done
-  2-11-project-detail-anchor-screen-with-header-strip-tabstrip-and-entityrail: backlog
-  2-12-place-on-hold-and-resume-transitions-with-three-region-oob-orchestration: backlog
+  2-11-project-detail-anchor-screen-with-header-strip-tabstrip-and-entityrail: done
+  2-12-place-on-hold-and-resume-transitions-with-three-region-oob-orchestration: ready-for-dev
   2-13-project-audit-log-tab: backlog
   2-14-reference-data-read-pages-for-administrator: done
   epic-2-retrospective: optional

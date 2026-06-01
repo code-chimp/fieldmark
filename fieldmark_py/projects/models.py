@@ -58,6 +58,16 @@ class Project(models.Model):
     def __str__(self) -> str:
         return f"{self.code} ({self.name})"
 
+    def can_place_on_hold(self) -> bool:
+        return self.status == ProjectStatus.ACTIVE
+
+    def can_resume(self) -> bool:
+        return self.status == ProjectStatus.ON_HOLD
+
+    def can_close(self) -> bool:
+        # Status-only gate for Story 2.11; Epic 6 adds additional closure checks.
+        return self.status == ProjectStatus.ACTIVE
+
     @classmethod
     def create(
         cls,

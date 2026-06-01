@@ -44,6 +44,27 @@
 
     private static string TabHxTarget(string hxTarget) =>
         hxTarget.StartsWith("#") ? hxTarget : "#" + hxTarget;
+
+    private static bool HasProperty(object model, string propertyName)
+    {
+        if (model is System.Collections.Generic.IDictionary<string, object> dict)
+            return dict.ContainsKey(propertyName);
+        return model.GetType().GetProperty(propertyName) is not null;
+    }
+
+    private static string? OptionalString(object model, string propertyName)
+    {
+        if (!HasProperty(model, propertyName))
+            return null;
+        if (model is System.Collections.Generic.IDictionary<string, object> dict)
+        {
+            return dict.TryGetValue(propertyName, out var value)
+                ? S(value)
+                : null;
+        }
+        var prop = model.GetType().GetProperty(propertyName);
+        return prop is null ? null : S(prop.GetValue(model));
+    }
 }
 @{
     var ariaLabel = S(Model.AriaLabel);
@@ -53,6 +74,7 @@
         );
 
     string? navId = null;
+    string? hxSwapOob = null;
     try { navId = Model.Id as string; } catch (Microsoft.CSharp.RuntimeBinder.RuntimeBinderException) { }
     if (string.IsNullOrEmpty(navId))
     {
@@ -66,6 +88,9 @@
         }
         catch { navId = null; }
     }
+    hxSwapOob = OptionalString(Model, "HxSwapOob");
+    if (string.IsNullOrWhiteSpace(hxSwapOob))
+        hxSwapOob = null;
 
     var tabs = ExtractTabs(Model);
     int activeIndex = 0;
@@ -85,6 +110,7 @@
   aria-label="@ariaLabel"
   class="tab-strip"
   data-tabstrip
+  @if (hxSwapOob is not null) { <text>hx-swap-oob="@hxSwapOob"</text> }
   id="@navId"
   role="tablist"
 >
@@ -114,6 +140,7 @@ else
   aria-label="@ariaLabel"
   class="tab-strip"
   data-tabstrip
+  @if (hxSwapOob is not null) { <text>hx-swap-oob="@hxSwapOob"</text> }
   role="tablist"
 >
 @for (int i = 0; i < tabs.Count; i++) {

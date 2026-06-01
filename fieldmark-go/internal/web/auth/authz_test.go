@@ -62,3 +62,26 @@ func TestCan_UnknownAction_ReturnsFalse(t *testing.T) {
 		t.Fatal("Can: expected false for action not in the map")
 	}
 }
+
+func TestProjectActions_AdminOnly(t *testing.T) {
+	resetForTests()
+	for _, action := range []string{"project.place_on_hold", "project.resume", "project.close"} {
+		RegisterAction(action, domain.RoleAdmin)
+	}
+
+	admin := &app.Actor{ID: uuid.New(), Username: "aisha", Role: string(domain.RoleAdmin)}
+	executive := &app.Actor{ID: uuid.New(), Username: "eli", Role: string(domain.RoleExecutive)}
+	inspector := &app.Actor{ID: uuid.New(), Username: "ravi", Role: string(domain.RoleInspector)}
+
+	for _, action := range []string{"project.place_on_hold", "project.resume", "project.close"} {
+		if !Can(admin, action, uuid.Nil) {
+			t.Fatalf("expected admin to have %s", action)
+		}
+		if Can(executive, action, uuid.Nil) {
+			t.Fatalf("expected executive to lack %s", action)
+		}
+		if Can(inspector, action, uuid.Nil) {
+			t.Fatalf("expected inspector to lack %s", action)
+		}
+	}
+}

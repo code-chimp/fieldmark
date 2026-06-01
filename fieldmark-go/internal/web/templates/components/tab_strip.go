@@ -32,6 +32,7 @@ type TabStripArgs struct {
 	AriaLabel   string // required — panics on execute if empty
 	Tabs        []TabSpec
 	ActiveIndex int
+	HxSwapOob   string
 }
 
 // TabTabindex returns "0" for the active tab and "-1" for all others.

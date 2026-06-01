@@ -1,0 +1,5 @@
+{{if eq .PanelTemplate "project_detail_summary_panel"}}{{template "project_detail_summary_panel" .}}{{end}}
+{{if eq .PanelTemplate "project_detail_inspections_panel"}}{{template "project_detail_inspections_panel" .}}{{end}}
+{{if eq .PanelTemplate "project_detail_violations_panel"}}{{template "project_detail_violations_panel" .}}{{end}}
+{{if eq .PanelTemplate "project_detail_audit_panel"}}{{template "project_detail_audit_panel" .}}{{end}}
+{{template "tab_strip" .TabOob}}

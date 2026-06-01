@@ -1,0 +1,15 @@
+<div id="project-detail">
+<section id="project-header-strip" class="mb-4">
+  <h1>{{ project.code }} — {{ project.name }}</h1>
+  {% include "components/_status_badge.html" with entity=status_entity value=status_value severity="" %}
+  {% include "components/_compliance_tile.html" with score=project.compliance_score label="Compliance" id="compliance-tile" %}
+</section>
+
+<section class="project-detail-grid">
+  <div class="tabs">
+    {% include "components/_tab_strip.html" with id="project-detail-tabstrip" aria_label="Project Detail Tabs" tabs=tabs active_index=0 %}
+    {% include "projects/tabs/_summary_panel.html" %}
+  </div>
+  {% include "components/_entity_rail.html" with id="violation-detail" entity_type_label="Violation" entity_loaded=False body_slot=None footer_slot=None %}
+</section>
+</div>

@@ -5,6 +5,7 @@
   aria-label="{{ tabRequired "AriaLabel" .AriaLabel }}"
   class="tab-strip"
   data-tabstrip
+  {{- if .HxSwapOob }} hx-swap-oob="{{ .HxSwapOob }}"{{ end }}
   id="{{ .ID }}"
   role="tablist"
 >
@@ -13,6 +14,7 @@
   aria-label="{{ tabRequired "AriaLabel" .AriaLabel }}"
   class="tab-strip"
   data-tabstrip
+  {{- if .HxSwapOob }} hx-swap-oob="{{ .HxSwapOob }}"{{ end }}
   role="tablist"
 >
 {{- end }}

@@ -12,7 +12,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError, transaction
 from django.http import HttpRequest, HttpResponse, HttpResponseForbidden
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.views.decorators.http import require_GET, require_POST
 
 from audit.actions import AuditAction
@@ -30,6 +30,9 @@ User = get_user_model()
 # Register the project.create action for ADMIN role (Story 2.8).
 register_action("project.create", Role.ADMIN)
 # project.read registered in grid/views.py at import time (Story 2.9).
+register_action("project.place_on_hold", Role.ADMIN)
+register_action("project.resume", Role.ADMIN)
+register_action("project.close", Role.ADMIN)
 
 
 def _get_reference_data():
@@ -224,16 +227,114 @@ def project_create_post(request: HttpRequest) -> HttpResponse:
     return response
 
 
+def _project_tabs(project_id: uuid.UUID) -> list[dict[str, str]]:
+    base = f"/projects/{project_id}/tabs"
+    return [
+        {"id": "tab-summary", "label": "Summary", "hx_get": f"{base}/summary", "hx_target": "#project-detail-tab-content", "badge_count": None},
+        {"id": "tab-inspections", "label": "Inspections", "hx_get": f"{base}/inspections", "hx_target": "#project-detail-tab-content", "badge_count": None},
+        {"id": "tab-violations", "label": "Violations", "hx_get": f"{base}/violations", "hx_target": "#project-detail-tab-content", "badge_count": None},
+        {"id": "tab-audit", "label": "Audit", "hx_get": f"{base}/audit", "hx_target": "#project-detail-tab-content", "badge_count": None},
+    ]
+
+
+def _actor_display_map(user_ids: list[uuid.UUID]) -> dict[uuid.UUID, str]:
+    if not user_ids:
+        return {}
+    rows = (
+        DevUserUuid.objects.filter(uuid__in=user_ids)
+        .select_related("user")
+    )
+    out: dict[uuid.UUID, str] = {}
+    for row in rows:
+        full = row.user.get_full_name() if hasattr(row.user, "get_full_name") else ""
+        out[row.uuid] = full or row.user.username
+    return out
+
+
+def _build_project_detail_context(request: HttpRequest, project: Project) -> dict[str, object]:
+    scope_ids = list(project.trade_scopes.values_list("trade_type_id", flat=True))
+    trade_rows = TradeType.objects.filter(id__in=scope_ids)
+    trade_by_id = {t.id: t for t in trade_rows}
+    trade_names = [
+        trade_by_id[sid].name if trade_by_id[sid].active else f"{trade_by_id[sid].name} (inactive)"
+        for sid in scope_ids
+        if sid in trade_by_id
+    ]
+
+    inspector_ids = list(project.inspector_assignments.values_list("user_id", flat=True))
+    display_map = _actor_display_map(inspector_ids)
+    inspector_names = [display_map[iid] for iid in inspector_ids if iid in display_map]
+
+    can_hold = can(request.user, "project.place_on_hold")
+    can_resume = can(request.user, "project.resume")
+    can_close = can(request.user, "project.close")
+
+    return {
+        "project": project,
+        "trade_names": trade_names,
+        "inspector_names": inspector_names,
+        "tabs": _project_tabs(project.id),
+        "status_entity": "Project",
+        "status_value": project.status,
+        "can_place_on_hold": can_hold,
+        "can_resume": can_resume,
+        "can_close": can_close,
+        "state_can_place_on_hold": project.can_place_on_hold(),
+        "state_can_resume": project.can_resume(),
+        "state_can_close": project.can_close(),
+    }
+
+
+def _load_project_or_404(id: uuid.UUID) -> Project | None:
+    return (
+        Project.objects
+        .filter(pk=id)
+        .prefetch_related("trade_scopes", "inspector_assignments")
+        .first()
+    )
+
+
 @require_GET
 @login_required
-def project_detail_stub(request: HttpRequest, id: uuid.UUID) -> HttpResponse:
-    """GET /projects/<id> — minimal stub. Story 2.11 replaces this."""
-    try:
-        project = Project.objects.get(pk=id)
-    except Project.DoesNotExist:
+def project_detail(request: HttpRequest, id: uuid.UUID) -> HttpResponse:
+    if not can(request.user, "project.read"):
+        return HttpResponseForbidden("You do not have permission to access this page.")
+    project = _load_project_or_404(id)
+    if project is None:
         return HttpResponse("Not Found.", status=404)
+    context = _build_project_detail_context(request, project)
+    is_htmx = request.headers.get("HX-Request") == "true"
+    template = "projects/_detail_body.html" if is_htmx else "projects/detail.html"
+    return render(request, template, context)
 
-    return render(request, "projects/detail.html", {"project": project})
+
+def _render_tab_response(request: HttpRequest, id: uuid.UUID, active_index: int, panel_template: str) -> HttpResponse:
+    if not can(request.user, "project.read"):
+        return HttpResponseForbidden("You do not have permission to access this page.")
+    if request.headers.get("HX-Request") != "true":
+        return redirect(f"/projects/{id}")
+    project = _load_project_or_404(id)
+    if project is None:
+        return HttpResponse("Not Found.", status=404)
+    context = _build_project_detail_context(request, project)
+    context["active_index"] = active_index
+    context["panel_template"] = panel_template
+    return render(request, "projects/_tab_response.html", context)
+
+
+@require_GET
+@login_required
+def project_tab(request: HttpRequest, id: uuid.UUID, tab: str) -> HttpResponse:
+    key = (tab or "").strip().lower()
+    if key == "summary":
+        return _render_tab_response(request, id, 0, "projects/tabs/_summary_panel.html")
+    if key == "inspections":
+        return _render_tab_response(request, id, 1, "projects/tabs/_placeholder_inspections.html")
+    if key == "violations":
+        return _render_tab_response(request, id, 2, "projects/tabs/_placeholder_violations.html")
+    if key == "audit":
+        return _render_tab_response(request, id, 3, "projects/tabs/_placeholder_audit.html")
+    return HttpResponse("Not Found.", status=404)
 
 
 @require_GET

@@ -1,0 +1,47 @@
+@model FieldMark.Web.Pages.Projects.DetailModel
+<div id="project-detail-tab-content" role="tabpanel" aria-labelledby="tab-summary" tabindex="-1" autofocus>
+  <dl>
+    <dt>Code</dt><dd>@Model.Summary!.Code</dd>
+    <dt>Name</dt><dd>@Model.Summary!.Name</dd>
+    <dt>Start date</dt><dd>@Model.Summary!.StartDate</dd>
+    <dt>Target completion date</dt><dd>@(Model.Summary!.TargetCompletionDate?.ToString() ?? "—")</dd>
+    <dt>Description</dt><dd>@(string.IsNullOrWhiteSpace(Model.Summary!.Description) ? "—" : Model.Summary.Description)</dd>
+    <dt>Assigned trades</dt>
+    <dd>
+      @if (Model.Summary!.TradeNames.Count == 0)
+      {
+        <text>No trades assigned</text>
+      }
+      else
+      {
+        <ul>
+        @foreach (var trade in Model.Summary.TradeNames)
+        {
+          <li>@trade</li>
+        }
+        </ul>
+      }
+    </dd>
+    <dt>Assigned inspectors</dt>
+    <dd>
+      @if (Model.Summary!.InspectorNames.Count == 0)
+      {
+        <text>No inspectors assigned</text>
+      }
+      else
+      {
+        <ul>
+        @foreach (var inspector in Model.Summary.InspectorNames)
+        {
+          <li>@inspector</li>
+        }
+        </ul>
+      }
+    </dd>
+  </dl>
+  <div class="mt-4 flex gap-2">
+    @await Html.PartialAsync("Shared/_ActionButton", Model.Summary!.PlaceOnHold)
+    @await Html.PartialAsync("Shared/_ActionButton", Model.Summary!.Resume)
+    @await Html.PartialAsync("Shared/_ActionButton", Model.Summary!.Close)
+  </div>
+</div>

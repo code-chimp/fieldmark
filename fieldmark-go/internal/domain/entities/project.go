@@ -25,3 +25,18 @@ type Project struct {
 	CreatedAt            time.Time
 	UpdatedAt            time.Time
 }
+
+// CanPlaceOnHold is a status-only gate for Story 2.11 affordance rendering.
+func (p Project) CanPlaceOnHold() bool {
+	return p.Status == enums.ProjectStatusActive
+}
+
+// CanResume is a status-only gate for Story 2.11 affordance rendering.
+func (p Project) CanResume() bool {
+	return p.Status == enums.ProjectStatusOnHold
+}
+
+// CanClose is a status-only gate for Story 2.11; Epic 6 adds closure checks.
+func (p Project) CanClose() bool {
+	return p.Status == enums.ProjectStatusActive
+}

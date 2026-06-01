@@ -11,6 +11,31 @@ type StatusBadgeVM struct {
 	Label     string
 }
 
+// ResolveStatusBadge maps entity/value to the shared status badge presentation.
+func ResolveStatusBadge(entity, value string) StatusBadgeVM {
+	vm := StatusBadgeVM{
+		Entity:    entity,
+		Value:     value,
+		ClassName: "badge-unknown",
+		Label:     strings.TrimSpace(value),
+	}
+	switch strings.ToLower(strings.TrimSpace(entity)) {
+	case "project":
+		switch strings.ToLower(strings.TrimSpace(value)) {
+		case "active":
+			vm.ClassName = "badge-project-active"
+			vm.Label = "Active"
+		case "onhold", "on hold":
+			vm.ClassName = "badge-project-onhold"
+			vm.Label = "On Hold"
+		case "closed":
+			vm.ClassName = "badge-project-closed"
+			vm.Label = "Closed"
+		}
+	}
+	return vm
+}
+
 // InlineAlertVM is the data context for the inline_alert component template.
 type InlineAlertVM struct {
 	Severity   string

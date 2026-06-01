@@ -1,3 +1,31 @@
+## Deferred from: code review round 3 of 2-11-project-detail-anchor-screen-with-header-strip-tabstrip-and-entityrail.md (2026-06-01)
+
+- **D-2.11-R3-1 — Go status-mutation tests lack `t.Cleanup` on `stubProjectStatus`**: `TestGetProjectsDetail_AdminClosedAllButtonsDisabled` and related tests mutate `stubProjectStatus` after `makeProjectsDetailApp` without a `t.Cleanup`. Currently safe (sequential execution; `makeProjectsDetailApp` resets on entry). Address if `-shuffle` or `t.Parallel` is introduced.
+- **D-2.11-R3-2 — `.NET` Summary VM built before redirect check**: `OnGetAsync` loads the full project + trades + inspectors + auth users before the `if (!isHtmx && tab is not null) return Redirect(...)` guard fires. No correctness defect; wasted DB work on non-HTMX tab redirect. Refactor the load to happen after the redirect check if handler performance becomes a concern.
+- **D-2.11-R3-3 — 403 body is custom text, not canonical Story 1.11 403 page**: All three stacks return plain-text `"You do not have permission to access this page."` rather than the Story 1.11 canonical 403 HTML page. AC6 specifies HTTP 403 status code only; body shape is not AC-required. Consistent with prior story patterns. Align if a canonical 403 template is ever introduced.
+- **D-2.11-R3-4 — Django `{% include panel_template %}` variable path**: `_tab_response.html` uses `{% include panel_template %}` where `panel_template` is a view-set string literal. Safe today (never sourced from request input), but fragile if refactored. Add a code comment documenting "must always be a hardcoded literal" when next touching this template.
+- **D-2.11-R3-5 — Django `prefetch_related` bypassed by `.values_list()` in `_build_project_detail_context`**: `project.trade_scopes.values_list(...)` and `project.inspector_assignments.values_list(...)` create new querysets that bypass the `prefetch_related` cache — two extra DB hits per request. Fix: iterate `.all()` to use the cache, then extract values in Python. Address if request latency becomes a concern.
+- **D-2.11-R3-6 — No test for no-role user + non-HTMX GET on tab URL**: The R2 authz-before-redirect fix is correct but the combined unauthorized + non-HTMX path is untested. Add `no_role_user` hitting `/projects/{id}/tabs/violations` without HX-Request and asserting 403 in all three stacks.
+- **D-2.11-R3-7 — Go `buildVM` nil project not guarded after `LoadWithRelations`**: If `LoadWithRelations` returns `(nil, nil, nil, nil, nil)` (nil project, nil error — a store contract violation), `project.Code` panics. Add `if project == nil { return nil, postgres.ErrProjectNotFound }` guard when next touching `buildVM`.
+- **D-2.11-R3-8 — `.NET` `_DetailBody.cshtml` hardcodes `ActiveIndex = 0`**: The TabStrip is always rendered with Summary as active on full-page load, per Decision 6. Correct for current scope; potential footgun if a future story needs to render a non-Summary tab as active on initial load (e.g., a tab deep-link URL scheme).
+
+## Deferred from: code review round 2 of 2-11-project-detail-anchor-screen-with-header-strip-tabstrip-and-entityrail.md (2026-06-01)
+
+- **D-2.11-R2-1 — Inspector silent drop for deleted auth user (cross-stack)**: When a `domain.project_inspector.user_id` has no matching row in `dotnet_auth.users` / `django_auth.auth_user` / `fiber_auth.users` (deleted user), the inspector is silently omitted from the Summary panel list with no fallback display or operator log. Address when user-lifecycle management / delete handling is in scope.
+- **D-2.11-R2-2 — `_SummaryPanel` no `#project-action-form` slot**: Story 2.12 Decision 1 designates adding this slot as Task 0 in that story. Epic-sanctioned; no action needed on Story 2.11.
+- **D-2.11-R2-3 — `HtmxMode` test ARIA coverage weak**: The `.NET` `HtmxMode` conformance test asserts `id="violation-detail"` is present but does not verify `role="region"` or `aria-live` on the rail, nor that `hx-swap-oob` is absent from the main response. Address when next touching the conformance tests.
+- **D-2.11-R2-4 — `autofocus` on OOB-swapped panel reliability**: `autofocus` is the chosen focus-move mechanism per UX-DR31. Spec-compliant and working in HTMX 4.0-beta2 + Chromium. If cross-browser issues emerge, add `HX-Trigger: {"focusPanel": true}` + JS listener fallback.
+
+## Deferred from: code review of 2-11-project-detail-anchor-screen-with-header-strip-tabstrip-and-entityrail.md (2026-06-01)
+
+- **D-2.11-1 — `IsTabResponse` flag set before tab validation (.NET)**: `Detail.cshtml.cs` sets `IsTabResponse = tab is not null` before the `NotFound()` guard fires on invalid tab values. No current defect (guard fires correctly), but the ordering is fragile to future refactoring that bypasses the guard. Address when next touching `Detail.cshtml.cs`.
+- **D-2.11-2 — Go nil-pool `loadInspectorNames` silent swallow**: `if len(inspectorIDs) == 0 || h.Pool == nil { return out, nil }` silently returns empty inspector names with no error or log when `Pool` is nil. Pre-existing nil-pool pattern throughout Go test suite. Address when Go test harness gains a real Postgres pool.
+- **D-2.11-3 — Go `projects_detail_tab_response.html` no fallback for unknown `PanelTemplate`**: Four `{{if eq .PanelTemplate "..."}}` blocks with no `{{else}}` branch — silently emits empty panel + OOB tabstrip if `PanelTemplate` drifts. Handler switch guards it today; add a defensive `{{else}}` when next touching this template.
+- **D-2.11-4 — .NET `ProjectActionPredicateTests` uses reflection to set `Status`**: `typeof(Project).GetProperty("Status")!.SetValue(project, status)` will break silently if `Status` becomes `init`-only. Use a factory constructor overload when next touching the entity.
+- **D-2.11-5 — `compliance-tile` present-once not asserted**: AC1 states `#compliance-tile` must appear exactly once. Tests verify presence but not uniqueness. Low risk on this read page; add a `ContainSingle` assertion when next touching the conformance tests.
+- **D-2.11-6 — `javaScriptEnabled:false` E2E test absent (Task 7.3)**: Playwright Chromium environment constraint prevented running the no-JS test. Must land on a CI lane that can launch Chromium. Add as part of Epic 7 E2E build-out.
+- **D-2.11-7 — E2E scenario + `make parity` unverified (Task 8)**: Same Playwright environment constraint. Five new routes need parity-tool verification; add to Epic 7 E2E sprint.
+
 ## Deferred from: code review rerun of 2-14-reference-data-read-pages-for-administrator.md (2026-05-31)
 
 - **D-R1 — Dead `_subnav.html` partial**: `fieldmark_py/reference/templates/reference/_subnav.html` contains the 4-link self-referential nav and is no longer referenced by any template (inline sub-navs replaced it). Accidentally `{% include %}`ing it in a future template would silently reintroduce the AC5 self-link bug. Delete the file.
@@ -25,9 +53,9 @@
 
 - **Story 2.7-followup — TabStrip badge semantic monoculture**: The badge `aria-label` is hard-coded to `"<count> unread"`. If a future consumer needs a different semantic (e.g., a "high priority count" badge), the wrapper needs an additional `badge_aria_template` prop per stack. Currently deferred; add when a non-unread-count consumer lands. Track: add `badge_aria_template: string?` prop to all three stack wrappers and the canonical fixture.
 
-## Deferred from: code review of 2-4-implement-phase-2-markup-only-components (2026-05-28)
+## Resolved by Story 2.11 (2026-06-01)
 
-- `StatusBadgeVM.Severity` field (`fieldmark-go/internal/web/viewmodels/components.go`) is dead exported state — no template or resolver reads it; acceptable for the markup-only story scope since resolution logic (`(Entity, Value, Severity)` → `(ClassName, Label)`) will live in the first handler that constructs a `StatusBadgeVM` from domain values (Story 2.10 / 2.11). Address when that handler is written.
+- `StatusBadgeVM.Severity` deferred item from Story 2.4 is resolved by introducing `ResolveStatusBadge(entity, value string)` and using it in the Go Project Detail handler (`fieldmark-go/internal/web/viewmodels/components.go`, `fieldmark-go/internal/web/handlers/projects_detail_handler.go`).
 
 ## Resolved by Story 1.14 (2026-05-21)
 

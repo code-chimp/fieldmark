@@ -116,3 +116,18 @@ body {
     overflow-y: auto;
   }
 }
+
+/* Project Detail layout container: tab panel + co-present EntityRail */
+.project-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 1280px) {
+  .project-detail-grid {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    align-items: start;
+    gap: 1.5rem;
+  }
+}

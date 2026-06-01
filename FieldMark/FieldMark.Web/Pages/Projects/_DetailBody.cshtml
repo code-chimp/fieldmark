@@ -1,0 +1,16 @@
+@model FieldMark.Web.Pages.Projects.DetailModel
+<div id="project-detail">
+<section id="project-header-strip" class="mb-4">
+  <h1>@Model.ProjectCode — @Model.ProjectName</h1>
+  @await Html.PartialAsync("Shared/Components/_StatusBadge", new { Entity = "Project", Value = Model.ProjectStatus, Severity = "" })
+  @await Html.PartialAsync("Shared/Components/_ComplianceTile", new { Score = Model.ComplianceScore, Label = "Compliance", Id = "compliance-tile" })
+</section>
+
+<section class="project-detail-grid">
+  <div class="tabs">
+    @await Html.PartialAsync("Shared/Components/_TabStrip", new { Id = "project-detail-tabstrip", AriaLabel = "Project Detail Tabs", Tabs = Model.Tabs, ActiveIndex = 0 })
+    @await Html.PartialAsync("Projects/Tabs/_SummaryPanel", Model)
+  </div>
+  @await Html.PartialAsync("Shared/Components/_EntityRail", new { Id = "violation-detail", EntityTypeLabel = "Violation", EntityLoaded = false })
+</section>
+</div>

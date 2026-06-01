@@ -1,9 +1,31 @@
-@* GET /projects/{id} — minimal stub. Story 2.11 replaces this.
-   Exists so the HX-Redirect from Story 2.8 has a destination. *@
 @page "/projects/{id:guid}"
 @model DetailModel
 @{
-    ViewData["Title"] = Model.ProjectName;
+    var isHtmx = Request.Headers.TryGetValue("HX-Request", out var htmxVal) && string.Equals(htmxVal, "true", StringComparison.OrdinalIgnoreCase);
+    ViewData["Title"] = $"{Model.ProjectCode} — {Model.ProjectName}";
+    if (isHtmx) { Layout = null; }
 }
-
-<h1>@Model.ProjectName</h1>
+@if (Model.IsTabResponse)
+{
+    if (Model.ActiveTabIndex == 0)
+    {
+        @await Html.PartialAsync("Projects/Tabs/_SummaryPanel", Model)
+    }
+    else if (Model.ActiveTabIndex == 1)
+    {
+        @await Html.PartialAsync("Projects/Tabs/_InspectionsPanel")
+    }
+    else if (Model.ActiveTabIndex == 2)
+    {
+        @await Html.PartialAsync("Projects/Tabs/_ViolationsPanel")
+    }
+    else
+    {
+        @await Html.PartialAsync("Projects/Tabs/_AuditPanel")
+    }
+    @await Html.PartialAsync("Shared/Components/_TabStrip", new { Id = "project-detail-tabstrip", AriaLabel = "Project Detail Tabs", Tabs = Model.Tabs, ActiveIndex = Model.ActiveTabIndex, HxSwapOob = "outerHTML" })
+}
+else
+{
+    @await Html.PartialAsync("Projects/_DetailBody", Model)
+}

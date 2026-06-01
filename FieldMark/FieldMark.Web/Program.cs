@@ -17,6 +17,7 @@ builder.Services.AddRazorPages(options =>
     options.Conventions.AllowAnonymousToPage("/Account/Logout");
     // Theme toggle must be callable while unauthenticated so it works on /login.
     options.Conventions.AllowAnonymousToFolder("/Preferences");
+    options.Conventions.AddPageRoute("/Projects/Detail", "/projects/{id:guid}/tabs/{tab}");
 });
 
 // FIELDMARK_DATABASE_URL takes precedence when non-blank/whitespace.
@@ -136,6 +137,9 @@ DomainPolicies.RegisterAction(
     "project.read",
     Role.Admin, Role.ComplianceOfficer, Role.Inspector, Role.SiteSupervisor, Role.Executive
 );
+DomainPolicies.RegisterAction("project.place_on_hold", Role.Admin);
+DomainPolicies.RegisterAction("project.resume", Role.Admin);
+DomainPolicies.RegisterAction("project.close", Role.Admin);
 DomainPolicies.RegisterAction(
     "dashboard.view",
     Role.Admin, Role.ComplianceOfficer, Role.Inspector, Role.SiteSupervisor, Role.Executive

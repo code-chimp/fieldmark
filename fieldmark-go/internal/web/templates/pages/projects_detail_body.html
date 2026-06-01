@@ -1,0 +1,16 @@
+{{ define "projects_detail_body" -}}
+<div id="project-detail">
+<section id="project-header-strip" class="mb-4">
+  <h1>{{.ProjectCode}} — {{.ProjectName}}</h1>
+  {{template "status_badge" .ProjectStatus}}
+  {{template "compliance_tile" .ComplianceTile}}
+</section>
+<section class="project-detail-grid">
+  <div class="tabs">
+    {{template "tab_strip" .Tabs}}
+    {{template "project_detail_summary_panel" .}}
+  </div>
+  {{template "entity_rail" .Rail}}
+</section>
+</div>
+{{- end }}
