@@ -177,6 +177,9 @@ func registerRoutes(app *fiber.App, pool *pgxpool.Pool) {
 			Reference: postgres.NewReferenceStore(pool),
 		}
 		app.Get("/admin/reference", auth.RequireAuth(), referenceHandlers.AdminReferenceIndex)
+		app.Get("/admin/reference/trade-types", auth.RequireAuth(), referenceHandlers.TradeTypesIndex)
+		app.Get("/admin/reference/violation-categories", auth.RequireAuth(), referenceHandlers.ViolationCategoriesIndex)
+		app.Get("/admin/reference/compliance-rules", auth.RequireAuth(), referenceHandlers.ComplianceRulesIndex)
 
 		// Project routes — Story 2.8 (create) + Story 2.9 (list, grid endpoint).
 		projectsCreate := &handlers.ProjectsCreateHandlers{
@@ -200,6 +203,9 @@ func registerRoutes(app *fiber.App, pool *pgxpool.Pool) {
 		app.Get("/projects/:id", auth.RequireAuth(), projectsDetail.GetProjectsDetail)
 	} else {
 		app.Get("/admin/reference", auth.RequireAuth(), func(c fiber.Ctx) error { return nil })
+		app.Get("/admin/reference/trade-types", auth.RequireAuth(), func(c fiber.Ctx) error { return nil })
+		app.Get("/admin/reference/violation-categories", auth.RequireAuth(), func(c fiber.Ctx) error { return nil })
+		app.Get("/admin/reference/compliance-rules", auth.RequireAuth(), func(c fiber.Ctx) error { return nil })
 
 		// Stub route registration for dump-routes (no DB).
 		noop := func(c fiber.Ctx) error { return nil }

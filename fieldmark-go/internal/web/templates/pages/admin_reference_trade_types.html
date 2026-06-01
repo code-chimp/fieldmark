@@ -1,0 +1,32 @@
+<h1>Trade Types</h1>
+
+<nav aria-label="Reference catalogs">
+    <a href="/admin/reference">← Reference overview</a>
+    <a href="/admin/reference/violation-categories">Violation Categories</a>
+    <a href="/admin/reference/compliance-rules">Compliance Rules</a>
+</nav>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Code</th>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Active</th>
+        </tr>
+    </thead>
+    <tbody>
+    {{if .TradeTypes}}
+        {{range .TradeTypes}}
+            <tr>
+                <td>{{.Code}}</td>
+                <td>{{.Name}}</td>
+                <td>{{.Description}}</td>
+                <td>{{.Active}}</td>
+            </tr>
+        {{end}}
+    {{else}}
+        <tr><td colspan="4">No trade types defined.</td></tr>
+    {{end}}
+    </tbody>
+</table>

@@ -88,6 +88,71 @@ func (h *AdminReferenceHandlers) AdminReferenceIndex(c fiber.Ctx) error {
 	return c.Render("pages/admin_reference", m)
 }
 
+func (h *AdminReferenceHandlers) TradeTypesIndex(c fiber.Ctx) error {
+	actor := auth.ActorFromCtx(c)
+	if actor == nil || actor.Role != string(domain.RoleAdmin) {
+		c.Status(fiber.StatusForbidden)
+		return c.SendString("You do not have permission to access this page.")
+	}
+
+	tradeTypes, err := h.Reference.ListTradeTypes(c.Context())
+	if err != nil {
+		return err
+	}
+
+	m := referenceBaseMap(c)
+	m["Title"] = "Trade Types"
+	m["TradeTypes"] = tradeTypeRows(tradeTypes)
+	return c.Render("pages/admin_reference_trade_types", m)
+}
+
+func (h *AdminReferenceHandlers) ViolationCategoriesIndex(c fiber.Ctx) error {
+	actor := auth.ActorFromCtx(c)
+	if actor == nil || actor.Role != string(domain.RoleAdmin) {
+		c.Status(fiber.StatusForbidden)
+		return c.SendString("You do not have permission to access this page.")
+	}
+
+	categories, err := h.Reference.ListViolationCategories(c.Context())
+	if err != nil {
+		return err
+	}
+
+	m := referenceBaseMap(c)
+	m["Title"] = "Violation Categories"
+	m["ViolationCategories"] = violationCategoryRows(categories)
+	return c.Render("pages/admin_reference_violation_categories", m)
+}
+
+func (h *AdminReferenceHandlers) ComplianceRulesIndex(c fiber.Ctx) error {
+	actor := auth.ActorFromCtx(c)
+	if actor == nil || actor.Role != string(domain.RoleAdmin) {
+		c.Status(fiber.StatusForbidden)
+		return c.SendString("You do not have permission to access this page.")
+	}
+
+	rules, err := h.Reference.ListComplianceRules(c.Context())
+	if err != nil {
+		return err
+	}
+
+	m := referenceBaseMap(c)
+	m["Title"] = "Compliance Rules"
+	ruleRows := make([]complianceRuleRow, 0, len(rules))
+	for _, rule := range rules {
+		ruleRows = append(ruleRows, complianceRuleRow{
+			Code:           rule.Code,
+			Name:           rule.Name,
+			Description:    rule.Description,
+			RuleKind:       rule.RuleKind,
+			ParametersJSON: string(rule.Parameters),
+			Active:         rule.Active,
+		})
+	}
+	m["ComplianceRules"] = ruleRows
+	return c.Render("pages/admin_reference_compliance_rules", m)
+}
+
 func tradeTypeRows(tradeTypes []entities.TradeType) []tradeTypeRow {
 	rows := make([]tradeTypeRow, 0, len(tradeTypes))
 	for _, tradeType := range tradeTypes {

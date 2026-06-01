@@ -1,3 +1,15 @@
+## Deferred from: code review rerun of 2-14-reference-data-read-pages-for-administrator.md (2026-05-31)
+
+- **D-R1 — Dead `_subnav.html` partial**: `fieldmark_py/reference/templates/reference/_subnav.html` contains the 4-link self-referential nav and is no longer referenced by any template (inline sub-navs replaced it). Accidentally `{% include %}`ing it in a future template would silently reintroduce the AC5 self-link bug. Delete the file.
+- **D-R2 — .NET sub-nav `NotContain` assertion scope**: `AdminReferenceCatalogPagesTests.cs` line 51 uses `html.Should().NotContain("/admin/reference/trade-types")` against the full body. A tighter assertion scoped to `href="..."` would be more precise and resilient to future layout changes that might include the URL in a meta tag or breadcrumb.
+- **D-R3 — Django `index.html` (Story 2.3) `category.trade_type` unguarded**: The Story 2.3 overview page `violation_categories` column renders `{{ category.trade_type }}` without `|default_if_none:""`. Explicitly out of scope for Story 2.14 per spec Decisions note 1; track as a pre-existing gap in Story 2.3.
+
+## Deferred from: code review of 2-14-reference-data-read-pages-for-administrator.md (2026-05-31)
+
+- **D1 — Go call-counter assertion is cumulative across 3 sub-tests**: `store.tradeCalls/categoryCalls/ruleCalls` are asserted collectively after all three route tests run. Correct for sequential execution and handlers are obviously single-purpose, but does not strictly prove per-handler isolation and would race if sub-tests were ever parallelized. Address if sub-test parallelism is ever introduced or if a per-handler isolation test is required by a future AC.
+- **D2 — `actor == nil` dead code in Go handlers**: `auth.ActorFromCtx` always returns non-nil (falls back to `app.Anonymous()`); the nil guard in `TradeTypesIndex`, `ViolationCategoriesIndex`, and `ComplianceRulesIndex` is unreachable. Remove when next touching `admin_reference.go` to avoid misleading future maintainers.
+- **D3 — AC7 cat 3 Playwright `javaScriptEnabled:false` test absent**: Pages are purely server-rendered and degrade correctly with JS off. The test coverage assertion is missing but no production defect exists. Add when the e2e suite covers admin reference pages.
+
 ## Deferred from: code review rerun of 2-10-compliance-dashboard-with-portfolio-tiles.md (2026-05-31)
 
 - **AG Grid `detail` mode silently drops row-click when `data-grid-target` is absent** — the `if (target)` guard in `ag-grid-panel.js` silently no-ops when `data-grid-target` is missing, with no `console.warn`. This is pre-existing behavior from Story 2.9. Add a console warning in the `else` branch when a future story modifies this file.

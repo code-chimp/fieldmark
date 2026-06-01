@@ -1,0 +1,46 @@
+@page "/admin/reference/violation-categories"
+@model FieldMark.Web.Pages.Admin.ReferenceViolationCategoriesModel
+@{
+    ViewData["Title"] = "Violation Categories";
+}
+
+<h1>Violation Categories</h1>
+
+<nav aria-label="Reference catalogs">
+    <a href="/admin/reference">← Reference overview</a>
+    <a href="/admin/reference/trade-types">Trade Types</a>
+    <a href="/admin/reference/compliance-rules">Compliance Rules</a>
+</nav>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Code</th>
+            <th>Name</th>
+            <th>Trade Type ID</th>
+            <th>Default Severity</th>
+            <th>Description</th>
+            <th>Active</th>
+        </tr>
+    </thead>
+    <tbody>
+    @if (Model.ViolationCategories.Count == 0)
+    {
+        <tr><td colspan="6">No violation categories defined.</td></tr>
+    }
+    else
+    {
+        @foreach (var category in Model.ViolationCategories)
+        {
+            <tr>
+                <td>@category.Code</td>
+                <td>@category.Name</td>
+                <td>@category.TradeTypeId</td>
+                <td>@category.DefaultSeverity</td>
+                <td>@category.Description</td>
+                <td>@category.Active</td>
+            </tr>
+        }
+    }
+    </tbody>
+</table>

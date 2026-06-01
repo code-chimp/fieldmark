@@ -96,7 +96,7 @@ def _normalize(raw: str) -> str | None:
     if len(path) > 1:
         path = path.rstrip("/")
 
-    if path == "/admin/reference":
+    if path == "/admin/reference" or path.startswith("/admin/reference/"):
         return path
 
     # Exclude framework internals and debug-only test fixtures.

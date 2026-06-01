@@ -4,6 +4,7 @@ using System.Text;
 using System.Text.Json;
 using FieldMark.Tests.Web.Fixtures;
 using FluentAssertions;
+using Microsoft.AspNetCore.Mvc.Testing;
 
 namespace FieldMark.Tests.Web.Pages;
 
@@ -15,6 +16,11 @@ namespace FieldMark.Tests.Web.Pages;
 [Collection(AuthTests.Name)]
 public sealed class ProjectsListPageTests(PostgresFixture pg)
 {
+    private static readonly object[] EmptySortModel = [];
+    private static readonly object EmptyFilterModel = new { };
+    private static readonly string[] InvalidStatusValues = ["INVALID"];
+    private static readonly string[] InjectionStatusValues = ["Active' OR '1'='1"];
+
     private readonly PostgresFixture _pg = pg;
 
     private HttpClient CreateClient(bool allowAutoRedirect = false) =>
@@ -133,7 +139,7 @@ public sealed class ProjectsListPageTests(PostgresFixture pg)
 
     // ─── POST /grid/projects — authz + 400 validation (no DB rows needed) ───
 
-    private async Task<HttpResponseMessage> PostGridAsync(HttpClient client, object body)
+    private static async Task<HttpResponseMessage> PostGridAsync(HttpClient client, object body)
     {
         var json = JsonSerializer.Serialize(body);
         var content = new StringContent(json, Encoding.UTF8, "application/json");
@@ -144,7 +150,7 @@ public sealed class ProjectsListPageTests(PostgresFixture pg)
     public async Task GridProjects_Unauthenticated_Returns403OrRedirect()
     {
         var client = CreateClient();
-        var resp = await PostGridAsync(client, new { startRow = 0, endRow = 10, sortModel = Array.Empty<object>(), filterModel = new { } });
+        var resp = await PostGridAsync(client, new { startRow = 0, endRow = 10, sortModel = EmptySortModel, filterModel = EmptyFilterModel });
 
         ((int)resp.StatusCode).Should().BeOneOf(302, 303, 401, 403);
     }
@@ -212,8 +218,8 @@ public sealed class ProjectsListPageTests(PostgresFixture pg)
         {
             startRow = -1,
             endRow = 10,
-            sortModel = Array.Empty<object>(),
-            filterModel = new { },
+            sortModel = EmptySortModel,
+            filterModel = EmptyFilterModel,
         });
 
         resp.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -242,10 +248,10 @@ public sealed class ProjectsListPageTests(PostgresFixture pg)
         {
             startRow = 0,
             endRow = 10,
-            sortModel = Array.Empty<object>(),
+            sortModel = EmptySortModel,
             filterModel = new
             {
-                status = new { filterType = "set", values = new[] { "INVALID" } },
+                status = new { filterType = "set", values = InvalidStatusValues },
             },
         });
 
@@ -260,10 +266,10 @@ public sealed class ProjectsListPageTests(PostgresFixture pg)
         {
             startRow = 0,
             endRow = 10,
-            sortModel = Array.Empty<object>(),
+            sortModel = EmptySortModel,
             filterModel = new
             {
-                status = new { filterType = "set", values = new[] { "Active' OR '1'='1" } },
+                status = new { filterType = "set", values = InjectionStatusValues },
             },
         });
 
@@ -279,7 +285,7 @@ public sealed class ProjectsListPageTests(PostgresFixture pg)
         {
             startRow = 0,
             endRow = 10,
-            sortModel = Array.Empty<object>(),
+            sortModel = EmptySortModel,
             filterModel = new { },
         });
 

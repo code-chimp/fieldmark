@@ -13,8 +13,8 @@
 }
 
 <form method="post"
-      action="/projects/"
-      hx-post="/projects/"
+      action="/projects/create-submit"
+      hx-post="/projects/create-submit"
       hx-target="this"
       hx-swap="outerHTML"
       hx-disabled-elt="find button[type=submit]">
@@ -127,7 +127,14 @@
             @foreach (var tt in Model.AvailableTradeTypes)
             {
                 var selected = Model.SelectedTradeTypeIds.Contains(tt.Id);
-                <option value="@tt.Id" @(selected ? Html.Raw("selected") : Html.Raw(""))>@tt.Name</option>
+                if (selected)
+                {
+                    <option value="@tt.Id" selected>@tt.Name</option>
+                }
+                else
+                {
+                    <option value="@tt.Id">@tt.Name</option>
+                }
             }
         </select>
         @if (HasErr("trade_scope_ids"))
@@ -148,7 +155,14 @@
             @foreach (var insp in Model.AvailableInspectors)
             {
                 var selected = Model.SelectedInspectorIds.Contains(insp.Id);
-                <option value="@insp.Id" @(selected ? Html.Raw("selected") : Html.Raw(""))>@insp.Label</option>
+                if (selected)
+                {
+                    <option value="@insp.Id" selected>@insp.Label</option>
+                }
+                else
+                {
+                    <option value="@insp.Id">@insp.Label</option>
+                }
             }
         </select>
         @if (HasErr("inspector_ids"))

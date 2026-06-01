@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Compliance Rules{% endblock %}
+{% block content %}
+<h1>Compliance Rules</h1>
+<nav aria-label="Reference catalogs">
+    <a href="/admin/reference">← Reference overview</a>
+    <a href="/admin/reference/trade-types">Trade Types</a>
+    <a href="/admin/reference/violation-categories">Violation Categories</a>
+</nav>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Code</th>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Rule Kind</th>
+            <th>Parameters</th>
+            <th>Active</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for rule in compliance_rules %}
+        <tr>
+            <td>{{ rule.code }}</td>
+            <td>{{ rule.name }}</td>
+            <td>{{ rule.description|default_if_none:"" }}</td>
+            <td>{{ rule.rule_kind }}</td>
+            <td>
+                <details>
+                    <summary>parameters</summary>
+                    <pre><code class="font-mono">{{ rule.parameters_json }}</code></pre>
+                </details>
+            </td>
+            <td>{{ rule.active }}</td>
+        </tr>
+    {% empty %}
+        <tr><td colspan="6">No compliance rules defined.</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

@@ -2,6 +2,7 @@
 // See docs/reference/project-create-form-contract.md.
 using FieldMark.Data.Context;
 using FieldMark.Data.Reference;
+using FieldMark.Domain.ValueObjects;
 using FieldMark.Web.Authorization;
 using FieldMark.Web.ViewModels.Projects;
 using Microsoft.AspNetCore.Identity;

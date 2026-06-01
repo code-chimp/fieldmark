@@ -1,0 +1,42 @@
+@page "/admin/reference/trade-types"
+@model FieldMark.Web.Pages.Admin.ReferenceTradeTypesModel
+@{
+    ViewData["Title"] = "Trade Types";
+}
+
+<h1>Trade Types</h1>
+
+<nav aria-label="Reference catalogs">
+    <a href="/admin/reference">← Reference overview</a>
+    <a href="/admin/reference/violation-categories">Violation Categories</a>
+    <a href="/admin/reference/compliance-rules">Compliance Rules</a>
+</nav>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Code</th>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Active</th>
+        </tr>
+    </thead>
+    <tbody>
+    @if (Model.TradeTypes.Count == 0)
+    {
+        <tr><td colspan="4">No trade types defined.</td></tr>
+    }
+    else
+    {
+        @foreach (var tradeType in Model.TradeTypes)
+        {
+            <tr>
+                <td>@tradeType.Code</td>
+                <td>@tradeType.Name</td>
+                <td>@tradeType.Description</td>
+                <td>@tradeType.Active</td>
+            </tr>
+        }
+    }
+    </tbody>
+</table>

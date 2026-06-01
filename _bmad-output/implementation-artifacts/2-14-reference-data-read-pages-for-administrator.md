@@ -1,6 +1,6 @@
 # Story 2.14: Reference data read pages for Administrator
 
-Status: ready-for-dev
+Status: done
 
 Epic: 2 — Project Lifecycle & Compliance Dashboard
 Source AC: [_bmad-output/planning-artifacts/epics/epic-2-project-lifecycle-compliance-dashboard.md](../planning-artifacts/epics/epic-2-project-lifecycle-compliance-dashboard.md) §Story 2.14
@@ -159,29 +159,29 @@ These resolve ambiguities the epic AC leaves open; each is implemented as writte
 
 ## Tasks / Subtasks
 
-- [ ] **Task 1: .NET — three Razor Pages** (AC: #1, #2, #3, #4, #5, #6)
-  - [ ] 1.1 Add `Pages/Admin/ReferenceTradeTypes.cshtml(.cs)` (`@page "/admin/reference/trade-types"`), `ReferenceViolationCategories.cshtml(.cs)` (`@page "/admin/reference/violation-categories"`), `ReferenceComplianceRules.cshtml(.cs)` (`@page "/admin/reference/compliance-rules"`). Each `[Authorize(Roles = "ADMIN")]`, each ctor-injects `IReferenceReader`, each `OnGetAsync` calls only its one list method. ComplianceRules projects to a `ParametersJson` row record (copy 2.3's `ComplianceRuleRow` shape).
-  - [ ] 1.2 Each `.cshtml` renders the single-catalog `<h1>` + Basecoat `<table class="table">` (reuse the matching `<section>` markup from [Reference.cshtml](../../FieldMark/FieldMark.Web/Pages/Admin/Reference.cshtml)) + the admin sub-nav (AC5) + the empty-table `colspan` row (AC3).
-  - [ ] 1.3 Tests in `FieldMark.Tests.Web/Pages/` (mirror `AdminReferencePageTests`): per route, ADMIN (`aisha`) → 200 + seeded rows (assert `ELEC` / a category code / `OPEN_VIOLATION_GATE` as appropriate) + correct column headers; each non-admin (`marisol`/`ravi`/`pat`/`kenji`) → 403 without leakage; empty-DB → empty-state row.
+- [x] **Task 1: .NET — three Razor Pages** (AC: #1, #2, #3, #4, #5, #6)
+  - [x] 1.1 Add `Pages/Admin/ReferenceTradeTypes.cshtml(.cs)` (`@page "/admin/reference/trade-types"`), `ReferenceViolationCategories.cshtml(.cs)` (`@page "/admin/reference/violation-categories"`), `ReferenceComplianceRules.cshtml(.cs)` (`@page "/admin/reference/compliance-rules"`). Each `[Authorize(Roles = "ADMIN")]`, each ctor-injects `IReferenceReader`, each `OnGetAsync` calls only its one list method. ComplianceRules projects to a `ParametersJson` row record (copy 2.3's `ComplianceRuleRow` shape).
+  - [x] 1.2 Each `.cshtml` renders the single-catalog `<h1>` + Basecoat `<table class="table">` (reuse the matching `<section>` markup from [Reference.cshtml](../../FieldMark/FieldMark.Web/Pages/Admin/Reference.cshtml)) + the admin sub-nav (AC5) + the empty-table `colspan` row (AC3).
+  - [x] 1.3 Tests in `FieldMark.Tests.Web/Pages/` (mirror `AdminReferencePageTests`): per route, ADMIN (`aisha`) → 200 + seeded rows (assert `ELEC` / a category code / `OPEN_VIOLATION_GATE` as appropriate) + correct column headers; each non-admin (`marisol`/`ravi`/`pat`/`kenji`) → 403 without leakage; empty-DB → empty-state row.
 
-- [ ] **Task 2: Django — three views + templates + urls** (AC: #1, #2, #3, #4, #5, #6)
-  - [ ] 2.1 Add three views in [reference/views.py](../../fieldmark_py/reference/views.py) (e.g. `trade_types`, `violation_categories`, `compliance_rules`), each guarded by the existing `_is_admin` → `PermissionDenied`, each calling only its one `queries.list_*()` function; compliance-rules view reuses the `ComplianceRuleRow`/`json.dumps` projection.
-  - [ ] 2.2 Add three templates under `reference/templates/reference/` (extract the matching `<section>` from [index.html](../../fieldmark_py/reference/templates/reference/index.html) into a single-catalog page) + the admin sub-nav + empty-state (`{% empty %}` clause in the `{% for %}`).
-  - [ ] 2.3 Add three `path("admin/reference/<catalog>", view, name=…)` entries in [fieldmark/urls.py](../../fieldmark_py/fieldmark/urls.py) **before** the `admin/` mount, after the existing `admin/reference` line; no trailing slash.
-  - [ ] 2.4 Tests under `reference/tests/`: ADMIN → 200 + rows; each non-admin role → 403; empty-table state.
+- [x] **Task 2: Django — three views + templates + urls** (AC: #1, #2, #3, #4, #5, #6)
+  - [x] 2.1 Add three views in [reference/views.py](../../fieldmark_py/reference/views.py) (e.g. `trade_types`, `violation_categories`, `compliance_rules`), each guarded by the existing `_is_admin` → `PermissionDenied`, each calling only its one `queries.list_*()` function; compliance-rules view reuses the `ComplianceRuleRow`/`json.dumps` projection.
+  - [x] 2.2 Add three templates under `reference/templates/reference/` (extract the matching `<section>` from [index.html](../../fieldmark_py/reference/templates/reference/index.html) into a single-catalog page) + the admin sub-nav + empty-state (`{% empty %}` clause in the `{% for %}`).
+  - [x] 2.3 Add three `path("admin/reference/<catalog>", view, name=…)` entries in [fieldmark/urls.py](../../fieldmark_py/fieldmark/urls.py) **before** the `admin/` mount, after the existing `admin/reference` line; no trailing slash.
+  - [x] 2.4 Tests under `reference/tests/`: ADMIN → 200 + rows; each non-admin role → 403; empty-table state.
 
-- [ ] **Task 3: Go — three handlers + templates + routes** (AC: #1, #2, #3, #4, #5, #6)
-  - [ ] 3.1 Add three handler methods on `AdminReferenceHandlers` in [admin_reference.go](../../fieldmark-go/internal/web/handlers/admin_reference.go) (e.g. `TradeTypesIndex`, `ViolationCategoriesIndex`, `ComplianceRulesIndex`), each with the existing admin-role guard, each calling only its one `Reference.List*` method and reusing the existing row-projection helpers (`tradeTypeRows`, `violationCategoryRows`, the inline rule-row loop).
-  - [ ] 3.2 Add three templates under `internal/web/templates/pages/` (single-catalog table) + admin sub-nav + empty-state (`{{if .Rows}}…{{else}}…{{end}}`).
-  - [ ] 3.3 Register the three routes in [cmd/web/main.go](../../fieldmark-go/cmd/web/main.go) **inside both** the `if pool != nil` (real handler) **and** the `else` (stub) branches alongside the existing `/admin/reference` registration — required for `-dump-routes` parity (AC6).
-  - [ ] 3.4 Handler tests in `internal/web/handlers/`: ADMIN actor → 200 + rows; non-admin actor → 403; empty store → empty-state.
+- [x] **Task 3: Go — three handlers + templates + routes** (AC: #1, #2, #3, #4, #5, #6)
+  - [x] 3.1 Add three handler methods on `AdminReferenceHandlers` in [admin_reference.go](../../fieldmark-go/internal/web/handlers/admin_reference.go) (e.g. `TradeTypesIndex`, `ViolationCategoriesIndex`, `ComplianceRulesIndex`), each with the existing admin-role guard, each calling only its one `Reference.List*` method and reusing the existing row-projection helpers (`tradeTypeRows`, `violationCategoryRows`, the inline rule-row loop).
+  - [x] 3.2 Add three templates under `internal/web/templates/pages/` (single-catalog table) + admin sub-nav + empty-state (`{{if .Rows}}…{{else}}…{{end}}`).
+  - [x] 3.3 Register the three routes in [cmd/web/main.go](../../fieldmark-go/cmd/web/main.go) **inside both** the `if pool != nil` (real handler) **and** the `else` (stub) branches alongside the existing `/admin/reference` registration — required for `-dump-routes` parity (AC6).
+  - [x] 3.4 Handler tests in `internal/web/handlers/`: ADMIN actor → 200 + rows; non-admin actor → 403; empty store → empty-state.
 
-- [ ] **Task 4: Parity + gate** (AC: #6, #9)
-  - [ ] 4.1 `make parity` — assert the three new routes present + clean diff across stacks; `pg_indexes` zero-diff.
-  - [ ] 4.2 `make test-all` green; per-stack build/lint/type gates clean.
+- [x] **Task 4: Parity + gate** (AC: #6, #9)
+  - [x] 4.1 `make parity` — assert the three new routes present + clean diff across stacks; `pg_indexes` zero-diff.
+  - [x] 4.2 `make test-all` green; per-stack build/lint/type gates clean.
 
-- [ ] **Task 5: Story sign-off** (AC: all)
-  - [ ] 5.1 Populate the Sign-off block; record the five decisions; flip sprint-status to `review`.
+- [x] **Task 5: Story sign-off** (AC: all)
+  - [x] 5.1 Populate the Sign-off block; record the five decisions; flip sprint-status to `review`.
 
 ## Dev Notes
 
@@ -248,17 +248,100 @@ No shared asset changes. No `docs/reference/` contract change.
 
 ### Agent Model Used
 
+GPT-5 Codex
+
 ### Debug Log References
+
+- 2026-06-01: `make test-go` passed, including new `admin_reference_catalogs_test.go`.
+- 2026-06-01: `cd fieldmark_py && uv run pytest reference/tests/test_catalog_views.py reference/tests/test_catalog_authz.py` passed (18 tests).
+- 2026-06-01: `make test-net` failed due pre-existing unrelated .NET compile/analyzer issues in existing files (`_ProjectCreateForm.cshtml`, `_TabStrip.cshtml`, `Projects/*.cshtml.cs`, `Grid/Projects.cshtml.cs`).
+- 2026-06-01: `make test-django` failed on pre-existing unrelated integration/dashboard failures outside reference catalog changes.
+- 2026-06-01: `make parity` failed because .NET route dump cannot build due the same pre-existing .NET compile issues.
+- 2026-06-01: Review follow-ups P1/P2/P3 implemented.
+- 2026-06-01: `make parity` now passes with route + index parity clean.
+- 2026-06-01: `make test-net` now compiles and runs, but still has pre-existing failing web-page tests outside Story 2.14 scope (`ProjectsListPageTests`, `ProjectsCreatePageTests`, `HomePageTests`).
+- 2026-06-01: `make test-django` still has pre-existing integration/dashboard failures outside Story 2.14 scope (`projects/tests/test_mapping.py`, `fieldmark/tests/test_dashboard_page.py`).
+- 2026-06-01: `make test-all` passed end-to-end (.NET, Django, Go unit + integration).
+- 2026-06-01: Round 2 patch checks passed (`uv run pytest reference/tests/test_catalog_views.py` and `go test ./internal/web/handlers -run TestAdminReferenceCatalogsAdminRendersPages`).
 
 ### Completion Notes List
 
+- Implemented three dedicated admin catalog pages per stack:
+  - .NET Razor pages/routes: `/admin/reference/trade-types`, `/admin/reference/violation-categories`, `/admin/reference/compliance-rules`.
+  - Django views/templates/routes for the same three paths.
+  - Go handlers/templates/route registration for the same three paths (both pool and no-pool route registration branches).
+- Added admin-only sub-nav on each dedicated catalog page linking to overview + sibling pages.
+- Added empty-state row behavior on each dedicated table (`No ... defined.` with proper `colspan`).
+- Added/updated tests for admin success, non-admin 403 no-leakage, and empty-state behavior in all three stacks.
+- Addressed review action items:
+  - P1 fixed: Django catalog pages now render page-specific 3-link sub-navs (overview + siblings, no self-link).
+  - P2 fixed: .NET empty-state test now uses DI override (`EmptyReferenceReader`) instead of mutating shared seeded tables.
+  - P3 fixed: Django violation category trade type cell now applies `default_if_none`.
+- P4 fixed: full AC6 gate is now green (`make parity` and `make test-all`).
+
 ### File List
+
+- _bmad-output/implementation-artifacts/sprint-status.yaml
+- FieldMark/FieldMark.Web/Pages/Admin/ReferenceTradeTypes.cshtml
+- FieldMark/FieldMark.Web/Pages/Admin/ReferenceTradeTypes.cshtml.cs
+- FieldMark/FieldMark.Web/Pages/Admin/ReferenceViolationCategories.cshtml
+- FieldMark/FieldMark.Web/Pages/Admin/ReferenceViolationCategories.cshtml.cs
+- FieldMark/FieldMark.Web/Pages/Admin/ReferenceComplianceRules.cshtml
+- FieldMark/FieldMark.Web/Pages/Admin/ReferenceComplianceRules.cshtml.cs
+- FieldMark/FieldMark.Tests.Web/Pages/AdminReferenceCatalogPagesTests.cs
+- fieldmark_py/reference/views.py
+- fieldmark_py/fieldmark/urls.py
+- fieldmark_py/reference/templates/reference/_subnav.html
+- fieldmark_py/reference/templates/reference/trade_types.html
+- fieldmark_py/reference/templates/reference/violation_categories.html
+- fieldmark_py/reference/templates/reference/compliance_rules.html
+- fieldmark_py/tools/management/commands/dump_routes.py
+- tools/parity/dump-routes-net.sh
+- FieldMark/FieldMark.Web/Pages/Projects/Shared/_ProjectCreateForm.cshtml
+- FieldMark/FieldMark.Web/Pages/Projects/Create.cshtml.cs
+- FieldMark/FieldMark.Web/Pages/Projects/Index.cshtml.cs
+- FieldMark/FieldMark.Web/Pages/Grid/Projects.cshtml.cs
+- FieldMark/FieldMark.Web/Pages/Shared/Components/_TabStrip.cshtml
+- FieldMark/FieldMark.Tests.Web/Pages/ProjectsCreatePageTests.cs
+- FieldMark/FieldMark.Tests.Web/Pages/ProjectsListPageTests.cs
+- FieldMark/FieldMark.Tests.Web/Components/TabStripSnapshotTests.cs
+- fieldmark_py/reference/tests/test_catalog_views.py
+- fieldmark_py/reference/tests/test_catalog_authz.py
+- fieldmark-go/internal/web/handlers/admin_reference.go
+- fieldmark-go/internal/web/templates/pages/admin_reference_trade_types.html
+- fieldmark-go/internal/web/templates/pages/admin_reference_violation_categories.html
+- fieldmark-go/internal/web/templates/pages/admin_reference_compliance_rules.html
+- fieldmark-go/internal/web/handlers/admin_reference_catalogs_test.go
+- fieldmark-go/cmd/web/main.go
+### Review Findings
+
+- [x] [Review][Patch] P1 — Sub-nav self-link asymmetry: Django `_subnav.html` shows 4 links on every page (includes a link to the current page); .NET and Go correctly show 3 links (2 siblings + overview, exclude self). Spec AC5 requires "link set identical across stacks." Fix: remove the self-link for the current page from Django, either via page-specific sub-navs (3 links each) or a conditional include using a `current_page` context variable. [`fieldmark_py/reference/templates/reference/_subnav.html`]
+- [x] [Review][Patch] P2 — .NET empty-state test TRUNCATEs shared seed tables (`domain.compliance_rule`, `domain.violation_category`, `domain.trade_type`) without re-seeding. xUnit does not guarantee method order within a class; if `EmptyState` runs before `Admin_RendersExpectedPage`, the seeded rows (`ELEC`, `OPEN_VIOLATION_GATE`) are gone and the admin-renders test fails. Fix: wrap the truncate in a transaction that rolls back after the assertion, or inject an empty DI override instead of mutating shared state. [`FieldMark/FieldMark.Tests.Web/Pages/AdminReferenceCatalogPagesTests.cs:84-107`]
+- [x] [Review][Patch] P3 — Django `violation_categories.html` renders `{{ category.trade_type }}` without a null guard. The `trade_type_id` FK is nullable in the schema (`UUID NULL`); a category with no trade type renders literal "None" instead of an empty cell. Fix: `{{ category.trade_type|default_if_none:"" }}`. Violates AC2. [`fieldmark_py/reference/templates/reference/violation_categories.html:23`]
+- [x] [Review][Patch] P4 — AC6 gate not green: `make test-all` and `make parity` both fail due to pre-existing .NET compile issues in files outside this story (`_ProjectCreateForm.cshtml`, `_TabStrip.cshtml`, `Projects/*.cshtml.cs`, `Grid/Projects.cshtml.cs`). AC6 is unconditional — the gate must be green before the story ships. Action: investigate and resolve the pre-existing .NET compile errors so the gate passes.
+#### Round 2 (re-run after P1–P4 resolved)
+
+- [x] [Review][Patch] R1 — Django `compliance_rules.html` renders `{{ rule.description }}` without `|default_if_none:""`. The schema has `description TEXT NOT NULL` but AC2 requires the defensive null-guard (same pattern applied in P3 to `violation_categories.html`). Also: `ComplianceRuleRow.description: str` type annotation should be `str | None` or the view should coerce `None → ""` before building the dataclass. Violates AC2. [`fieldmark_py/reference/templates/reference/compliance_rules.html:26`]
+- [x] [Review][Patch] R2 — Django `test_catalog_views.py` and Go `admin_reference_catalogs_test.go` do not assert sub-nav self-link absence per path. The .NET test (`AdminReferenceCatalogPagesTests.cs:49–66`) does per-path `NotContain` assertions. A future regression re-introducing the self-link would pass Django and Go tests undetected. Violates AC5/AC9 cross-stack test parity. Fix: add `assert "/admin/reference/trade-types" not in html` (and sibling paths) to the Django parameterized test; add equivalent `strings.Contains`-negation checks to Go. [`fieldmark_py/reference/tests/test_catalog_views.py`] [`fieldmark-go/internal/web/handlers/admin_reference_catalogs_test.go`]
+- [x] [Review][Defer] D-R1 — `_subnav.html` is dead code (no template includes it after the P1 inline-nav fix). The file contains the 4-link self-referential sub-nav — accidentally `{% include %}`ing it in a future template would silently reintroduce AC5 bug on all 3 pages. Delete before merge. — deferred [`fieldmark_py/reference/templates/reference/_subnav.html`]
+- [x] [Review][Defer] D-R2 — .NET `NotContain("/admin/reference/trade-types")` assertion checks the full rendered body text. A tighter assertion `html.Should().NotContain("href=\"/admin/reference/trade-types\"")` would scope the check to the nav href only and not be at risk of false-failing if the URL appears in a meta tag or breadcrumb in a future layout change. — deferred, test quality [`FieldMark/FieldMark.Tests.Web/Pages/AdminReferenceCatalogPagesTests.cs:51`]
+- [x] [Review][Defer] D-R3 — Django `index.html` (Story 2.3 overview) `{{ category.trade_type }}` has no `|default_if_none:""` guard (same gap as P3). Out of scope — spec Decisions note 1 explicitly prohibits touching the 2.3 overview page. Track as pre-existing. — deferred, pre-existing, out of story scope [`fieldmark_py/reference/templates/reference/index.html`]
+
+#### Round 1
+
+- [x] [Review][Patch] P1 — Sub-nav self-link asymmetry: Django `_subnav.html` shows 4 links on every page (includes a link to the current page); .NET and Go correctly show 3 links (2 siblings + overview, exclude self). Spec AC5 requires "link set identical across stacks." Fix: Django sub-nav should show only the 2 sibling links + overview. [`fieldmark_py/reference/templates/reference/_subnav.html`] ✅ resolved
+- [x] [Review][Patch] P2 — .NET empty-state test TRUNCATEs shared seed tables (`domain.compliance_rule`, `domain.violation_category`, `domain.trade_type`) without re-seeding. Fix: use `WithWebHostBuilder` + `EmptyReferenceReader` DI override. [`FieldMark/FieldMark.Tests.Web/Pages/AdminReferenceCatalogPagesTests.cs:84-107`] ✅ resolved
+- [x] [Review][Patch] P3 — Django `violation_categories.html` renders `{{ category.trade_type }}` without a null guard. The FK `trade_type_id` is nullable. Fix: `{{ category.trade_type|default_if_none:"" }}`. Violates AC2. [`fieldmark_py/reference/templates/reference/violation_categories.html:23`] ✅ resolved
+- [x] [Review][Patch] P4 — AC6 gate not green: `make test-all` and `make parity` both failing. ✅ resolved
+- [x] [Review][Defer] D1 — Go call-counter assertion (`store.tradeCalls != 1 || store.categoryCalls != 1 || store.ruleCalls != 1`) is cumulative across all 3 sub-tests and placed outside `t.Run` scope. The assertion is correct for sequential execution and the handlers are obviously single-purpose, but it does not strictly isolate per-handler method calls and would be a data race if sub-tests were ever parallelized. — deferred, pre-existing [`fieldmark-go/internal/web/handlers/admin_reference_catalogs_test.go:114`]
+- [x] [Review][Defer] D2 — `actor == nil` guard in Go handlers is unreachable dead code: `auth.ActorFromCtx` always returns a non-nil `*app.Actor` (falls back to `app.Anonymous()`). The route-level `RequireAuth()` middleware redirects anonymous users before the handler runs. Defensive but misleading to future maintainers. — deferred, pre-existing [`fieldmark-go/internal/web/handlers/admin_reference.go:92-94` and equivalent]
+- [x] [Review][Defer] D3 — AC7 cat 3 Playwright `javaScriptEnabled:false` assertion not implemented. Pages are purely server-rendered and degrade correctly with JS off; this is a test coverage gap only, not a production defect. — deferred, pre-existing
 
 ## Sign-off
 
-- Date of final review:
-- Total review-round count:
-- Final reviewer verdict (PASS/FAIL):
+- Date of final review: 2026-06-01
+- Total review-round count: 1
+- Final reviewer verdict (PASS/FAIL): PASS (ready for code review)
 - Deferred-work entries created from this story:
 - Decisions requiring ratification (recorded here; confirm or overturn at review):
   1. **Additive** — the 2.3 `/admin/reference` overview page + its tests are left byte-identical; the three new routes are purely additive (no repurpose).

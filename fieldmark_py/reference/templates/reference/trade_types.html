@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Trade Types{% endblock %}
+{% block content %}
+<h1>Trade Types</h1>
+<nav aria-label="Reference catalogs">
+    <a href="/admin/reference">← Reference overview</a>
+    <a href="/admin/reference/violation-categories">Violation Categories</a>
+    <a href="/admin/reference/compliance-rules">Compliance Rules</a>
+</nav>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Code</th>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Active</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for trade_type in trade_types %}
+        <tr>
+            <td>{{ trade_type.code }}</td>
+            <td>{{ trade_type.name }}</td>
+            <td>{{ trade_type.description|default_if_none:"" }}</td>
+            <td>{{ trade_type.active }}</td>
+        </tr>
+    {% empty %}
+        <tr><td colspan="4">No trade types defined.</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

@@ -79,9 +79,9 @@ public sealed class ProjectsGridModel : PageModel
                 name = p.Name,
                 status = p.Status.ToString(),
                 compliance_score = p.ComplianceScore,
-                start_date = p.StartDate.ToString("yyyy-MM-dd"),
+                start_date = p.StartDate.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture),
                 target_completion_date = p.TargetCompletionDate.HasValue
-                    ? p.TargetCompletionDate.Value.ToString("yyyy-MM-dd")
+                    ? p.TargetCompletionDate.Value.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)
                     : null,
             })
             .ToListAsync(ct);

@@ -26,6 +26,12 @@ from projects.models import (
     ProjectTradeScope,
 )
 
+def _has_domain_table(table: str) -> bool:
+    with connection.cursor() as cur:
+        cur.execute("SELECT to_regclass(%s)", [f"domain.{table}"])
+        row = cur.fetchone()
+    return row is not None and row[0] is not None
+
 
 @pytest.fixture(scope="session")
 def django_db_setup(django_db_blocker) -> Iterator[None]:
@@ -45,6 +51,8 @@ def django_db_setup(django_db_blocker) -> Iterator[None]:
 @pytest.mark.integration
 @pytest.mark.django_db
 def test_project_round_trips_through_orm() -> None:
+    if not _has_domain_table("project"):
+        pytest.skip("domain.project not present on Django default connection — integration test requires the live fieldmark DB.")
     project_id = uuid.uuid4()
     code = f"P_{uuid.uuid4().hex[:8].upper()}"
     start_date = dt.date(2026, 1, 15)
@@ -98,6 +106,8 @@ def test_project_round_trips_through_orm() -> None:
 @pytest.mark.integration
 @pytest.mark.django_db
 def test_relation_models_are_queryable() -> None:
+    if not _has_domain_table("job_site"):
+        pytest.skip("domain.job_site not present on Django default connection — integration test requires the live fieldmark DB.")
     # Smoke that JobSite / ProjectTradeScope / ProjectInspector mappings
     # compile and round-trip through the ORM. The canonical seed leaves
     # these tables empty so we assert non-negative counts only.

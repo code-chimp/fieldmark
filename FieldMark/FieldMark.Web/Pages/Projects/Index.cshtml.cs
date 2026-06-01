@@ -43,7 +43,6 @@ public sealed partial class IndexModel : PageModel
     }
 
     // GET /projects/ → 405 Method Not Allowed (Story 2.9 will register the list route here).
-    [IgnoreAntiforgeryToken]
     public IActionResult OnGet()
     {
         Response.Headers.Allow = "POST";
@@ -244,10 +243,10 @@ public sealed partial class IndexModel : PageModel
                         description = (object?)description,
                         inspector_ids = sortedInspIds,
                         name = created.Project.Name,
-                        start_date = startDate.ToString("yyyy-MM-dd"),
+                        start_date = startDate.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture),
                         status = "Active",
                         target_completion_date = (object?)(targetDate.HasValue
-                            ? targetDate.Value.ToString("yyyy-MM-dd")
+                            ? targetDate.Value.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)
                             : null),
                         trade_scope_ids = sortedTradeIds,
                     }

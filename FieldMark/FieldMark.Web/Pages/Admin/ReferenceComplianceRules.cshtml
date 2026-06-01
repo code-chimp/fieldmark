@@ -1,0 +1,51 @@
+@page "/admin/reference/compliance-rules"
+@model FieldMark.Web.Pages.Admin.ReferenceComplianceRulesModel
+@{
+    ViewData["Title"] = "Compliance Rules";
+}
+
+<h1>Compliance Rules</h1>
+
+<nav aria-label="Reference catalogs">
+    <a href="/admin/reference">← Reference overview</a>
+    <a href="/admin/reference/trade-types">Trade Types</a>
+    <a href="/admin/reference/violation-categories">Violation Categories</a>
+</nav>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Code</th>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Rule Kind</th>
+            <th>Parameters</th>
+            <th>Active</th>
+        </tr>
+    </thead>
+    <tbody>
+    @if (Model.ComplianceRules.Count == 0)
+    {
+        <tr><td colspan="6">No compliance rules defined.</td></tr>
+    }
+    else
+    {
+        @foreach (var rule in Model.ComplianceRules)
+        {
+            <tr>
+                <td>@rule.Code</td>
+                <td>@rule.Name</td>
+                <td>@rule.Description</td>
+                <td>@rule.RuleKind</td>
+                <td>
+                    <details>
+                        <summary>parameters</summary>
+                        <pre><code class="font-mono">@rule.ParametersJson</code></pre>
+                    </details>
+                </td>
+                <td>@rule.Active</td>
+            </tr>
+        }
+    }
+    </tbody>
+</table>

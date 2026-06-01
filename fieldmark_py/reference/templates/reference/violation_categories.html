@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Violation Categories{% endblock %}
+{% block content %}
+<h1>Violation Categories</h1>
+<nav aria-label="Reference catalogs">
+    <a href="/admin/reference">← Reference overview</a>
+    <a href="/admin/reference/trade-types">Trade Types</a>
+    <a href="/admin/reference/compliance-rules">Compliance Rules</a>
+</nav>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Code</th>
+            <th>Name</th>
+            <th>Trade Type ID</th>
+            <th>Default Severity</th>
+            <th>Description</th>
+            <th>Active</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for category in violation_categories %}
+        <tr>
+            <td>{{ category.code }}</td>
+            <td>{{ category.name }}</td>
+            <td>{{ category.trade_type|default_if_none:"" }}</td>
+            <td>{{ category.default_severity }}</td>
+            <td>{{ category.description|default_if_none:"" }}</td>
+            <td>{{ category.active }}</td>
+        </tr>
+    {% empty %}
+        <tr><td colspan="6">No violation categories defined.</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

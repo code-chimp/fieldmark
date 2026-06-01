@@ -51,6 +51,11 @@
 
 generated: 2026-05-11
 last_updated: 2026-05-31
+#   (2-14 round 3 rerun code review clean; status set to done)
+#   (2-14 round 2 review patch items resolved; status set to review)
+#   (2-14 round 2 review found 2 patch items; status set to in-progress)
+#   (2-14 review action items resolved; full gate green; status set to review)
+#   (2-14 round 1 review found 4 patch items; status set to in-progress)
 #   (2-10 rerun 4 code review clean; status set to done)
 #   (2-10 rerun 3 review patch item resolved: 1 item closed; status set to review)
 #   (2-10 rerun 3 review left 1 patch finding as action item; status set to in-progress)
@@ -212,7 +217,7 @@ development_status:
   2-11-project-detail-anchor-screen-with-header-strip-tabstrip-and-entityrail: backlog
   2-12-place-on-hold-and-resume-transitions-with-three-region-oob-orchestration: backlog
   2-13-project-audit-log-tab: backlog
-  2-14-reference-data-read-pages-for-administrator: ready-for-dev
+  2-14-reference-data-read-pages-for-administrator: done
   epic-2-retrospective: optional
 
   # ===== Epic 3: Inspection Workflow & Violation Genesis =====

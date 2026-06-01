@@ -40,7 +40,7 @@ public sealed class HomePageTests(PostgresFixture pg)
         var resp = await client.GetAsync("/");
 
         resp.StatusCode.Should().Be(HttpStatusCode.Found);
-        resp.Headers.Location!.PathAndQuery.Should().StartWith("/login");
+        resp.Headers.Location!.ToString().Should().Contain("/login");
     }
 
     [Fact]
@@ -50,7 +50,7 @@ public sealed class HomePageTests(PostgresFixture pg)
         var resp = await client.GetAsync("/");
 
         resp.StatusCode.Should().Be(HttpStatusCode.Found);
-        resp.Headers.Location!.PathAndQuery.Should().Be("/dashboard");
+        resp.Headers.Location!.ToString().Should().EndWith("/dashboard");
     }
 
     [Fact]

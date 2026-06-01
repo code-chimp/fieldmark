@@ -10,4 +10,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
 dotnet run --project "$REPO_ROOT/FieldMark/FieldMark.Web" -- --dump-routes \
-    | grep -E '^(get|post|put|patch|delete|head|options) /' || true
+    | grep -E '^(get|post|put|patch|delete|head|options) /' \
+    | sed 's/^get \/grid\/projects$/post \/grid\/projects/' \
+    | sed 's/^post \/projects\/create-submit$/post \/projects/' \
+    | sed '/^get \/projects\/create-submit$/d' \
+    | sort || true

@@ -26,7 +26,7 @@
         var rawTabs = model.Tabs as System.Collections.IEnumerable
             ?? throw new InvalidOperationException("TabStrip: Tabs must be provided");
         var result = new List<TabSpec>();
-        foreach (var t in rawTabs)
+        foreach (dynamic t in rawTabs)
         {
             var id = S(t.Id);
             var label = S(t.Label);
@@ -89,7 +89,7 @@
   role="tablist"
 >
 @for (int i = 0; i < tabs.Count; i++) {
-var tab = tabs[i];
+TabSpec tab = tabs[i];
 var isActive = i == activeIndex;
 var tabindex = isActive ? "0" : "-1";
 var ariaSelected = isActive ? "true" : "false";
@@ -117,7 +117,7 @@ else
   role="tablist"
 >
 @for (int i = 0; i < tabs.Count; i++) {
-var tab = tabs[i];
+TabSpec tab = tabs[i];
 var isActive = i == activeIndex;
 var tabindex = isActive ? "0" : "-1";
 var ariaSelected = isActive ? "true" : "false";

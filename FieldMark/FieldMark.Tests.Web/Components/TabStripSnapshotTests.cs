@@ -217,14 +217,8 @@ public sealed class TabStripSnapshotTests(PostgresFixture pg) : ComponentRenderF
             StripModel("strip", "Tabs", 0, ProjectDetailTabs)
         );
         // active tab has tabindex 0; all others have -1
-        var tabindexZeroCount = System.Text.RegularExpressions.Regex.Matches(
-            html,
-            @"tabindex=""0"""
-        ).Count;
-        var tabindexNegCount = System.Text.RegularExpressions.Regex.Matches(
-            html,
-            @"tabindex=""-1"""
-        ).Count;
+        var tabindexZeroCount = System.Text.RegularExpressions.Regex.Count(html, @"tabindex=""0""");
+        var tabindexNegCount = System.Text.RegularExpressions.Regex.Count(html, @"tabindex=""-1""");
         tabindexZeroCount.Should().Be(1, "exactly one tab should have tabindex=0");
         tabindexNegCount.Should().Be(3, "three inactive tabs should have tabindex=-1");
     }
@@ -238,15 +232,9 @@ public sealed class TabStripSnapshotTests(PostgresFixture pg) : ComponentRenderF
         );
         html.Should().Contain("id=\"tab-violations\"");
         // violations tab (index 2) should be selected
-        var selectedCount = System.Text.RegularExpressions.Regex.Matches(
-            html,
-            @"aria-selected=""true"""
-        ).Count;
+        var selectedCount = System.Text.RegularExpressions.Regex.Count(html, @"aria-selected=""true""");
         selectedCount.Should().Be(1, "exactly one tab should be aria-selected=true");
-        var notSelectedCount = System.Text.RegularExpressions.Regex.Matches(
-            html,
-            @"aria-selected=""false"""
-        ).Count;
+        var notSelectedCount = System.Text.RegularExpressions.Regex.Count(html, @"aria-selected=""false""");
         notSelectedCount.Should().Be(3, "three tabs should be aria-selected=false");
     }
 
@@ -259,10 +247,7 @@ public sealed class TabStripSnapshotTests(PostgresFixture pg) : ComponentRenderF
         );
         // the last tab (index 3 = tab-audit) should have tabindex=0 and aria-selected=true
         html.Should().Contain("id=\"tab-audit\"");
-        var selectedCount = System.Text.RegularExpressions.Regex.Matches(
-            html,
-            @"aria-selected=""true"""
-        ).Count;
+        var selectedCount = System.Text.RegularExpressions.Regex.Count(html, @"aria-selected=""true""");
         selectedCount.Should().Be(1);
     }
 
@@ -342,10 +327,7 @@ public sealed class TabStripSnapshotTests(PostgresFixture pg) : ComponentRenderF
             "TabStrip",
             StripModel("strip", "Tabs", 0, ProjectDetailTabs)
         );
-        var typeButtonCount = System.Text.RegularExpressions.Regex.Matches(
-            html,
-            @"type=""button"""
-        ).Count;
+        var typeButtonCount = System.Text.RegularExpressions.Regex.Count(html, @"type=""button""");
         typeButtonCount.Should().Be(
             ProjectDetailTabs.Count,
             "every tab button must have type=button"
