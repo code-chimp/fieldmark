@@ -1,4 +1,7 @@
 <div id="project-detail-tab-content" role="tabpanel" aria-labelledby="tab-summary" tabindex="-1" autofocus>
+  {% if transition_error %}
+    {% include "components/_inline_alert.html" with severity="danger" title=transition_error.title message=transition_error.message meta="" %}
+  {% endif %}
   <dl>
     <dt>Code</dt><dd>{{ project.code }}</dd>
     <dt>Name</dt><dd>{{ project.name }}</dd>
@@ -23,8 +26,12 @@
     </dd>
   </dl>
   <div class="mt-4 flex gap-2">
-    {% include "components/_action_button.html" with id="place-on-hold-btn" permission=can_place_on_hold state_allows=state_can_place_on_hold label="Place on Hold" hx_post="/projects/{{ project.id }}/place-on-hold" hx_target="#project-detail" disabled_reason="Project is already on hold" %}
-    {% include "components/_action_button.html" with id="resume-btn" permission=can_resume state_allows=state_can_resume label="Resume" hx_post="/projects/{{ project.id }}/resume" hx_target="#project-detail" disabled_reason="Project is not on hold" %}
-    {% include "components/_action_button.html" with id="close-btn" permission=can_close state_allows=state_can_close label="Close" hx_post="/projects/{{ project.id }}/close" hx_target="#project-detail" disabled_reason="Only active projects can be closed" %}
+    {% url "project_place_on_hold" project.id as project_place_on_hold_path %}
+    {% url "project_resume" project.id as project_resume_path %}
+    {% url "project_detail" project.id as project_detail_path %}
+    {% include "components/_action_button.html" with id="place-on-hold-btn" permission=can_place_on_hold state_allows=state_can_place_on_hold label="Place on Hold" hx_get=project_place_on_hold_path hx_target="#project-action-form" hx_swap="innerHTML" disabled_reason="Project is already on hold" %}
+    {% include "components/_action_button.html" with id="resume-btn" permission=can_resume state_allows=state_can_resume label="Resume" hx_get=project_resume_path hx_target="#project-action-form" hx_swap="innerHTML" disabled_reason="Project is not on hold" %}
+    {% include "components/_action_button.html" with id="close-btn" permission=can_close state_allows=state_can_close label="Close" hx_post=project_detail_path|add:"/close" hx_target="#project-detail" disabled_reason="Only active projects can be closed" %}
   </div>
+  <div id="project-action-form" class="mt-3"></div>
 </div>

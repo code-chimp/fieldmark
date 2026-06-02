@@ -1,0 +1,13 @@
+{% load compliance_tile_tags %}
+{% include "projects/_detail_body.html" %}
+
+{% compliance_band project.compliance_score as band %}
+<section id="compliance-tile" hx-swap-oob="true" role="status" aria-live="polite" aria-atomic="true" class="compliance-tile">
+  <p class="compliance-tile__label">Compliance</p>
+  <p class="compliance-tile__value text-3xl font-bold tnum {{ band.value_class }}">{{ band.display_value }}</p>
+  {% if band.render_p %}<p class="compliance-tile__threshold {{ band.threshold_class }}">{{ band.threshold_word }}</p>{% endif %}
+</section>
+
+<li hx-swap-oob="afterbegin:#audit-log">
+  {% include "components/_audit_row.html" with action=oob.audit.action actor_name=oob.audit.actor_name occurred_at=oob.audit.occurred_at absolute=oob.audit.absolute relative=oob.audit.relative before_after_json=oob.audit.before_after_json expanded=oob.audit.expanded %}
+</li>

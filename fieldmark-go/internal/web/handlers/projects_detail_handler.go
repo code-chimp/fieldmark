@@ -26,6 +26,7 @@ type ProjectsDetailHandlers struct {
 	Pool      *pgxpool.Pool
 	Projects  postgres.ProjectStore
 	Reference postgres.ReferenceStore
+	Audit     postgres.AuditEntryStore
 }
 
 type projectSummaryVM struct {
@@ -81,6 +82,16 @@ func (h *ProjectsDetailHandlers) buildVM(c fiber.Ctx, id uuid.UUID) (fiber.Map, 
 	if err != nil {
 		return nil, err
 	}
+	return h.buildVMWithLoadedProjectData(c, id, project, scopes, inspectors)
+}
+
+func (h *ProjectsDetailHandlers) buildVMWithLoadedProjectData(
+	c fiber.Ctx,
+	id uuid.UUID,
+	project *entities.Project,
+	scopes []entities.ProjectTradeScope,
+	inspectors []entities.ProjectInspector,
+) (fiber.Map, error) {
 	tradeTypes, err := h.Reference.ListTradeTypes(c.Context())
 	if err != nil {
 		return nil, err
@@ -115,27 +126,27 @@ func (h *ProjectsDetailHandlers) buildVM(c fiber.Ctx, id uuid.UUID) (fiber.Map, 
 	}
 	actor := auth.ActorFromCtx(c)
 	summary := projectSummaryVM{
-		Code:        project.Code,
-		Name:        project.Name,
-		StartDate:   project.StartDate.Format("2006-01-02"),
-		TargetDate:  "—",
-		Description: "—",
-		TradeNames:  tradeNames,
+		Code:           project.Code,
+		Name:           project.Name,
+		StartDate:      project.StartDate.Format("2006-01-02"),
+		TargetDate:     "—",
+		Description:    "—",
+		TradeNames:     tradeNames,
 		InspectorNames: inspectorNames,
 		PlaceOnHold: viewmodels.ActionButtonVM{
 			ID: "place-on-hold-btn", Permission: auth.Can(actor, "project.place_on_hold", uuid.Nil),
 			StateAllows: project.CanPlaceOnHold(), Label: "Place on Hold",
-			HxPost: fmt.Sprintf("/projects/%s/place-on-hold", id), HxTarget: "#project-detail", DisabledReason: "Project is already on hold",
+			HxGet: fmt.Sprintf("/projects/%s/place-on-hold", id), HxTarget: "#project-action-form", HxSwap: "innerHTML", DisabledReason: "Project is already on hold",
 		},
 		Resume: viewmodels.ActionButtonVM{
 			ID: "resume-btn", Permission: auth.Can(actor, "project.resume", uuid.Nil),
 			StateAllows: project.CanResume(), Label: "Resume",
-			HxPost: fmt.Sprintf("/projects/%s/resume", id), HxTarget: "#project-detail", DisabledReason: "Project is not on hold",
+			HxGet: fmt.Sprintf("/projects/%s/resume", id), HxTarget: "#project-action-form", HxSwap: "innerHTML", DisabledReason: "Project is not on hold",
 		},
 		Close: viewmodels.ActionButtonVM{
 			ID: "close-btn", Permission: auth.Can(actor, "project.close", uuid.Nil),
 			StateAllows: project.CanClose(), Label: "Close",
-			HxPost: fmt.Sprintf("/projects/%s/close", id), HxTarget: "#project-detail", DisabledReason: "Only active projects can be closed",
+			HxPost: fmt.Sprintf("/projects/%s/close", id), HxTarget: "#project-detail", HxSwap: "outerHTML", DisabledReason: "Only active projects can be closed",
 		},
 	}
 	if project.TargetCompletionDate != nil {
@@ -151,28 +162,34 @@ func (h *ProjectsDetailHandlers) buildVM(c fiber.Ctx, id uuid.UUID) (fiber.Map, 
 	switch tab {
 	case "", "summary":
 	case "inspections":
-		activeIndex = 1; panel = "project_detail_inspections_panel"; activeTabID = "tab-inspections"
+		activeIndex = 1
+		panel = "project_detail_inspections_panel"
+		activeTabID = "tab-inspections"
 	case "violations":
-		activeIndex = 2; panel = "project_detail_violations_panel"; activeTabID = "tab-violations"
+		activeIndex = 2
+		panel = "project_detail_violations_panel"
+		activeTabID = "tab-violations"
 	case "audit":
-		activeIndex = 3; panel = "project_detail_audit_panel"; activeTabID = "tab-audit"
+		activeIndex = 3
+		panel = "project_detail_audit_panel"
+		activeTabID = "tab-audit"
 	default:
 		return nil, fiber.ErrNotFound
 	}
 	status := viewmodels.ResolveStatusBadge("project", string(project.Status))
 	return fiber.Map{
-		"Title": project.Name,
-		"ProjectCode": project.Code,
-		"ProjectName": project.Name,
-		"ProjectID": id.String(),
-		"ProjectStatus": status,
+		"Title":          project.Name,
+		"ProjectCode":    project.Code,
+		"ProjectName":    project.Name,
+		"ProjectID":      id.String(),
+		"ProjectStatus":  status,
 		"ComplianceTile": components.NewComplianceTileArgs(&project.ComplianceScore, "Compliance", "compliance-tile"),
 		"Tabs": components.TabStripArgs{
 			ID: "project-detail-tabstrip", AriaLabel: "Project Detail Tabs", Tabs: projectTabs(id), ActiveIndex: activeIndex,
 		},
-		"Summary": summary,
-		"Rail": components.EntityRailArgs{ID: "violation-detail", EntityTypeLabel: "Violation", EntityLoaded: false},
-		"ActiveTabID": activeTabID,
+		"Summary":       summary,
+		"Rail":          components.EntityRailArgs{ID: "violation-detail", EntityTypeLabel: "Violation", EntityLoaded: false},
+		"ActiveTabID":   activeTabID,
 		"PanelTemplate": panel,
 		"IsTabResponse": tab != "",
 	}, nil
@@ -213,7 +230,7 @@ func (h *ProjectsDetailHandlers) GetProjectsDetail(c fiber.Ctx) error {
 			}
 			return c.Render("pages/projects_detail_tab_response", m, "")
 		}
-		return c.Render("pages/projects_detail", m, "")
+		return c.Render("projects_detail_body", m, "")
 	}
 	if isTab {
 		return c.Redirect().To(fmt.Sprintf("/projects/%s", id))

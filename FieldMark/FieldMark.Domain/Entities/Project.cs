@@ -1,4 +1,5 @@
 using FieldMark.Domain.ValueObjects;
+using FieldMark.Domain.Exceptions;
 
 namespace FieldMark.Domain.Entities;
 
@@ -36,6 +37,22 @@ public class Project
     /// Epic 6 adds additional closure gate checks (open violations / required inspections).
     /// </summary>
     public bool CanClose() => Status == ProjectStatus.Active;
+
+    public void PlaceOnHold(string reason)
+    {
+        _ = reason; // Reason is validated/recorded by the handler; transition gate is status-only.
+        if (Status != ProjectStatus.Active)
+            throw new InvalidProjectTransitionException("Project is already on hold");
+        Status = ProjectStatus.OnHold;
+    }
+
+    public void Resume(string? reason)
+    {
+        _ = reason; // Optional metadata only; transition gate is status-only.
+        if (Status != ProjectStatus.OnHold)
+            throw new InvalidProjectTransitionException("Project is not on hold");
+        Status = ProjectStatus.Active;
+    }
 
     /// <summary>
     /// Creates a new Project with its join collections. Returns a

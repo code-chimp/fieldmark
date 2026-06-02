@@ -110,11 +110,29 @@ func TestGetProjectsDetail_HxRequestReturnsFragment(t *testing.T) {
 	}
 	b, _ := io.ReadAll(resp.Body)
 	html := string(b)
-	if !strings.Contains(html, `id="project-detail"`) || !strings.Contains(html, `id="project-header-strip"`) || !strings.Contains(html, `id="project-detail-tabstrip"`) {
+	if strings.Contains(html, `id="project-detail"`) || !strings.Contains(html, `id="project-header-strip"`) || !strings.Contains(html, `id="project-detail-tabstrip"`) {
 		t.Fatalf("missing canonical ids; body=%s", html)
 	}
 	if strings.Contains(strings.ToLower(html), "<html") {
 		t.Fatalf("expected body fragment only for HX request")
+	}
+}
+
+func TestGetProjectsDetail_FullPageWrapsFragment(t *testing.T) {
+	a := makeProjectsDetailApp(adminActor)
+	req, _ := http.NewRequest(http.MethodGet, "/projects/a1000000-0000-0000-0000-000000000001", nil)
+	resp, err := a.Test(req)
+	if err != nil {
+		t.Fatalf("test request failed: %v", err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("expected 200, got %d", resp.StatusCode)
+	}
+	b, _ := io.ReadAll(resp.Body)
+	html := string(b)
+	if !strings.Contains(html, `<div id="project-detail">`) || !strings.Contains(html, `id="project-header-strip"`) {
+		t.Fatalf("expected standalone wrapper around detail fragment; body=%s", html)
 	}
 }
 

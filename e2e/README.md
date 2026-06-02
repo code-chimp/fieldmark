@@ -34,6 +34,33 @@ From **`e2e/`**:
 
 Single-target debugging avoids failures from backends that are not running; use `--project=fiber` etc.
 
+## Agent Runbook: Sandbox-Safe Playwright
+
+For Codex / Claude style agents running inside a managed sandbox:
+
+1. Start the backend(s) first.
+2. Run the narrowest useful Playwright command first:
+
+```bash
+pnpm exec playwright test --project=dotnet
+pnpm exec playwright test tests/shared/project-transition-flow.spec.ts --project=django
+```
+
+3. If browser startup fails with a macOS permission error such as:
+   - `Permission denied (1100)`
+   - `MachPortRendezvousServer`
+   - browser bootstrap / launch denial before any assertions run
+
+   then the failure is probably **sandbox-related**, not a test failure. Re-run the same command with escalation / outside the sandbox.
+
+4. When the spec mutates shared database state, prefer **per-project** runs over the full matrix and reset known fixture rows between runs.
+
+### Important Notes
+
+- The current Playwright config uses `devices["Desktop Chrome"]` as a preset. That does **not** mean the fix is “switch to Chrome vs Chromium”.
+- In this repo, the recurring agent failure mode has been **browser launch permission**, and it still applies to standard Playwright Chromium launches.
+- If one stack passes only when run alone, inspect shared DB state before changing selectors or app code.
+
 ## Selector policy
 
 Prefer **`getByRole` / `getByLabel`** and parity-locked copy; use **`#project-detail`** and other HTMX IDs from root **CLAUDE.md**; use **`data-testid`** only when stacks diverge. Helpers live in `helpers/selectors.ts`.

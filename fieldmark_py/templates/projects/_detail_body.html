@@ -1,4 +1,3 @@
-<div id="project-detail">
 <section id="project-header-strip" class="mb-4">
   <h1>{{ project.code }} — {{ project.name }}</h1>
   {% include "components/_status_badge.html" with entity=status_entity value=status_value severity="" %}
@@ -12,4 +11,3 @@
   </div>
   {% include "components/_entity_rail.html" with id="violation-detail" entity_type_label="Violation" entity_loaded=False body_slot=None footer_slot=None %}
 </section>
-</div>

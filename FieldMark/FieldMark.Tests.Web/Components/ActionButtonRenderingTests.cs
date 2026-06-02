@@ -25,7 +25,9 @@ public sealed class ActionButtonRenderingTests(PostgresFixture pg)
         StateAllows: false,
         Label: "Approve Resolution",
         HxPost: "/violations/00000000-0000-0000-0000-000000000001/corrective-actions/00000000-0000-0000-0000-000000000002/approve",
+        HxGet: null,
         HxTarget: "#violation-detail",
+        HxSwap: "outerHTML",
         DisabledReason: "Awaiting review"
     );
 

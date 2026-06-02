@@ -3,5 +3,7 @@
 {% block title %}{{ project.name }}{% endblock %}
 
 {% block content %}
-{% include "projects/_detail_body.html" %}
+<div id="project-detail">
+  {% include "projects/_detail_body.html" %}
+</div>
 {% endblock %}

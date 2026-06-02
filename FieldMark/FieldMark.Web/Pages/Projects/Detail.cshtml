@@ -5,7 +5,15 @@
     ViewData["Title"] = $"{Model.ProjectCode} — {Model.ProjectName}";
     if (isHtmx) { Layout = null; }
 }
-@if (Model.IsTabResponse)
+@if (Model.IsTransitionFormResponse)
+{
+    @await Html.PartialAsync("Projects/_ProjectTransitionForm", Model)
+}
+else if (Model.IsTransitionSuccessResponse)
+{
+    @await Html.PartialAsync("Projects/_DetailTransitionResponse", Model)
+}
+else if (Model.IsTabResponse)
 {
     if (Model.ActiveTabIndex == 0)
     {
@@ -27,5 +35,14 @@
 }
 else
 {
+    if (isHtmx)
+    {
+        @await Html.PartialAsync("Projects/_DetailBody", Model)
+    }
+    else
+    {
+<div id="project-detail">
     @await Html.PartialAsync("Projects/_DetailBody", Model)
+</div>
+    }
 }

@@ -1,5 +1,9 @@
-@model FieldMark.Web.Pages.Projects.DetailModel
+@model FieldMark.Web.Pages.Projects.ProjectDetailPageModelBase
 <div id="project-detail-tab-content" role="tabpanel" aria-labelledby="tab-summary" tabindex="-1" autofocus>
+  @if (Model.TransitionError is not null)
+  {
+    @await Html.PartialAsync("Shared/Components/_InlineAlert", Model.TransitionError)
+  }
   <dl>
     <dt>Code</dt><dd>@Model.Summary!.Code</dd>
     <dt>Name</dt><dd>@Model.Summary!.Name</dd>
@@ -44,4 +48,5 @@
     @await Html.PartialAsync("Shared/_ActionButton", Model.Summary!.Resume)
     @await Html.PartialAsync("Shared/_ActionButton", Model.Summary!.Close)
   </div>
+  <div id="project-action-form" class="mt-3"></div>
 </div>

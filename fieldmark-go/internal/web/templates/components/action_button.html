@@ -5,9 +5,9 @@
   type="button"
   id="{{ .ID }}"
   class="btn btn-primary"
-  hx-post="{{ .HxPost }}"
+  {{ if .HxGet }}hx-get="{{ .HxGet }}"{{ else }}hx-post="{{ .HxPost }}"{{ end }}
   hx-target="{{ .HxTarget }}"
-  hx-swap="outerHTML"
+  hx-swap="{{ if .HxSwap }}{{ .HxSwap }}{{ else }}outerHTML{{ end }}"
   hx-disabled-elt="this"
 >{{ .Label }}</button>
 {{- else -}}

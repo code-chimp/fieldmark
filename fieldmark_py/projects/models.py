@@ -17,6 +17,8 @@ from typing import TYPE_CHECKING
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
+from .errors import InvalidProjectTransition
+
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
@@ -67,6 +69,18 @@ class Project(models.Model):
     def can_close(self) -> bool:
         # Status-only gate for Story 2.11; Epic 6 adds additional closure checks.
         return self.status == ProjectStatus.ACTIVE
+
+    def place_on_hold(self, reason: str) -> None:
+        _ = reason
+        if self.status != ProjectStatus.ACTIVE:
+            raise InvalidProjectTransition("Project is already on hold")
+        self.status = ProjectStatus.ON_HOLD
+
+    def resume(self, reason: str | None = None) -> None:
+        _ = reason
+        if self.status != ProjectStatus.ON_HOLD:
+            raise InvalidProjectTransition("Project is not on hold")
+        self.status = ProjectStatus.ACTIVE
 
     @classmethod
     def create(

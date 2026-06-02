@@ -6,14 +6,18 @@ See docs/reference/ag-grid-ssrm-contract.md for the list page + grid contract.
 
 from __future__ import annotations
 
+import re
 import uuid
+import json
+import logging
+from datetime import UTC, datetime
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError, transaction
 from django.http import HttpRequest, HttpResponse, HttpResponseForbidden
 from django.shortcuts import redirect, render
-from django.views.decorators.http import require_GET, require_POST
+from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
 from audit.actions import AuditAction
 from audit.append import append_audit_entry
@@ -22,6 +26,7 @@ from fieldmark.roles import Role
 from reference.models import TradeType
 from tools.models import DevUserUuid
 
+from .errors import InvalidProjectTransition
 from .forms import ProjectCreateForm
 from .models import Project, ProjectInspector, ProjectTradeScope
 
@@ -33,6 +38,9 @@ register_action("project.create", Role.ADMIN)
 register_action("project.place_on_hold", Role.ADMIN)
 register_action("project.resume", Role.ADMIN)
 register_action("project.close", Role.ADMIN)
+
+_REASON_MAX_LENGTH = 500
+_CONTROL_CHAR_PATTERN = re.compile(r"[\x00-\x1F\x7F]")
 
 
 def _get_reference_data():
@@ -374,4 +382,235 @@ def _render_422(request, form, _stale_trade_choices=None, _stale_inspector_choic
             "error_count": len(form.errors),
         },
         status=422,
+    )
+
+
+def _actor_id_from_request_user(request: HttpRequest) -> uuid.UUID:
+    try:
+        return request.user.dev_uuid.uuid  # type: ignore[union-attr]
+    except Exception:  # noqa: BLE001
+        logging.getLogger(__name__).error(
+            "projects.transition: no dev_uuid for user_id=%s; "
+            "using synthetic actor_id — seed runner may need to be re-run",
+            request.user.pk,
+        )
+        return uuid.uuid5(uuid.NAMESPACE_DNS, f"django-user-{request.user.pk}")
+
+
+def _validate_reason(reason: str, required: bool) -> str | None:
+    value = (reason or "").strip()
+    if required and not value:
+        return "Reason is required."
+    if value and len(value) > _REASON_MAX_LENGTH:
+        return f"Reason must be {_REASON_MAX_LENGTH} characters or fewer."
+    if value and _CONTROL_CHAR_PATTERN.search(value):
+        return "Reason contains invalid control characters."
+    return None
+
+
+def _audit_row_context(action: str, actor_name: str, occurred_at: datetime, before_after_json: str) -> dict[str, object]:
+    iso = occurred_at.astimezone(UTC).isoformat().replace("+00:00", "Z")
+    return {
+        "action": action,
+        "actor_name": actor_name,
+        "occurred_at": iso,
+        "absolute": iso,
+        "relative": "just now",
+        "before_after_json": before_after_json,
+        "expanded": False,
+    }
+
+
+def _render_transition_form(request: HttpRequest, id: uuid.UUID, *, action_path: str, submit_label: str, title: str, required: bool, reason: str = "", error: str | None = None, status: int = 200) -> HttpResponse:
+    return render(
+        request,
+        "projects/_project_transition_form.html",
+        {
+            "project_id": id,
+            "action_path": action_path,
+            "submit_label": submit_label,
+            "title": title,
+            "required": required,
+            "reason": reason,
+            "error": error,
+            "alert_error": error,
+        },
+        status=status,
+    )
+
+
+def _render_transition_success(request: HttpRequest, project: Project, *, action: AuditAction, reason: str, before_state: dict[str, object], after_state: dict[str, object]) -> HttpResponse:
+    context = _build_project_detail_context(request, project)
+    context["oob"] = {
+        "audit": _audit_row_context(
+            action=action.value,
+            actor_name=request.user.get_username(),
+            occurred_at=datetime.now(UTC),
+            before_after_json=json.dumps({"before": before_state, "after": after_state}, sort_keys=True),
+        ),
+    }
+    return render(request, "projects/_detail_transition_response.html", context)
+
+
+def _render_transition_conflict(request: HttpRequest, project: Project, *, title: str, message: str) -> HttpResponse:
+    context = _build_project_detail_context(request, project)
+    context["transition_error"] = {"title": title, "message": message}
+    return render(request, "projects/_detail_body.html", context, status=409)
+
+
+@require_http_methods(["GET", "POST"])
+@login_required
+def project_place_on_hold(request: HttpRequest, id: uuid.UUID) -> HttpResponse:
+    if request.method == "GET":
+        if not can(request.user, "project.place_on_hold"):
+            return HttpResponseForbidden("You do not have permission to access this page.")
+        project = _load_project_or_404(id)
+        if project is None:
+            return HttpResponse("Not Found.", status=404)
+        return _render_transition_form(
+            request,
+            id,
+            action_path=f"/projects/{id}/place-on-hold",
+            submit_label="Place on hold",
+            title="Place project on hold",
+            required=True,
+        )
+
+    if not can(request.user, "project.place_on_hold"):
+        return HttpResponseForbidden("You do not have permission to access this page.")
+    project = _load_project_or_404(id)
+    if project is None:
+        return HttpResponse("Not Found.", status=404)
+
+    reason = request.POST.get("reason", "")
+    err = _validate_reason(reason, required=True)
+    if err is not None:
+        return _render_transition_form(
+            request,
+            id,
+            action_path=f"/projects/{id}/place-on-hold",
+            submit_label="Place on hold",
+            title="Place project on hold",
+            required=True,
+            reason=reason,
+            error=err,
+            status=422,
+        )
+
+    before_state: dict[str, object] = {}
+    try:
+        with transaction.atomic():
+            project = Project.objects.select_for_update().get(pk=id)
+            before_state = {"status": project.status}
+            project.place_on_hold(reason)
+            project.save(update_fields=["status"])
+            append_audit_entry(
+                actor_id=_actor_id_from_request_user(request),
+                action=AuditAction.PROJECT_PLACED_ON_HOLD,
+                entity_type="Project",
+                entity_id=project.id,
+                project_id=project.id,
+                before_state=before_state,
+                after_state={"status": project.status},
+                metadata={"reason": reason.strip()},
+            )
+    except Project.DoesNotExist:
+        return HttpResponse("Not Found.", status=404)
+    except InvalidProjectTransition as ex:
+        return _render_transition_conflict(
+            request,
+            project,
+            title="Couldn't place project on hold",
+            message=str(ex),
+        )
+
+    project = _load_project_or_404(id)
+    if project is None:
+        return HttpResponse("Not Found.", status=404)
+    return _render_transition_success(
+        request,
+        project,
+        action=AuditAction.PROJECT_PLACED_ON_HOLD,
+        reason=reason.strip(),
+        before_state=before_state,
+        after_state={"status": project.status},
+    )
+
+
+@require_http_methods(["GET", "POST"])
+@login_required
+def project_resume(request: HttpRequest, id: uuid.UUID) -> HttpResponse:
+    if request.method == "GET":
+        if not can(request.user, "project.resume"):
+            return HttpResponseForbidden("You do not have permission to access this page.")
+        project = _load_project_or_404(id)
+        if project is None:
+            return HttpResponse("Not Found.", status=404)
+        return _render_transition_form(
+            request,
+            id,
+            action_path=f"/projects/{id}/resume",
+            submit_label="Resume",
+            title="Resume project",
+            required=False,
+        )
+
+    if not can(request.user, "project.resume"):
+        return HttpResponseForbidden("You do not have permission to access this page.")
+    project = _load_project_or_404(id)
+    if project is None:
+        return HttpResponse("Not Found.", status=404)
+
+    reason = request.POST.get("reason", "")
+    err = _validate_reason(reason, required=False)
+    if err is not None:
+        return _render_transition_form(
+            request,
+            id,
+            action_path=f"/projects/{id}/resume",
+            submit_label="Resume",
+            title="Resume project",
+            required=False,
+            reason=reason,
+            error=err,
+            status=422,
+        )
+
+    before_state: dict[str, object] = {}
+    try:
+        with transaction.atomic():
+            project = Project.objects.select_for_update().get(pk=id)
+            before_state = {"status": project.status}
+            project.resume(reason.strip() or None)
+            project.save(update_fields=["status"])
+            append_audit_entry(
+                actor_id=_actor_id_from_request_user(request),
+                action=AuditAction.PROJECT_RESUMED,
+                entity_type="Project",
+                entity_id=project.id,
+                project_id=project.id,
+                before_state=before_state,
+                after_state={"status": project.status},
+                metadata={"reason": reason.strip()},
+            )
+    except Project.DoesNotExist:
+        return HttpResponse("Not Found.", status=404)
+    except InvalidProjectTransition as ex:
+        return _render_transition_conflict(
+            request,
+            project,
+            title="Couldn't resume project",
+            message=str(ex),
+        )
+
+    project = _load_project_or_404(id)
+    if project is None:
+        return HttpResponse("Not Found.", status=404)
+    return _render_transition_success(
+        request,
+        project,
+        action=AuditAction.PROJECT_RESUMED,
+        reason=reason.strip(),
+        before_state=before_state,
+        after_state={"status": project.status},
     )

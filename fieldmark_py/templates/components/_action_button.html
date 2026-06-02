@@ -7,7 +7,9 @@
     - state_allows: bool (server-computed from entity state)
     - label: string
     - hx_post: string (HTMX POST target)
+    - hx_get: string (HTMX GET target)
     - hx_target: string (CSS selector)
+    - hx_swap: string (HTMX swap mode, default outerHTML)
     - disabled_reason: string (rendered in tooltip + sr-only span when disabled)
 {% endcomment %}
 {% if not permission %}{% else %}{% if not state_allows %}<button
@@ -24,8 +26,8 @@
   type="button"
   id="{{ id }}"
   class="btn btn-primary"
-  hx-post="{{ hx_post }}"
+  {% if hx_get %}hx-get="{{ hx_get }}"{% else %}hx-post="{{ hx_post }}"{% endif %}
   hx-target="{{ hx_target }}"
-  hx-swap="outerHTML"
+  hx-swap="{{ hx_swap|default:'outerHTML' }}"
   hx-disabled-elt="this"
 >{{ label }}</button>{% endif %}{% endif %}

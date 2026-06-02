@@ -1,5 +1,4 @@
-@model FieldMark.Web.Pages.Projects.DetailModel
-<div id="project-detail">
+@model FieldMark.Web.Pages.Projects.ProjectDetailPageModelBase
 <section id="project-header-strip" class="mb-4">
   <h1>@Model.ProjectCode — @Model.ProjectName</h1>
   @await Html.PartialAsync("Shared/Components/_StatusBadge", new { Entity = "Project", Value = Model.ProjectStatus, Severity = "" })
@@ -13,4 +12,3 @@
   </div>
   @await Html.PartialAsync("Shared/Components/_EntityRail", new { Id = "violation-detail", EntityTypeLabel = "Violation", EntityLoaded = false })
 </section>
-</div>

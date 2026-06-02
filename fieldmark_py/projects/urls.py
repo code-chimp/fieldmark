@@ -20,5 +20,7 @@ urlpatterns = [
     # @require_POST on project_create_post returns 405 with Allow: POST on GET.
     path("projects/", views.project_create_post, name="project_collection"),
     path("projects/<uuid:id>", views.project_detail, name="project_detail"),
+    path("projects/<uuid:id>/place-on-hold", views.project_place_on_hold, name="project_place_on_hold"),
+    path("projects/<uuid:id>/resume", views.project_resume, name="project_resume"),
     path("projects/<uuid:id>/tabs/<str:tab>", views.project_tab, name="project_tab"),
 ]

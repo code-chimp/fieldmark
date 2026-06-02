@@ -10,6 +10,8 @@ type ActionButtonVM struct {
 	StateAllows    bool
 	Label          string
 	HxPost         string
+	HxGet          string
 	HxTarget       string
+	HxSwap         string
 	DisabledReason string
 }

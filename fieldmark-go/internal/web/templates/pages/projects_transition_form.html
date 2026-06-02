@@ -1,0 +1,33 @@
+<form
+  role="form"
+  method="post"
+  action="{{ .ActionPath }}"
+  hx-post="{{ .ActionPath }}"
+  hx-target="#project-detail"
+  hx-swap="innerHTML"
+  hx-disabled-elt="find button[type=submit]"
+  class="space-y-2"
+>
+  {{ if .Alert }}
+    {{ template "inline_alert" .Alert }}
+  {{ end }}
+  <label for="reason">{{ .Title }}</label>
+  <textarea
+    id="reason"
+    name="reason"
+    maxlength="500"
+    {{ if .Required }}required{{ end }}
+    {{ if .ReasonError }}aria-invalid="true" aria-describedby="reason-error"{{ end }}
+  >{{ .Reason }}</textarea>
+  {{ if .ReasonError }}
+    <p id="reason-error" class="form-error" role="alert">{{ .ReasonError }}</p>
+  {{ end }}
+  <div class="flex gap-2">
+    <button type="submit" class="btn btn-primary">{{ .SubmitLabel }}</button>
+    <button
+      type="button"
+      class="btn btn-secondary"
+      hx-on:click="document.getElementById('project-action-form').innerHTML=''"
+    >Cancel</button>
+  </div>
+</form>

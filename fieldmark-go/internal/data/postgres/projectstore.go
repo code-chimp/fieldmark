@@ -56,6 +56,24 @@ func LoadProjectFrom(ctx context.Context, q Querier, id uuid.UUID) (*entities.Pr
 	return loadProject(ctx, q, id)
 }
 
+// LoadProjectForUpdateFrom reads a single domain.project row and acquires a
+// row-level lock within the caller's open transaction.
+func LoadProjectForUpdateFrom(ctx context.Context, q Querier, id uuid.UUID) (*entities.Project, error) {
+	return loadProjectForUpdate(ctx, q, id)
+}
+
+// LoadTradeScopesFrom reads the project's trade-scope join rows using the
+// caller's provided Querier, typically an open transaction.
+func LoadTradeScopesFrom(ctx context.Context, q Querier, id uuid.UUID) ([]entities.ProjectTradeScope, error) {
+	return loadTradeScopes(ctx, q, id)
+}
+
+// LoadInspectorsFrom reads the project's inspector join rows using the caller's
+// provided Querier, typically an open transaction.
+func LoadInspectorsFrom(ctx context.Context, q Querier, id uuid.UUID) ([]entities.ProjectInspector, error) {
+	return loadInspectors(ctx, q, id)
+}
+
 func scanProject(row pgx.Row, p *entities.Project) error {
 	return row.Scan(
 		&p.ID,
@@ -77,9 +95,17 @@ func (s *projectStorePg) Load(ctx context.Context, id uuid.UUID) (*entities.Proj
 }
 
 func loadProject(ctx context.Context, r Querier, id uuid.UUID) (*entities.Project, error) {
+	return loadProjectBySQL(ctx, r, `SELECT `+projectColumns+` FROM domain.project WHERE id = $1`, id)
+}
+
+func loadProjectForUpdate(ctx context.Context, r Querier, id uuid.UUID) (*entities.Project, error) {
+	return loadProjectBySQL(ctx, r, `SELECT `+projectColumns+` FROM domain.project WHERE id = $1 FOR UPDATE`, id)
+}
+
+func loadProjectBySQL(ctx context.Context, r Querier, sql string, id uuid.UUID) (*entities.Project, error) {
 	row := r.QueryRow(
 		ctx,
-		`SELECT `+projectColumns+` FROM domain.project WHERE id = $1`,
+		sql,
 		id,
 	)
 	var p entities.Project

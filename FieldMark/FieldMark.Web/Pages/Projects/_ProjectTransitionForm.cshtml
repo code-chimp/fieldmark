@@ -1,0 +1,37 @@
+@model FieldMark.Web.Pages.Projects.ProjectDetailPageModelBase
+<form
+  role="form"
+  method="post"
+  action="@Model.TransitionActionPath"
+  hx-post="@Model.TransitionActionPath"
+  hx-target="#project-detail"
+  hx-swap="innerHTML"
+  hx-disabled-elt="find button[type=submit]"
+  class="space-y-2"
+>
+  @Html.AntiForgeryToken()
+  @if (!string.IsNullOrWhiteSpace(Model.TransitionReasonError))
+  {
+    @await Html.PartialAsync("Shared/Components/_InlineAlert", new { Severity = "danger", Title = "Couldn't submit transition", Message = Model.TransitionReasonError, Meta = "" })
+  }
+  <label for="reason">@Model.TransitionTitle</label>
+  <textarea
+    id="reason"
+    name="reason"
+    maxlength="500"
+    @(Model.TransitionReasonRequired ? "required" : "")
+    @(Html.Raw(!string.IsNullOrWhiteSpace(Model.TransitionReasonError) ? "aria-invalid=\"true\" aria-describedby=\"reason-error\"" : ""))
+  >@Model.TransitionReason</textarea>
+  @if (!string.IsNullOrWhiteSpace(Model.TransitionReasonError))
+  {
+    <p id="reason-error" class="form-error" role="alert">@Model.TransitionReasonError</p>
+  }
+  <div class="flex gap-2">
+    <button type="submit" class="btn btn-primary">@Model.TransitionSubmitLabel</button>
+    <button
+      type="button"
+      class="btn btn-secondary"
+      hx-on:click="document.getElementById('project-action-form').innerHTML=''"
+    >Cancel</button>
+  </div>
+</form>

@@ -1,0 +1,9 @@
+{{ template "projects_detail_body" . }}
+
+<section id="compliance-tile" hx-swap-oob="true" role="status" aria-live="polite" aria-atomic="true">
+  {{ template "compliance_tile" .ComplianceTileOOB }}
+</section>
+
+<li hx-swap-oob="afterbegin:#audit-log">
+  {{ template "audit_row" .AuditRow }}
+</li>

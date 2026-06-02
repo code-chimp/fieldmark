@@ -1,5 +1,4 @@
 {{ define "projects_detail_body" -}}
-<div id="project-detail">
 <section id="project-header-strip" class="mb-4">
   <h1>{{.ProjectCode}} — {{.ProjectName}}</h1>
   {{template "status_badge" .ProjectStatus}}
@@ -12,5 +11,4 @@
   </div>
   {{template "entity_rail" .Rail}}
 </section>
-</div>
 {{- end }}

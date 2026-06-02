@@ -5,7 +5,9 @@ public sealed record ActionButtonVm(
     bool Permission,
     bool StateAllows,
     string Label,
-    string HxPost,
+    string? HxPost,
+    string? HxGet,
     string HxTarget,
+    string HxSwap = "outerHTML",
     string? DisabledReason = null
 );

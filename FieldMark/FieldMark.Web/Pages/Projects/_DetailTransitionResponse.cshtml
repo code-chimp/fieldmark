@@ -1,0 +1,10 @@
+@model FieldMark.Web.Pages.Projects.ProjectDetailPageModelBase
+@await Html.PartialAsync("Projects/_DetailBody", Model)
+
+<section id="compliance-tile" hx-swap-oob="true" role="status" aria-live="polite" aria-atomic="true">
+  @await Html.PartialAsync("Shared/Components/_ComplianceTile", new { Score = Model.ComplianceScore, Label = "Compliance", Id = "compliance-tile" })
+</section>
+
+<li hx-swap-oob="afterbegin:#audit-log">
+  @await Html.PartialAsync("Shared/Components/_AuditRow", Model.AuditRow)
+</li>

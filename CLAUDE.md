@@ -14,6 +14,17 @@ The `docs/` folder is organized by the Diátaxis framework: `tutorials/` (learni
 
 See [docs/reference/hard-rules.md](docs/reference/hard-rules.md). Stack-specific rules live in each project's own `CLAUDE.md`.
 
+## Playwright E2E Rule
+
+When an agent runs Playwright from [`e2e/`](e2e/), treat browser launch as a likely sandbox boundary on macOS-hosted agent runners.
+
+- If a Playwright command fails during browser startup with a permission error such as `Permission denied (1100)`, `MachPortRendezvousServer`, or another browser bootstrap denial, do **not** debug selectors first.
+- Re-run the same Playwright command with escalation / outside the sandbox so Chromium can launch normally.
+- Prefer **single-project reruns** (`--project=dotnet|django|fiber`) when tests mutate shared DB state; reset or reseed known fixture rows between project runs if the scenario is stateful.
+- Do not assume switching from `devices["Desktop Chrome"]` to explicit `browserName: "chromium"` will remove sandbox failures. In this repo the practical issue is browser-launch permission, not the Playwright browser preset.
+
+See [e2e/README.md](e2e/README.md) for the concrete runbook.
+
 ## Cross-Stack Architecture Principle
 
 Each stack (.NET, Django, Go) is a self-contained, idiomatic application. A native developer opening one stack must see every enum, DTO, DAO, handler, and test in its expected location with no surprises.

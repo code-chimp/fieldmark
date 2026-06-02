@@ -23,9 +23,16 @@ else
         type="button"
         id="@Model.Id"
         class="btn btn-primary"
-        hx-post="@Model.HxPost"
+        @if (!string.IsNullOrWhiteSpace(Model.HxGet))
+        {
+            <text>hx-get="@Model.HxGet"</text>
+        }
+        else if (!string.IsNullOrWhiteSpace(Model.HxPost))
+        {
+            <text>hx-post="@Model.HxPost"</text>
+        }
         hx-target="@Model.HxTarget"
-        hx-swap="outerHTML"
+        hx-swap="@Model.HxSwap"
         hx-disabled-elt="this"
     >@Model.Label</button>
 }

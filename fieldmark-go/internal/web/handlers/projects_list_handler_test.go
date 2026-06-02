@@ -18,6 +18,12 @@ import (
 )
 
 func makeProjectsListApp(actor *app.Actor) *fiber.App {
+	auth.ResetForTests()
+	auth.RegisterAction("project.read",
+		domain.RoleAdmin, domain.RoleComplianceOfficer, domain.RoleInspector,
+		domain.RoleSiteSupervisor, domain.RoleExecutive,
+	)
+	auth.RegisterAction("project.create", domain.RoleAdmin)
 	a := newTestApp()
 	if actor != nil {
 		a.Use(injectActor(actor))

@@ -50,7 +50,22 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-05-11
-last_updated: 2026-06-01
+last_updated: 2026-06-02
+#   (2-12 all 5 groups clean; sign-off finalized; status set to done)
+#   (2-12 Group 5 rerun clean; Group 5 complete)
+#   (2-12 Group 5 review found 2 patch items; status set to in-progress)
+#   (2-12 Group 4 rerun 2 clean; Group 4 complete)
+#   (2-12 Group 4 rerun found 2 patch items; status set to in-progress)
+#   (2-12 Group 4 review found 8 patch items; status set to in-progress)
+#   (2-12 Group 3 rerun clean; Group 3 complete)
+#   (2-12 Group 3 review found 2 patch items; status set to in-progress)
+#   (2-12 Group 2 rerun 3 review clean; Group 2 complete)
+#   (2-12 Group 2 rerun 2 review found 1 patch item; status set to in-progress)
+#   (2-12 Group 2 rerun review found 5 patch items; status set to in-progress)
+#   (2-12 round 3 review found 6 patch items; status set to in-progress)
+#   (2-12 round 2 review found 1 patch item; status set to in-progress)
+#   (2-12 round 1 review found 2 patch items; status set to in-progress)
+#   (2-12 implementation complete; parity green, Django+Go suites green, per-stack transition E2E green; status set to review with .NET aggregate web-suite runner caveat documented in story sign-off)
 #   (2-11 round 3 review: 1 patch applied by reviewer; all ACs satisfied; status set to done)
 #   (2-11 round 2 review found 1 decision + 4 patch items; status set to in-progress)
 #   (2-11 round 1 review found 1 decision + 18 patch items; status set to in-progress)
@@ -220,7 +235,7 @@ development_status:
   2-9-project-list-ag-grid-with-server-side-row-model: done
   2-10-compliance-dashboard-with-portfolio-tiles: done
   2-11-project-detail-anchor-screen-with-header-strip-tabstrip-and-entityrail: done
-  2-12-place-on-hold-and-resume-transitions-with-three-region-oob-orchestration: ready-for-dev
+  2-12-place-on-hold-and-resume-transitions-with-three-region-oob-orchestration: done
   2-13-project-audit-log-tab: backlog
   2-14-reference-data-read-pages-for-administrator: done
   epic-2-retrospective: optional

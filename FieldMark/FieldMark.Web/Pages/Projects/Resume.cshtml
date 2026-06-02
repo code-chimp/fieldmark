@@ -1,0 +1,18 @@
+@page "/projects/{id:guid}/resume"
+@model ResumeModel
+@{
+    var isHtmx = Request.Headers.TryGetValue("HX-Request", out var htmxVal) && string.Equals(htmxVal, "true", StringComparison.OrdinalIgnoreCase);
+    if (isHtmx) { Layout = null; }
+}
+@if (Model.IsTransitionFormResponse)
+{
+    @await Html.PartialAsync("Projects/_ProjectTransitionForm", Model)
+}
+else if (Model.IsTransitionSuccessResponse)
+{
+    @await Html.PartialAsync("Projects/_DetailTransitionResponse", Model)
+}
+else
+{
+    @await Html.PartialAsync("Projects/_DetailBody", Model)
+}

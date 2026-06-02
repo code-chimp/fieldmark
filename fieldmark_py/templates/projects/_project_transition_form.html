@@ -1,0 +1,34 @@
+<form
+  role="form"
+  method="post"
+  action="{{ action_path }}"
+  hx-post="{{ action_path }}"
+  hx-target="#project-detail"
+  hx-swap="innerHTML"
+  hx-disabled-elt="find button[type=submit]"
+  class="space-y-2"
+>
+  {% csrf_token %}
+  {% if alert_error %}
+    {% include "components/_inline_alert.html" with severity="danger" title="Couldn't submit transition" message=alert_error meta="" %}
+  {% endif %}
+  <label for="reason">{{ title }}</label>
+  <textarea
+    id="reason"
+    name="reason"
+    maxlength="500"
+    {% if required %}required{% endif %}
+    {% if error %}aria-invalid="true" aria-describedby="reason-error"{% endif %}
+  >{{ reason }}</textarea>
+  {% if error %}
+    <p id="reason-error" class="form-error" role="alert">{{ error }}</p>
+  {% endif %}
+  <div class="flex gap-2">
+    <button type="submit" class="btn btn-primary">{{ submit_label }}</button>
+    <button
+      type="button"
+      class="btn btn-secondary"
+      hx-on:click="document.getElementById('project-action-form').innerHTML=''"
+    >Cancel</button>
+  </div>
+</form>
