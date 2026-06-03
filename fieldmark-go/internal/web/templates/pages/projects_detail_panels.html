@@ -28,5 +28,19 @@
 <div id="project-detail-tab-content" role="tabpanel" aria-labelledby="tab-violations" tabindex="-1" autofocus><div class="alert alert-info" role="status">Violations appear here once the violation workflow lands.</div></div>
 {{- end }}
 {{ define "project_detail_audit_panel" -}}
-<div id="project-detail-tab-content" role="tabpanel" aria-labelledby="tab-audit" tabindex="-1" autofocus><div class="alert alert-info" role="status">Audit entries appear here once the audit tab story lands.</div></div>
+<div id="project-detail-tab-content" role="tabpanel" aria-labelledby="tab-audit" tabindex="-1" autofocus>
+  <ul id="audit-log" role="list" aria-live="polite">
+    {{- range .AuditRows }}
+      {{ template "audit_row" . }}
+    {{- end }}
+    {{- if .AuditLoadMorePath }}
+    <li id="audit-log-load-more">
+      <button type="button" class="btn btn-secondary" hx-get="{{ .AuditLoadMorePath }}" hx-target="closest li" hx-swap="outerHTML">Load more</button>
+    </li>
+    {{- end }}
+    {{- if and (not .AuditRows) (not .SuppressAuditEmptyState) }}
+    <li class="alert alert-info" role="status">No audit entries recorded for this project yet.</li>
+    {{- end }}
+  </ul>
+</div>
 {{- end }}

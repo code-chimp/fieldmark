@@ -4,6 +4,8 @@
   {{ template "compliance_tile" .ComplianceTileOOB }}
 </section>
 
+{{ with .AuditRow }}
 <li hx-swap-oob="afterbegin:#audit-log">
-  {{ template "audit_row" .AuditRow }}
+  {{ template "audit_row" . }}
 </li>
+{{ end }}

@@ -1,0 +1,6 @@
+@page "/projects/{id:guid}/audit-log"
+@model AuditLogModel
+@{
+    Layout = null;
+}
+@await Html.PartialAsync("Projects/_AuditLogItems", Model)

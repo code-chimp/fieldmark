@@ -13,6 +13,7 @@
  */
 
 import { expect, test } from '../../fixtures/base';
+import { projectSlotForBaseUrl } from './helpers';
 
 const ADMIN_USERNAME = 'aisha';
 const ADMIN_PASSWORD = 'FieldMark!2026';
@@ -73,6 +74,9 @@ async function loadProjectFromGrid(
 
   const detailRegion = page.locator('#project-detail');
   const rowCount = await rows.count();
+  const targetSlot = projectSlotForBaseUrl(baseURL);
+  let candidateCount = 0;
+  let fallbackIndex: number | null = null;
   for (let i = 0; i < Math.min(rowCount, 20); i += 1) {
     const row = rows.nth(i);
     const rowText = (await row.textContent()) ?? '';
@@ -97,6 +101,27 @@ async function loadProjectFromGrid(
       continue;
     }
 
+    if (fallbackIndex === null) {
+      fallbackIndex = i;
+    }
+    if (candidateCount === targetSlot) {
+      return;
+    }
+    candidateCount += 1;
+  }
+
+  if (fallbackIndex !== null) {
+    const before = await detailRegion.innerHTML();
+
+    await rows.nth(fallbackIndex).click();
+    await page.waitForFunction(
+      (previous) => {
+        const el = document.getElementById('project-detail');
+        return !!el && el.innerHTML !== previous;
+      },
+      before,
+      { timeout: 10000 },
+    );
     return;
   }
 

@@ -1,4 +1,11 @@
 # generated: 2026-05-11
+# last_updated: 2026-06-05
+#   (2-13 round 5 review clean; all ACs satisfied; status set to done)
+#   (2-13 round 4 review found 1 patch + 5 advisory items; status set to in-progress)
+#   (2-13 round 3 review found 4 patch items; status set to in-progress)
+#   (2-13 round 2 review found 10 patch items (2 new regressions + 8 still-open); status remains in-progress)
+#   (2-13 round 1 review found 11 patch items + 1 deferred; status set to in-progress)
+#   (2-13 round 1 review patch items resolved; focused stack tests + shared audit-log Playwright spec green; status set to review)
 # last_updated: 2026-05-28
 #   (2-4 round 7 review: 4 patch items applied directly by reviewer; all ACs satisfied; status set to done)
 #   (2-4 round 6 review patch items resolved: 4 patch items closed; status set to review)
@@ -50,7 +57,8 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-05-11
-last_updated: 2026-06-02
+last_updated: 2026-06-03
+#   (2-13 story created by create-story workflow; status set to ready-for-dev)
 #   (2-12 all 5 groups clean; sign-off finalized; status set to done)
 #   (2-12 Group 5 rerun clean; Group 5 complete)
 #   (2-12 Group 5 review found 2 patch items; status set to in-progress)
@@ -236,21 +244,36 @@ development_status:
   2-10-compliance-dashboard-with-portfolio-tiles: done
   2-11-project-detail-anchor-screen-with-header-strip-tabstrip-and-entityrail: done
   2-12-place-on-hold-and-resume-transitions-with-three-region-oob-orchestration: done
-  2-13-project-audit-log-tab: backlog
+  2-13-project-audit-log-tab: done
   2-14-reference-data-read-pages-for-administrator: done
+  2-15-harden-epic-2: backlog  # SHELL authored 2026-06-03; populate Section H (manual-AC findings) after 2-13; land before retro
   epic-2-retrospective: optional
 
   # ===== Epic 3: Inspection Workflow & Violation Genesis =====
+  # Story-split policy applied 2026-06-03 (sprint-change-proposal-2026-06-03.md).
+  # Behavioral/UI-integration stories split a/b/c: .a=.NET reference, .b=Django+Go port,
+  # .c=parity & definition-of-done (three-stack invariant gate). Chain .a->.b->.c is hard.
+  # Stories are listed in build order; numbers ascend with build order (reordered 2026-06-03):
+  # infrastructure (list 3.4, detail 3.6) precedes transitions (schedule 3.7, start 3.8, complete 3.9, cancel 3.10).
+  # Unified (data-layer / deterministic helper / small transitions): 3-1, 3-2, 3-3, 3-5, 3-8, 3-10.
   epic-3: backlog
   3-1-map-domain-inspection-and-domain-finding-into-each-stacks-data-layer: backlog
   3-2-map-domain-violation-into-each-stacks-data-layer-write-capable-for-auto-open: backlog
   3-3-implement-compliance-rule-engine-and-scoring-helper: backlog
-  3-4-schedule-inspection-compliance-officer-administrator: backlog
-  3-5-inspection-list-ag-grid-with-ssrm-endpoint: backlog
-  3-6-inspection-list-filters-and-date-range-scoping: backlog
-  3-7-inspection-detail-rendered-in-entityrail: backlog
+  3-4a-inspection-list-ag-grid-ssrm-dotnet-reference: ready-for-dev
+  3-4b-inspection-list-ag-grid-ssrm-django-go-port: backlog
+  3-4c-inspection-list-ag-grid-ssrm-parity-and-dod: backlog
+  3-5-inspection-list-filters-and-date-range-scoping: backlog
+  3-6a-inspection-detail-entityrail-dotnet-reference: backlog
+  3-6b-inspection-detail-entityrail-django-go-port: backlog
+  3-6c-inspection-detail-entityrail-parity-and-dod: backlog
+  3-7a-schedule-inspection-dotnet-reference: ready-for-dev
+  3-7b-schedule-inspection-django-go-port: backlog
+  3-7c-schedule-inspection-parity-and-dod: backlog
   3-8-start-inspection-scheduled-inprogress: backlog
-  3-9-complete-inspection-with-findings-and-auto-open-violations-atomically: backlog
+  3-9a-complete-inspection-auto-open-violations-dotnet-reference: backlog
+  3-9b-complete-inspection-auto-open-violations-django-go-port: backlog
+  3-9c-complete-inspection-auto-open-violations-parity-and-dod: backlog
   3-10-cancel-scheduled-inspection-with-reason: backlog
   epic-3-retrospective: optional
 

@@ -1,0 +1,11 @@
+@model FieldMark.Web.Pages.Projects.ProjectDetailPageModelBase
+@foreach (var auditRow in Model.AuditRows)
+{
+  @await Html.PartialAsync("Shared/Components/_AuditRow", auditRow)
+}
+@if (!string.IsNullOrWhiteSpace(Model.AuditLoadMorePath))
+{
+  <li id="audit-log-load-more">
+    <button type="button" class="btn btn-secondary" hx-get="@Model.AuditLoadMorePath" hx-target="closest li" hx-swap="outerHTML">Load more</button>
+  </li>
+}

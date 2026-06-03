@@ -11,6 +11,7 @@ import uuid
 import json
 import logging
 from datetime import UTC, datetime
+from django.db.models import Q
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
@@ -21,6 +22,7 @@ from django.views.decorators.http import require_GET, require_http_methods, requ
 
 from audit.actions import AuditAction
 from audit.append import append_audit_entry
+from audit.models import AuditEntry
 from fieldmark.authz import can, register_action
 from fieldmark.roles import Role
 from reference.models import TradeType
@@ -41,6 +43,7 @@ register_action("project.close", Role.ADMIN)
 
 _REASON_MAX_LENGTH = 500
 _CONTROL_CHAR_PATTERN = re.compile(r"[\x00-\x1F\x7F]")
+_AUDIT_PAGE_SIZE = 100
 
 
 def _get_reference_data():
@@ -245,6 +248,17 @@ def _project_tabs(project_id: uuid.UUID) -> list[dict[str, str]]:
     ]
 
 
+def _normalize_project_tab(tab: str | None) -> tuple[int, str]:
+    key = (tab or "summary").strip().lower()
+    if key == "inspections":
+        return 1, "projects/tabs/_placeholder_inspections.html"
+    if key == "violations":
+        return 2, "projects/tabs/_placeholder_violations.html"
+    if key == "audit":
+        return 3, "projects/tabs/_audit_panel.html"
+    return 0, "projects/tabs/_summary_panel.html"
+
+
 def _actor_display_map(user_ids: list[uuid.UUID]) -> dict[uuid.UUID, str]:
     if not user_ids:
         return {}
@@ -254,9 +268,84 @@ def _actor_display_map(user_ids: list[uuid.UUID]) -> dict[uuid.UUID, str]:
     )
     out: dict[uuid.UUID, str] = {}
     for row in rows:
-        full = row.user.get_full_name() if hasattr(row.user, "get_full_name") else ""
-        out[row.uuid] = full or row.user.username
+        full = (row.user.get_full_name() if hasattr(row.user, "get_full_name") else "").strip()
+        username = (row.user.username or "").strip()
+        out[row.uuid] = full or username
     return out
+
+
+def _relative_audit_time(occurred_at: datetime, *, now: datetime | None = None) -> str:
+    current = (now or datetime.now(UTC)).astimezone(UTC)
+    delta = current - occurred_at.astimezone(UTC)
+    seconds = max(int(delta.total_seconds()), 0)
+    if seconds < 60:
+        return "just now"
+    minutes = seconds // 60
+    if minutes < 60:
+        return f"{minutes} minute ago" if minutes == 1 else f"{minutes} minutes ago"
+    hours = minutes // 60
+    if hours < 24:
+        return f"{hours} hour ago" if hours == 1 else f"{hours} hours ago"
+    days = hours // 24
+    if days < 30:
+        return f"{days} day ago" if days == 1 else f"{days} days ago"
+    months = days // 30
+    if months < 12:
+        return f"{months} month ago" if months == 1 else f"{months} months ago"
+    years = months // 12
+    return f"{years} year ago" if years == 1 else f"{years} years ago"
+
+
+def _render_audit_json(entry: AuditEntry) -> str:
+    payload: dict[str, object] = {}
+    if entry.after_state is not None:
+        payload["after"] = entry.after_state
+    if entry.before_state is not None:
+        payload["before"] = entry.before_state
+    if entry.metadata is not None:
+        payload["metadata"] = entry.metadata
+    if not payload:
+        return ""
+    return json.dumps(payload, sort_keys=True, separators=(",", ":"))
+
+
+def _audit_row_view_model(entry: AuditEntry, actor_map: dict[uuid.UUID, str]) -> dict[str, object]:
+    occurred_at = entry.occurred_at.astimezone(UTC)
+    absolute = occurred_at.isoformat().replace("+00:00", "Z")
+    return {
+        "action": entry.action,
+        "actor_name": actor_map.get(entry.actor_id, ""),
+        "occurred_at": absolute,
+        "absolute": absolute,
+        "relative": _relative_audit_time(occurred_at),
+        "before_after_json": _render_audit_json(entry),
+        "expanded": False,
+    }
+
+
+def _project_audit_page(
+    project_id: uuid.UUID,
+    *,
+    before_occurred_at: datetime | None = None,
+    before_id: uuid.UUID | None = None,
+) -> tuple[list[dict[str, object]], str | None]:
+    query = AuditEntry.objects.filter(project_id=project_id)
+    if before_occurred_at is not None and before_id is not None:
+        query = query.filter(
+            Q(occurred_at__lt=before_occurred_at)
+            | (Q(occurred_at=before_occurred_at) & Q(id__lt=before_id))
+        )
+    rows = list(query.order_by("-occurred_at", "-id")[: _AUDIT_PAGE_SIZE + 1])
+    has_more = len(rows) > _AUDIT_PAGE_SIZE
+    rows = rows[:_AUDIT_PAGE_SIZE]
+    actor_map = _actor_display_map([row.actor_id for row in rows])
+    items = [_audit_row_view_model(row, actor_map) for row in rows]
+    load_more_url = None
+    if has_more and rows:
+        last = rows[-1]
+        cursor_ts = last.occurred_at.astimezone(UTC).isoformat().replace("+00:00", "Z")
+        load_more_url = f"/projects/{project_id}/audit-log?before_occurred_at={cursor_ts}&before_id={last.id}"
+    return items, load_more_url
 
 
 def _build_project_detail_context(request: HttpRequest, project: Project) -> dict[str, object]:
@@ -327,6 +416,10 @@ def _render_tab_response(request: HttpRequest, id: uuid.UUID, active_index: int,
     context = _build_project_detail_context(request, project)
     context["active_index"] = active_index
     context["panel_template"] = panel_template
+    if panel_template == "projects/tabs/_audit_panel.html":
+        audit_rows, audit_load_more_url = _project_audit_page(project.id)
+        context["audit_rows"] = audit_rows
+        context["audit_load_more_url"] = audit_load_more_url
     return render(request, "projects/_tab_response.html", context)
 
 
@@ -341,8 +434,44 @@ def project_tab(request: HttpRequest, id: uuid.UUID, tab: str) -> HttpResponse:
     if key == "violations":
         return _render_tab_response(request, id, 2, "projects/tabs/_placeholder_violations.html")
     if key == "audit":
-        return _render_tab_response(request, id, 3, "projects/tabs/_placeholder_audit.html")
+        return _render_tab_response(request, id, 3, "projects/tabs/_audit_panel.html")
     return HttpResponse("Not Found.", status=404)
+
+
+@require_GET
+@login_required
+def project_audit_log(request: HttpRequest, id: uuid.UUID) -> HttpResponse:
+    if not can(request.user, "project.read"):
+        return HttpResponseForbidden("You do not have permission to access this page.")
+    if _load_project_or_404(id) is None:
+        return HttpResponse("Not Found.", status=404)
+
+    raw_before_ts = request.GET.get("before_occurred_at")
+    raw_before_id = request.GET.get("before_id")
+    before_occurred_at = None
+    before_id = None
+    if raw_before_ts or raw_before_id:
+        if not raw_before_ts or not raw_before_id:
+            return HttpResponse("Invalid cursor.", status=400)
+        try:
+            before_occurred_at = datetime.fromisoformat(raw_before_ts.replace("Z", "+00:00"))
+            before_id = uuid.UUID(raw_before_id)
+        except ValueError:
+            return HttpResponse("Invalid cursor.", status=400)
+
+    audit_rows, load_more_url = _project_audit_page(
+        id,
+        before_occurred_at=before_occurred_at,
+        before_id=before_id,
+    )
+    return render(
+        request,
+        "projects/_audit_log_items.html",
+        {
+            "audit_rows": audit_rows,
+            "audit_load_more_url": load_more_url,
+        },
+    )
 
 
 @require_GET
@@ -434,26 +563,62 @@ def _render_transition_form(request: HttpRequest, id: uuid.UUID, *, action_path:
             "reason": reason,
             "error": error,
             "alert_error": error,
+            "current_tab": (request.POST.get("current_tab") or request.GET.get("current_tab") or "").strip().lower(),
         },
         status=status,
     )
 
 
-def _render_transition_success(request: HttpRequest, project: Project, *, action: AuditAction, reason: str, before_state: dict[str, object], after_state: dict[str, object]) -> HttpResponse:
+def _render_transition_success(request: HttpRequest, project: Project, *, action: AuditAction, reason: str, before_state: dict[str, object], after_state: dict[str, object], current_tab: str | None = None) -> HttpResponse:
+    transition_json = json.dumps(
+        {"after": after_state, "before": before_state, "metadata": {"reason": reason}},
+        sort_keys=True,
+    )
     context = _build_project_detail_context(request, project)
-    context["oob"] = {
-        "audit": _audit_row_context(
+    active_index, panel_template = _normalize_project_tab(current_tab)
+    context["active_index"] = active_index
+    context["panel_template"] = panel_template
+    context["suppress_audit_empty_state"] = False
+    if panel_template == "projects/tabs/_audit_panel.html":
+        latest = AuditEntry.objects.filter(project_id=project.id).order_by("-occurred_at", "-id").first()
+        audit_rows, audit_load_more_url = _project_audit_page(
+            project.id,
+            before_occurred_at=latest.occurred_at if latest is not None else None,
+            before_id=latest.id if latest is not None else None,
+        )
+        current_audit_row = _audit_row_context(
             action=action.value,
             actor_name=request.user.get_username(),
             occurred_at=datetime.now(UTC),
-            before_after_json=json.dumps({"before": before_state, "after": after_state}, sort_keys=True),
-        ),
-    }
+            before_after_json=transition_json,
+        )
+        audit_rows = [current_audit_row, *audit_rows]
+        context["audit_rows"] = audit_rows
+        context["audit_load_more_url"] = audit_load_more_url
+        context["suppress_audit_empty_state"] = True
+        context["oob"] = {"audit": None}
+    else:
+        context["oob"] = {
+            "audit": _audit_row_context(
+                action=action.value,
+                actor_name=request.user.get_username(),
+                occurred_at=datetime.now(UTC),
+                before_after_json=transition_json,
+            ),
+        }
     return render(request, "projects/_detail_transition_response.html", context)
 
 
-def _render_transition_conflict(request: HttpRequest, project: Project, *, title: str, message: str) -> HttpResponse:
+def _render_transition_conflict(request: HttpRequest, project: Project, *, title: str, message: str, current_tab: str | None = None) -> HttpResponse:
     context = _build_project_detail_context(request, project)
+    active_index, panel_template = _normalize_project_tab(current_tab)
+    context["active_index"] = active_index
+    context["panel_template"] = panel_template
+    context["suppress_audit_empty_state"] = False
+    if panel_template == "projects/tabs/_audit_panel.html":
+        audit_rows, audit_load_more_url = _project_audit_page(project.id)
+        context["audit_rows"] = audit_rows
+        context["audit_load_more_url"] = audit_load_more_url
     context["transition_error"] = {"title": title, "message": message}
     return render(request, "projects/_detail_body.html", context, status=409)
 
@@ -483,6 +648,7 @@ def project_place_on_hold(request: HttpRequest, id: uuid.UUID) -> HttpResponse:
         return HttpResponse("Not Found.", status=404)
 
     reason = request.POST.get("reason", "")
+    current_tab = (request.POST.get("current_tab") or "").strip().lower()
     err = _validate_reason(reason, required=True)
     if err is not None:
         return _render_transition_form(
@@ -522,6 +688,7 @@ def project_place_on_hold(request: HttpRequest, id: uuid.UUID) -> HttpResponse:
             project,
             title="Couldn't place project on hold",
             message=str(ex),
+            current_tab=current_tab,
         )
 
     project = _load_project_or_404(id)
@@ -534,6 +701,7 @@ def project_place_on_hold(request: HttpRequest, id: uuid.UUID) -> HttpResponse:
         reason=reason.strip(),
         before_state=before_state,
         after_state={"status": project.status},
+        current_tab=current_tab,
     )
 
 
@@ -562,6 +730,7 @@ def project_resume(request: HttpRequest, id: uuid.UUID) -> HttpResponse:
         return HttpResponse("Not Found.", status=404)
 
     reason = request.POST.get("reason", "")
+    current_tab = (request.POST.get("current_tab") or "").strip().lower()
     err = _validate_reason(reason, required=False)
     if err is not None:
         return _render_transition_form(
@@ -601,6 +770,7 @@ def project_resume(request: HttpRequest, id: uuid.UUID) -> HttpResponse:
             project,
             title="Couldn't resume project",
             message=str(ex),
+            current_tab=current_tab,
         )
 
     project = _load_project_or_404(id)
@@ -613,4 +783,5 @@ def project_resume(request: HttpRequest, id: uuid.UUID) -> HttpResponse:
         reason=reason.strip(),
         before_state=before_state,
         after_state={"status": project.status},
+        current_tab=current_tab,
     )

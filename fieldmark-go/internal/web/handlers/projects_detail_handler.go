@@ -6,9 +6,15 @@
 package handlers
 
 import (
+	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
+	"maps"
+	"slices"
 	"strings"
+	"time"
 
 	"github.com/gofiber/fiber/v3"
 	"github.com/google/uuid"
@@ -27,6 +33,7 @@ type ProjectsDetailHandlers struct {
 	Projects  postgres.ProjectStore
 	Reference postgres.ReferenceStore
 	Audit     postgres.AuditEntryStore
+	AuditRead postgres.AuditEntryReadStore
 }
 
 type projectSummaryVM struct {
@@ -77,12 +84,21 @@ func (h *ProjectsDetailHandlers) loadInspectorNames(c fiber.Ctx, inspectorIDs []
 	return out, rows.Err()
 }
 
+func normalizeProjectTab(tab string) string {
+	switch strings.ToLower(strings.TrimSpace(tab)) {
+	case "inspections", "violations", "audit":
+		return strings.ToLower(strings.TrimSpace(tab))
+	default:
+		return "summary"
+	}
+}
+
 func (h *ProjectsDetailHandlers) buildVM(c fiber.Ctx, id uuid.UUID) (fiber.Map, error) {
 	project, _, scopes, inspectors, err := h.Projects.LoadWithRelations(c.Context(), id)
 	if err != nil {
 		return nil, err
 	}
-	return h.buildVMWithLoadedProjectData(c, id, project, scopes, inspectors)
+	return h.buildVMWithLoadedProjectData(c, id, project, scopes, inspectors, c.Params("tab"))
 }
 
 func (h *ProjectsDetailHandlers) buildVMWithLoadedProjectData(
@@ -91,6 +107,7 @@ func (h *ProjectsDetailHandlers) buildVMWithLoadedProjectData(
 	project *entities.Project,
 	scopes []entities.ProjectTradeScope,
 	inspectors []entities.ProjectInspector,
+	tabValue string,
 ) (fiber.Map, error) {
 	tradeTypes, err := h.Reference.ListTradeTypes(c.Context())
 	if err != nil {
@@ -156,11 +173,11 @@ func (h *ProjectsDetailHandlers) buildVMWithLoadedProjectData(
 		summary.Description = *project.Description
 	}
 	activeIndex := 0
-	tab := strings.ToLower(c.Params("tab"))
+	tab := normalizeProjectTab(tabValue)
 	panel := "project_detail_summary_panel"
 	activeTabID := "tab-summary"
 	switch tab {
-	case "", "summary":
+	case "summary":
 	case "inspections":
 		activeIndex = 1
 		panel = "project_detail_inspections_panel"
@@ -177,7 +194,7 @@ func (h *ProjectsDetailHandlers) buildVMWithLoadedProjectData(
 		return nil, fiber.ErrNotFound
 	}
 	status := viewmodels.ResolveStatusBadge("project", string(project.Status))
-	return fiber.Map{
+	m := fiber.Map{
 		"Title":          project.Name,
 		"ProjectCode":    project.Code,
 		"ProjectName":    project.Name,
@@ -191,8 +208,188 @@ func (h *ProjectsDetailHandlers) buildVMWithLoadedProjectData(
 		"Rail":          components.EntityRailArgs{ID: "violation-detail", EntityTypeLabel: "Violation", EntityLoaded: false},
 		"ActiveTabID":   activeTabID,
 		"PanelTemplate": panel,
-		"IsTabResponse": tab != "",
-	}, nil
+		"IsTabResponse": tabValue != "",
+	}
+	if activeTabID == "tab-audit" {
+		auditRows, auditLoadMorePath, err := h.loadAuditPage(c, id, postgres.AuditPage{})
+		if err != nil {
+			return nil, err
+		}
+		m["AuditRows"] = auditRows
+		m["AuditLoadMorePath"] = auditLoadMorePath
+		m["SuppressAuditEmptyState"] = false
+	}
+	return m, nil
+}
+
+func relativeAuditTime(occurredAt time.Time, now time.Time) string {
+	seconds := int(now.Sub(occurredAt).Seconds())
+	if seconds < 0 {
+		seconds = 0
+	}
+	if seconds < 60 {
+		return "just now"
+	}
+	minutes := seconds / 60
+	if minutes < 60 {
+		if minutes == 1 {
+			return "1 minute ago"
+		}
+		return fmt.Sprintf("%d minutes ago", minutes)
+	}
+	hours := minutes / 60
+	if hours < 24 {
+		if hours == 1 {
+			return "1 hour ago"
+		}
+		return fmt.Sprintf("%d hours ago", hours)
+	}
+	days := hours / 24
+	if days < 30 {
+		if days == 1 {
+			return "1 day ago"
+		}
+		return fmt.Sprintf("%d days ago", days)
+	}
+	months := days / 30
+	if months < 12 {
+		if months == 1 {
+			return "1 month ago"
+		}
+		return fmt.Sprintf("%d months ago", months)
+	}
+	years := months / 12
+	if years == 1 {
+		return "1 year ago"
+	}
+	return fmt.Sprintf("%d years ago", years)
+}
+
+func renderAuditJSON(row postgres.AuditEntryRow) string {
+	payload := map[string]any{}
+	if len(row.AfterState) > 0 {
+		var after any
+		if json.Unmarshal(row.AfterState, &after) == nil {
+			payload["after"] = after
+		}
+	}
+	if len(row.BeforeState) > 0 {
+		var before any
+		if json.Unmarshal(row.BeforeState, &before) == nil {
+			payload["before"] = before
+		}
+	}
+	if len(row.Metadata) > 0 {
+		var metadata any
+		if json.Unmarshal(row.Metadata, &metadata) == nil {
+			payload["metadata"] = metadata
+		}
+	}
+	if len(payload) == 0 {
+		return ""
+	}
+	b, err := marshalSortedJSON(payload)
+	if err != nil {
+		return ""
+	}
+	return string(b)
+}
+
+func marshalSortedJSON(value any) ([]byte, error) {
+	switch v := value.(type) {
+	case map[string]any:
+		keys := slices.Sorted(maps.Keys(v))
+		var buf bytes.Buffer
+		buf.WriteByte('{')
+		for i, key := range keys {
+			if i > 0 {
+				buf.WriteByte(',')
+			}
+			keyJSON, err := json.Marshal(key)
+			if err != nil {
+				return nil, err
+			}
+			buf.Write(keyJSON)
+			buf.WriteByte(':')
+			childJSON, err := marshalSortedJSON(v[key])
+			if err != nil {
+				return nil, err
+			}
+			buf.Write(childJSON)
+		}
+		buf.WriteByte('}')
+		return buf.Bytes(), nil
+	case []any:
+		var buf bytes.Buffer
+		buf.WriteByte('[')
+		for i, child := range v {
+			if i > 0 {
+				buf.WriteByte(',')
+			}
+			childJSON, err := marshalSortedJSON(child)
+			if err != nil {
+				return nil, err
+			}
+			buf.Write(childJSON)
+		}
+		buf.WriteByte(']')
+		return buf.Bytes(), nil
+	default:
+		return json.Marshal(v)
+	}
+}
+
+func auditActionClass(action string) string {
+	switch action {
+	case "ProjectCreated", "ProjectPlacedOnHold", "ProjectResumed", "ProjectClosed",
+		"InspectionScheduled", "InspectionStarted", "InspectionCompleted", "InspectionCancelled",
+		"ViolationOpened", "ViolationAssigned", "ViolationVoided",
+		"CorrectiveActionSubmitted", "CorrectiveActionTakenForReview",
+		"CorrectiveActionApproved", "CorrectiveActionRejected":
+		return "badge-audit-action"
+	default:
+		return "badge-unknown"
+	}
+}
+
+func (h *ProjectsDetailHandlers) loadAuditPage(
+	c fiber.Ctx,
+	projectID uuid.UUID,
+	page postgres.AuditPage,
+) ([]viewmodels.AuditRowVM, string, error) {
+	if h.AuditRead == nil {
+		log.Printf("warn: ProjectsDetailHandlers.loadAuditPage called without AuditRead store for project %s", projectID.String())
+		return nil, "", nil
+	}
+	result, err := h.AuditRead.ListByProject(c.Context(), projectID, page)
+	if err != nil {
+		return nil, "", err
+	}
+	now := time.Now().UTC()
+	rows := make([]viewmodels.AuditRowVM, 0, len(result.Rows))
+	for _, row := range result.Rows {
+		absolute := row.OccurredAt.UTC().Format(time.RFC3339)
+		rows = append(rows, viewmodels.AuditRowVM{
+			Action:          row.Action,
+			ActionClass:     auditActionClass(row.Action),
+			ActorName:       row.ActorName,
+			OccurredAt:      absolute,
+			Absolute:        absolute,
+			Relative:        relativeAuditTime(row.OccurredAt.UTC(), now),
+			BeforeAfterJSON: renderAuditJSON(row),
+			Expanded:        false,
+		})
+	}
+	loadMorePath := ""
+	if result.NextCursor != nil {
+		loadMorePath = fmt.Sprintf(
+			"/projects/%s/audit-log?before_occurred_at=%s&before_id=%s",
+			projectID.String(),
+			result.NextCursor.OccurredAt.UTC().Format(time.RFC3339),
+			result.NextCursor.ID.String(),
+		)
+	}
+	return rows, loadMorePath, nil
 }
 
 // GetProjectsDetail handles GET /projects/:id.

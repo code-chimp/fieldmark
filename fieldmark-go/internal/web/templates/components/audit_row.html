@@ -10,9 +10,7 @@
   {{- if .BeforeAfterJSON }}
   <details class="audit-row__disclosure"{{ if .Expanded }} open{{ end }}>
     <summary>Show change</summary>
-    {{- if .Expanded }}
     <pre><code class="font-mono">{{ .BeforeAfterJSON }}</code></pre>
-    {{- end }}
   </details>
   {{- end }}
 </li>

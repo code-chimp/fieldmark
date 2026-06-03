@@ -1,11 +1,16 @@
 using System.Net;
+using System.IO;
 using System.Text.RegularExpressions;
+using System.Text.Json;
 using System.Linq;
 using FieldMark.Data.Context;
 using FieldMark.Domain.Entities;
 using FieldMark.Tests.Web.Fixtures;
+using FieldMark.Tests.Web.Helpers;
 using FluentAssertions;
+using HtmlAgilityPack;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -160,8 +165,128 @@ public sealed class ProjectsDetailPageTests(PostgresFixture pg)
         return await db.AuditEntries.AsNoTracking().CountAsync(a => a.ProjectId == projectId);
     }
 
+    private async Task<Guid> CreateAuthUserAsync(string userName, string? displayName = null)
+    {
+        using var factory = _pg.CreateFactory();
+        using var scope = factory.Services.CreateScope();
+        var authDb = scope.ServiceProvider.GetRequiredService<AuthDbContext>();
+        var userId = Guid.NewGuid();
+        authDb.Users.Add(
+            new IdentityUser<Guid>
+            {
+                Id = userId,
+                UserName = userName,
+                NormalizedUserName = userName.ToUpperInvariant(),
+                SecurityStamp = Guid.NewGuid().ToString("N"),
+                ConcurrencyStamp = Guid.NewGuid().ToString("N"),
+            }
+        );
+        if (!string.IsNullOrWhiteSpace(displayName))
+        {
+            authDb.UserClaims.Add(
+                new IdentityUserClaim<Guid>
+                {
+                    UserId = userId,
+                    ClaimType = "display_name",
+                    ClaimValue = displayName,
+                }
+            );
+        }
+        await authDb.SaveChangesAsync();
+        return userId;
+    }
+
+    private async Task CreateAuditEntryAsync(
+        Guid projectId,
+        string action = "ProjectPlacedOnHold",
+        Guid? actorId = null,
+        JsonDocument? beforeState = null,
+        JsonDocument? afterState = null,
+        JsonDocument? metadata = null
+    )
+    {
+        using var factory = _pg.CreateFactory();
+        using var scope = factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<FieldMarkDbContext>();
+        db.AuditEntries.Add(
+            new AuditEntry(
+                actorId ?? Guid.NewGuid(),
+                action,
+                "Project",
+                projectId,
+                projectId,
+                beforeState ?? JsonDocument.Parse("""{"status":"Active"}"""),
+                afterState ?? JsonDocument.Parse("""{"status":"OnHold"}"""),
+                metadata ?? JsonDocument.Parse("""{"reason":"Weather delay"}""")
+            )
+        );
+        await db.SaveChangesAsync();
+    }
+
     private static int CountOobRegions(string html) =>
         Regex.Count(html, "hx-swap-oob=");
+
+    private static string FindRepoRoot()
+    {
+        var dir = new DirectoryInfo(AppContext.BaseDirectory);
+        while (dir != null && !File.Exists(Path.Combine(dir.FullName, "Makefile")))
+        {
+            dir = dir.Parent;
+        }
+
+        return dir?.FullName
+            ?? throw new InvalidOperationException("Could not locate repo root (no Makefile found).");
+    }
+
+    private static string AuditLogCanonical(string variant)
+    {
+        var canonicalPath = Path.Combine(
+            FindRepoRoot(),
+            "docs",
+            "reference",
+            "fixtures",
+            "project-audit-log-canonical.html"
+        );
+        return NormaliseHtml.ExtractVariant(File.ReadAllText(canonicalPath), variant);
+    }
+
+    private static string NormaliseAuditLogHtml(string html)
+    {
+        html = Regex.Replace(
+            html,
+            "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}",
+            "00000000-0000-0000-0000-000000000000"
+        );
+        html = Regex.Replace(html, "datetime=\"[^\"]+\"", "datetime=\"TIMESTAMP\"");
+        html = Regex.Replace(html, "title=\"[^\"]+\"", "title=\"TIMESTAMP\"");
+        html = Regex.Replace(html, "before_occurred_at=[^\"&]+", "before_occurred_at=TIMESTAMP_ENCODED");
+        html = Regex.Replace(html, "(<time[^>]*>)(.*?)(</time>)", "$1RELATIVE_TIME$3");
+        return NormaliseHtml.NormaliseComponent(html);
+    }
+
+    private static string ExtractAuditPanel(string html)
+    {
+        var doc = new HtmlDocument();
+        doc.LoadHtml(html);
+        return doc.GetElementbyId("project-detail-tab-content")?.OuterHtml ?? string.Empty;
+    }
+
+    private static string ExtractFirstAuditRowAndLoadMore(string html)
+    {
+        var doc = new HtmlDocument();
+        doc.LoadHtml(html);
+        var row = doc.DocumentNode.SelectSingleNode("//li[contains(@class,'audit-row')]")?.OuterHtml ?? string.Empty;
+        var loadMore = doc.GetElementbyId("audit-log-load-more")?.OuterHtml ?? string.Empty;
+        return $"{row} {loadMore}";
+    }
+
+    private static string InvokeRenderAuditJson(AuditEntry row)
+    {
+        var method = typeof(FieldMark.Web.Pages.Projects.ProjectDetailPageModelBase)
+            .GetMethod("RenderAuditJson", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+        method.Should().NotBeNull();
+        return (string?)method!.Invoke(null, [row]) ?? string.Empty;
+    }
 
     [Fact]
     public async Task ProjectsDetail_Unauthenticated_RedirectsToLogin()
@@ -218,6 +343,154 @@ public sealed class ProjectsDetailPageTests(PostgresFixture pg)
         html.Should().Contain("id=\"project-detail-tabstrip\"");
         html.Should().Contain("id=\"tab-violations\"");
         html.Should().Contain("aria-selected=\"true\"");
+    }
+
+    [Fact]
+    public async Task ProjectsDetailTab_Audit_RendersLiveAuditLog()
+    {
+        var id = await CreateProjectAsync();
+        await CreateAuditEntryAsync(id);
+        var client = await CreateAuthenticatedClientAsync();
+        var req = new HttpRequestMessage(HttpMethod.Get, $"/projects/{id}/tabs/audit");
+        req.Headers.Add("HX-Request", "true");
+        var resp = await client.SendAsync(req);
+        resp.StatusCode.Should().Be(HttpStatusCode.OK);
+        var html = await resp.Content.ReadAsStringAsync();
+        html.Should().Contain("id=\"audit-log\"");
+        html.Should().Contain("aria-live=\"polite\"");
+        html.Should().Contain("data-audit-action=\"ProjectPlacedOnHold\"");
+        html.Should().Contain("Show change");
+    }
+
+    [Fact]
+    public async Task ProjectsDetailTab_Audit_UnknownAction_UsesBadgeUnknown()
+    {
+        var id = await CreateProjectAsync();
+        await CreateAuditEntryAsync(id, action: "ProjectReticulatedSpline");
+        var client = await CreateAuthenticatedClientAsync();
+        var req = new HttpRequestMessage(HttpMethod.Get, $"/projects/{id}/tabs/audit");
+        req.Headers.Add("HX-Request", "true");
+        var resp = await client.SendAsync(req);
+        resp.StatusCode.Should().Be(HttpStatusCode.OK);
+        var html = await resp.Content.ReadAsStringAsync();
+        html.Should().Contain("badge-unknown");
+    }
+
+    [Fact]
+    public async Task ProjectsDetailTab_Audit_EmptyPanelMatchesCanonical()
+    {
+        var id = await CreateProjectAsync();
+        var client = await CreateAuthenticatedClientAsync();
+        var req = new HttpRequestMessage(HttpMethod.Get, $"/projects/{id}/tabs/audit");
+        req.Headers.Add("HX-Request", "true");
+        var resp = await client.SendAsync(req);
+        resp.StatusCode.Should().Be(HttpStatusCode.OK);
+        var html = await resp.Content.ReadAsStringAsync();
+        NormaliseAuditLogHtml(ExtractAuditPanel(html)).Should().Be(AuditLogCanonical("panel-empty"));
+    }
+
+    [Fact]
+    public async Task ProjectsDetailTab_Audit_UnresolvableActor_RendersQuestionMarkFallback()
+    {
+        var id = await CreateProjectAsync();
+        await CreateAuditEntryAsync(id, actorId: Guid.NewGuid());
+        var client = await CreateAuthenticatedClientAsync();
+        var req = new HttpRequestMessage(HttpMethod.Get, $"/projects/{id}/tabs/audit");
+        req.Headers.Add("HX-Request", "true");
+        var resp = await client.SendAsync(req);
+        resp.StatusCode.Should().Be(HttpStatusCode.OK);
+        var html = await resp.Content.ReadAsStringAsync();
+        html.Should().Contain("<span class=\"audit-row__initials\">??</span>");
+    }
+
+    [Fact]
+    public async Task ProjectsDetailTab_Audit_WhitespaceUsername_RendersQuestionMarkFallback()
+    {
+        var id = await CreateProjectAsync();
+        var actorId = await CreateAuthUserAsync("   ");
+        await CreateAuditEntryAsync(id, actorId: actorId);
+        var client = await CreateAuthenticatedClientAsync();
+        var req = new HttpRequestMessage(HttpMethod.Get, $"/projects/{id}/tabs/audit");
+        req.Headers.Add("HX-Request", "true");
+        var resp = await client.SendAsync(req);
+        resp.StatusCode.Should().Be(HttpStatusCode.OK);
+        var html = await resp.Content.ReadAsStringAsync();
+        html.Should().Contain("<span class=\"audit-row__initials\">??</span>");
+    }
+
+    [Fact]
+    public async Task ProjectsDetailTab_Audit_EmptyUsername_RendersQuestionMarkFallback()
+    {
+        var id = await CreateProjectAsync();
+        var actorId = await CreateAuthUserAsync("");
+        await CreateAuditEntryAsync(id, actorId: actorId);
+        var client = await CreateAuthenticatedClientAsync();
+        var req = new HttpRequestMessage(HttpMethod.Get, $"/projects/{id}/tabs/audit");
+        req.Headers.Add("HX-Request", "true");
+        var resp = await client.SendAsync(req);
+        resp.StatusCode.Should().Be(HttpStatusCode.OK);
+        var html = await resp.Content.ReadAsStringAsync();
+        html.Should().Contain("<span class=\"audit-row__initials\">??</span>");
+    }
+
+    [Fact]
+    public async Task ProjectsDetailTab_Audit_NoRoleUser_ReturnsForbidden()
+    {
+        var id = await CreateProjectAsync();
+        var client = await CreateAuthenticatedClientAsync("testuser");
+        var req = new HttpRequestMessage(HttpMethod.Get, $"/projects/{id}/tabs/audit");
+        req.Headers.Add("HX-Request", "true");
+        var resp = await client.SendAsync(req);
+        resp.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        (await resp.Content.ReadAsStringAsync()).Should().Be("You do not have permission to access this page.");
+    }
+
+    [Fact]
+    public async Task ProjectAuditLog_ReturnsFragmentOnly()
+    {
+        var id = await CreateProjectAsync();
+        await CreateAuditEntryAsync(id);
+        var client = await CreateAuthenticatedClientAsync();
+        var resp = await client.GetAsync($"/projects/{id}/audit-log");
+        resp.StatusCode.Should().Be(HttpStatusCode.OK);
+        var html = await resp.Content.ReadAsStringAsync();
+        html.Should().Contain("class=\"audit-row\"");
+        html.Should().NotContain("id=\"audit-log\"");
+    }
+
+    [Fact]
+    public async Task ProjectAuditLog_FirstPageShapeMatchesCanonical()
+    {
+        var id = await CreateProjectAsync();
+        for (var i = 0; i < 101; i++)
+            await CreateAuditEntryAsync(id);
+        var client = await CreateAuthenticatedClientAsync();
+        var resp = await client.GetAsync($"/projects/{id}/audit-log");
+        resp.StatusCode.Should().Be(HttpStatusCode.OK);
+        var html = await resp.Content.ReadAsStringAsync();
+        NormaliseAuditLogHtml(ExtractFirstAuditRowAndLoadMore(html))
+            .Should()
+            .Be(AuditLogCanonical("fragment-with-row-and-load-more"));
+    }
+
+    [Fact]
+    public async Task ProjectAuditLog_Unauthenticated_RedirectsToLogin()
+    {
+        var id = await CreateProjectAsync();
+        var client = CreateClient();
+        var resp = await client.GetAsync($"/projects/{id}/audit-log");
+        resp.StatusCode.Should().Be(HttpStatusCode.Found);
+    }
+
+    [Fact]
+    public async Task ProjectAuditLog_InvalidCursor_ReturnsBadRequest()
+    {
+        var id = await CreateProjectAsync();
+        await CreateAuditEntryAsync(id);
+        var client = await CreateAuthenticatedClientAsync();
+        var resp = await client.GetAsync($"/projects/{id}/audit-log?before_occurred_at=nope&before_id=bad");
+        resp.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        (await resp.Content.ReadAsStringAsync()).Should().Be("Invalid cursor.");
     }
 
     [Fact]
@@ -342,6 +615,34 @@ public sealed class ProjectsDetailPageTests(PostgresFixture pg)
         audit.BeforeState!.RootElement.GetProperty("status").GetString().Should().Be("Active");
         audit.AfterState!.RootElement.GetProperty("status").GetString().Should().Be("OnHold");
         audit.Metadata!.RootElement.GetProperty("reason").GetString().Should().Be("Weather delay");
+    }
+
+    [Fact]
+    public async Task ProjectPlaceOnHold_Post_CurrentTabAudit_KeepsAuditPanelLive()
+    {
+        var id = await CreateProjectRowAsync(status: "Active");
+        var client = await CreateAuthenticatedClientAsync("aisha");
+        var req = new HttpRequestMessage(HttpMethod.Post, $"/projects/{id}/place-on-hold")
+        {
+            Content = new FormUrlEncodedContent(
+                [
+                    new("reason", "Weather delay"),
+                    new("current_tab", "audit"),
+                ]
+            ),
+        };
+        req.Headers.Add("HX-Request", "true");
+
+        var resp = await client.SendAsync(req);
+        resp.StatusCode.Should().Be(HttpStatusCode.OK);
+        var html = await resp.Content.ReadAsStringAsync();
+        html.Should().Contain("aria-labelledby=\"tab-audit\"");
+        html.Should().Contain("id=\"audit-log\"");
+        html.Should().Contain("id=\"tab-audit\"");
+        html.Should().Contain("aria-selected=\"true\"");
+        html.Should().NotContain("hx-swap-oob=\"afterbegin:#audit-log\"");
+        Regex.Count(html, "data-audit-action=\"ProjectPlacedOnHold\"").Should().Be(1);
+        html.Should().NotContain("No audit entries recorded for this project yet.");
     }
 
     [Fact]
@@ -640,5 +941,48 @@ public sealed class ProjectsDetailPageTests(PostgresFixture pg)
         var html = await resp.Content.ReadAsStringAsync();
         html.Should().Contain("&lt;script&gt;alert(1)&lt;/script&gt;");
         html.Should().NotContain("<script>alert(1)</script>");
+    }
+
+    [Fact]
+    public async Task ProjectsDetailTab_Audit_XssPayloads_AreEscapedAcrossActorAndMetadata()
+    {
+        const string payload = "<script>alert(1)</script>";
+        var id = await CreateProjectAsync();
+        var actorId = await CreateAuthUserAsync($"actor-{Guid.NewGuid():N}", payload);
+        await CreateAuditEntryAsync(
+            id,
+            actorId: actorId,
+            beforeState: JsonDocument.Parse("""{"status":"Active"}"""),
+            afterState: JsonDocument.Parse("""{"items":[{"zulu":2,"bravo":1}],"status":"OnHold"}"""),
+            metadata: JsonDocument.Parse("""{"reason":"<script>alert(1)</script>"}""")
+        );
+        var client = await CreateAuthenticatedClientAsync();
+        var req = new HttpRequestMessage(HttpMethod.Get, $"/projects/{id}/tabs/audit");
+        req.Headers.Add("HX-Request", "true");
+        var resp = await client.SendAsync(req);
+        resp.StatusCode.Should().Be(HttpStatusCode.OK);
+        var html = await resp.Content.ReadAsStringAsync();
+        html.Should().Contain("&lt;script&gt;alert(1)&lt;/script&gt;");
+        html.Should().NotContain("<script>alert(1)</script>");
+        html.Should().Contain("Show change");
+    }
+
+    [Fact]
+    public void ProjectsDetailTab_Audit_RenderAuditJson_SortsNestedObjects()
+    {
+        var row = new AuditEntry(
+            Guid.NewGuid(),
+            "ProjectPlacedOnHold",
+            "Project",
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            JsonDocument.Parse("""{"status":"Active"}"""),
+            JsonDocument.Parse("""{"items":[{"zulu":2,"bravo":1}],"status":"OnHold"}"""),
+            JsonDocument.Parse("""{"reason":"<script>alert(1)</script>"}""")
+        );
+
+        InvokeRenderAuditJson(row).Should().Be(
+            """{"after":{"items":[{"bravo":1,"zulu":2}],"status":"OnHold"},"before":{"status":"Active"},"metadata":{"reason":"\u003Cscript\u003Ealert(1)\u003C/script\u003E"}}"""
+        );
     }
 }

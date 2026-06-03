@@ -59,6 +59,7 @@ func makeProjectsTransitionIntegrationApp(pool *pgxpool.Pool) *fiber.App {
 		Projects:  postgres.NewProjectStore(pool),
 		Reference: postgres.NewReferenceStore(pool),
 		Audit:     postgres.NewAuditEntryStore(),
+		AuditRead: postgres.NewAuditEntryReadStore(pool),
 	}
 	a.Post("/projects/:id/place-on-hold", auth.RequireAuth(), h.PostProjectPlaceOnHold)
 	a.Post("/projects/:id/resume", auth.RequireAuth(), h.PostProjectResume)
@@ -165,6 +166,47 @@ func TestPostProjectPlaceOnHold_Success_RendersThreeRegionShape_AndPersistsAudit
 	}
 	if metadata["reason"] != "Weather delay" {
 		t.Fatalf("metadata.reason = %q; want Weather delay", metadata["reason"])
+	}
+}
+
+func TestPostProjectPlaceOnHold_CurrentTabAudit_KeepsSingleLiveRow(t *testing.T) {
+	pool := openHandlerPool(t)
+	defer pool.Close()
+
+	id := insertProjectRow(t, pool, "Active")
+	app := makeProjectsTransitionIntegrationApp(pool)
+
+	form := url.Values{"reason": {"Weather delay"}, "current_tab": {"audit"}}
+	req, _ := http.NewRequest(http.MethodPost, "/projects/"+id.String()+"/place-on-hold", strings.NewReader(form.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Set("HX-Request", "true")
+
+	resp, err := app.Test(req)
+	if err != nil {
+		t.Fatalf("test request failed: %v", err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		b, _ := io.ReadAll(resp.Body)
+		t.Fatalf("expected 200, got %d; body=%s", resp.StatusCode, string(b))
+	}
+
+	bodyBytes, _ := io.ReadAll(resp.Body)
+	body := string(bodyBytes)
+	if !strings.Contains(body, `aria-labelledby="tab-audit"`) || !strings.Contains(body, `id="audit-log"`) || !strings.Contains(body, `aria-selected="true"`) {
+		t.Fatalf("expected audit tab to stay active; body=%s", body)
+	}
+	if strings.Contains(body, `hx-swap-oob="afterbegin:#audit-log"`) {
+		t.Fatalf("did not expect audit-row oob when current audit tab is rerendered; body=%s", body)
+	}
+	if strings.Count(body, `data-audit-action="ProjectPlacedOnHold"`) != 1 {
+		t.Fatalf("expected exactly one placed-on-hold row in response; body=%s", body)
+	}
+	if !strings.Contains(body, `Weather delay`) {
+		t.Fatalf("expected rerendered audit row disclosure to include metadata.reason; body=%s", body)
+	}
+	if strings.Contains(body, `No audit entries recorded for this project yet.`) {
+		t.Fatalf("empty state must be suppressed when OOB row will land; body=%s", body)
 	}
 }
 

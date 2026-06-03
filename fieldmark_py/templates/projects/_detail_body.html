@@ -6,8 +6,8 @@
 
 <section class="project-detail-grid">
   <div class="tabs">
-    {% include "components/_tab_strip.html" with id="project-detail-tabstrip" aria_label="Project Detail Tabs" tabs=tabs active_index=0 %}
-    {% include "projects/tabs/_summary_panel.html" %}
+    {% include "components/_tab_strip.html" with id="project-detail-tabstrip" aria_label="Project Detail Tabs" tabs=tabs active_index=active_index|default:0 oob=False %}
+    {% include panel_template|default:"projects/tabs/_summary_panel.html" %}
   </div>
   {% include "components/_entity_rail.html" with id="violation-detail" entity_type_label="Violation" entity_loaded=False body_slot=None footer_slot=None %}
 </section>

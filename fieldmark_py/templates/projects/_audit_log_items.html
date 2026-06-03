@@ -1,0 +1,8 @@
+{% for audit_row in audit_rows %}
+{% include "components/_audit_row.html" with action=audit_row.action actor_name=audit_row.actor_name occurred_at=audit_row.occurred_at absolute=audit_row.absolute relative=audit_row.relative before_after_json=audit_row.before_after_json expanded=audit_row.expanded %}
+{% endfor %}
+{% if audit_load_more_url %}
+<li id="audit-log-load-more">
+  <button type="button" class="btn btn-secondary" hx-get="{{ audit_load_more_url }}" hx-target="closest li" hx-swap="outerHTML">Load more</button>
+</li>
+{% endif %}

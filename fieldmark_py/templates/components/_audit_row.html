@@ -6,6 +6,6 @@
   <time class="audit-row__timestamp tnum" datetime="{{ occurred_at }}" title="{{ absolute }}">{{ relative }}</time>
   {% if before_after_json %}<details class="audit-row__disclosure"{% if expanded %} open{% endif %}>
     <summary>Show change</summary>
-    {% if expanded %}<pre><code class="font-mono">{{ before_after_json }}</code></pre>{% endif %}
+    <pre><code class="font-mono">{{ before_after_json }}</code></pre>
   </details>{% endif %}
 </li>

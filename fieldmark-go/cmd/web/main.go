@@ -205,9 +205,11 @@ func registerRoutes(app *fiber.App, pool *pgxpool.Pool) {
 			Projects: postgres.NewProjectStore(pool),
 			Reference: postgres.NewReferenceStore(pool),
 			Audit: postgres.NewAuditEntryStore(),
+			AuditRead: postgres.NewAuditEntryReadStore(pool),
 		}
 		app.Get("/projects/:id", auth.RequireAuth(), projectsDetail.GetProjectsDetail)
 		app.Get("/projects/:id/tabs/:tab", auth.RequireAuth(), projectsDetail.GetProjectsDetail)
+		app.Get("/projects/:id/audit-log", auth.RequireAuth(), projectsDetail.GetProjectAuditLog)
 		app.Get("/projects/:id/place-on-hold", auth.RequireAuth(), projectsDetail.GetProjectPlaceOnHold)
 		app.Post("/projects/:id/place-on-hold", auth.RequireAuth(), projectsDetail.PostProjectPlaceOnHold)
 		app.Get("/projects/:id/resume", auth.RequireAuth(), projectsDetail.GetProjectResume)
@@ -226,6 +228,7 @@ func registerRoutes(app *fiber.App, pool *pgxpool.Pool) {
 		app.Post("/grid/projects", auth.RequireAuth(), noop)
 		app.Get("/projects/:id", auth.RequireAuth(), noop)
 		app.Get("/projects/:id/tabs/:tab", auth.RequireAuth(), noop)
+		app.Get("/projects/:id/audit-log", auth.RequireAuth(), noop)
 		app.Get("/projects/:id/place-on-hold", auth.RequireAuth(), noop)
 		app.Post("/projects/:id/place-on-hold", auth.RequireAuth(), noop)
 		app.Get("/projects/:id/resume", auth.RequireAuth(), noop)

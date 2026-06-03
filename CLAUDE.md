@@ -45,6 +45,8 @@ Each stack (.NET, Django, Go) is a self-contained, idiomatic application. A nati
 
 This principle was ratified in the Epic 1 retrospective (2026-05-25). It overrides any earlier guidance that suggested otherwise.
 
+**Split-story corollary (ratified 2026-06-03):** Large behavioral/UI-integration stories may be split into a three-part group — **`.a` reference (.NET)**, **`.b` port (Django + Go)**, **`.c` parity & definition-of-done**. Within such a group, `.a` and `.b` are legitimately "done" in a deliberately stack-divergent state; the *"a story is never done until all three stacks pass it"* invariant and `make parity` are asserted on the **`.c` story**, which carries the cross-stack conformance tests, byte-identical snapshots, E2E, and NFR-timing gates. The dependency chain `.a → .b → .c` is hard: `.b` does not start until `.a` is reviewed clean. Small single-transition stories and pure data-layer mapping stories stay unified. See [docs/how-to/cross-stack-story-splitting.md](docs/how-to/cross-stack-story-splitting.md).
+
 ## Key Reference Documents
 
 - [docs/explanation/architecture.md](docs/explanation/architecture.md) and [docs/tutorials/getting-started.md](docs/tutorials/getting-started.md) — canonical docs (progressive disclosure from this file).

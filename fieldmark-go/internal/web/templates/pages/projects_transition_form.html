@@ -8,6 +8,9 @@
   hx-disabled-elt="find button[type=submit]"
   class="space-y-2"
 >
+  {{ if .CurrentTab }}
+  <input type="hidden" name="current_tab" value="{{ .CurrentTab }}">
+  {{ end }}
   {{ if .Alert }}
     {{ template "inline_alert" .Alert }}
   {{ end }}

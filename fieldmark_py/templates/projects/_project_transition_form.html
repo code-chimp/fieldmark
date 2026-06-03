@@ -9,6 +9,9 @@
   class="space-y-2"
 >
   {% csrf_token %}
+  {% if current_tab %}
+    <input type="hidden" name="current_tab" value="{{ current_tab }}">
+  {% endif %}
   {% if alert_error %}
     {% include "components/_inline_alert.html" with severity="danger" title="Couldn't submit transition" message=alert_error meta="" %}
   {% endif %}

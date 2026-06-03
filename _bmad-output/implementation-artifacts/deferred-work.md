@@ -1,3 +1,12 @@
+# Status corrections (2026-06-03, John/PM — verified during Epic 2 hardening triage)
+
+> Corrections to earlier deferred entries that have since been resolved or were inaccurate. Kept as a record so the same misunderstanding does not recur. Originals left in place below for history.
+
+- **CORRECTION — D-2.10 "`make parity` route-dump is a no-op / tooling not scaffolded" is STALE/INACCURATE.** `tools/parity/` is fully scaffolded and functional: `diff-routes.sh` (dumps all three stacks, normalizes, pairwise `.NET vs Django` + `.NET vs Fiber` diff with non-zero exit on drift) and `diff-pg-indexes.sh` (live `domain.*` `pg_indexes` vs committed `canonical-pg-indexes.txt`). The routes tool landed in Story 1.3 (`e1s3 establish tools parity`) and was extended in Story 2.3 (`e2s3 expose read api`); `dump-routes-net.sh` was wired the same day (2026-05-31) the D-2.10 note was written, which likely explains the reviewer's observation. `make parity` is the gate for every Epic 3+ `.c` story (cross-stack story-split policy, 2026-06-03) and **does** enforce. Verified by live run on 2026-06-03 (see story 2.15 / sprint notes). **No parity-tooling story needed.**
+- **CORRECTION — D-2.1 "routes-parity gate is red because .NET lacks `/robots.txt` + `/.well-known/security.txt`" is RESOLVED via exemption.** `diff-routes.sh` contains `filter_ignored_non_business_routes()` which strips `^(get|options) /(robots\.txt|\.well-known/security\.txt)$` from all three stacks before diffing (added in the Story 2.3 commit `cc6ba23`). The D-2.1 note's "either land the endpoints on .NET or formally exempt them" choice was taken as **exempt**, so the gate is **not red** on this account. Follow-up (tracked in Story 2.15): land the two routes on .NET to match Django+Go and **remove the exemption filter** so parity verifies them too — converting a permanent carve-out into a stronger gate.
+
+---
+
 ## Deferred from: code review of 2-12 Group 4 tests (2026-06-03)
 
 - **D-2.12-G4-1 — `GET /resume` 403 and .NET GET 403 tests absent**: Auth path is shared with GET place-on-hold which is tested; risk low. AC4 technically covers GET too but the auth middleware is shared.
@@ -168,3 +177,7 @@ All 2026-05-17 entries are accounted for below.
 ## Deferred from: Story 2.4 (2026-05-28)
 
 - Story 2.4-followup — unknown-token runtime warning logger per [component-edge-case-checklist.md §1](../../docs/reference/component-edge-case-checklist.md) canonical resolution; deferred from Story 2.4 per Dev Notes §"Decision — unknown-token handling". Story 2.4 shipped the user-visible fallback class and per-stack fallback assertions; request-scoped operator logging remains follow-up work. Extended by Story 2.5 to also cover ComplianceTile out-of-range scores (< 0 or > 100) — same per-stack resolution pattern applies (no-data variant rendered, no log this story).
+
+## Deferred from: code review of 2-13-project-audit-log-tab (2026-06-04)
+
+- D-2.13-D1 — **.NET `latestAudit` fetched between `SaveChangesAsync` and `CommitAsync`**: `ProjectDetailPageModelBase.cs` reads the just-written audit entry inside the open transaction (after `SaveChangesAsync`, before `CommitAsync`) and uses its `OccurredAt`/`Id` to build the load-more cursor. If `CommitAsync` subsequently fails, the cursor points at a rolled-back row; because the exception propagates and no response is sent, there is no observable defect today. Pre-existing data-commit pattern carried from Story 2.12; hardening story 2.15 is the appropriate venue to harden the transaction boundary.

@@ -10,6 +10,10 @@
   class="space-y-2"
 >
   @Html.AntiForgeryToken()
+  @if (!string.IsNullOrWhiteSpace(Model.CurrentTab))
+  {
+    <input type="hidden" name="current_tab" value="@Model.CurrentTab" />
+  }
   @if (!string.IsNullOrWhiteSpace(Model.TransitionReasonError))
   {
     @await Html.PartialAsync("Shared/Components/_InlineAlert", new { Severity = "danger", Title = "Couldn't submit transition", Message = Model.TransitionReasonError, Meta = "" })

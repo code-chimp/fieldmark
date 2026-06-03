@@ -24,7 +24,7 @@
   aria-selected="{{ if eq $i $.ActiveIndex }}true{{ else }}false{{ end }}"
   class="tab-strip__tab"
   hx-get="{{ $t.HxGet }}"
-  hx-swap="innerHTML"
+  hx-swap="outerHTML"
   hx-target="{{ $t.HxTarget }}"
   id="{{ $t.ID }}"
   role="tab"

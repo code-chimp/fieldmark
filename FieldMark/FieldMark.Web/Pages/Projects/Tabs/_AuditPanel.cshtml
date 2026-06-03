@@ -1,5 +1,9 @@
 <div id="project-detail-tab-content" role="tabpanel" aria-labelledby="tab-audit" tabindex="-1" autofocus>
-  <div class="alert alert-info" role="status">
-    Audit entries appear here once the audit tab story lands.
-  </div>
+  <ul id="audit-log" role="list" aria-live="polite">
+    @await Html.PartialAsync("Projects/_AuditLogItems", (object)Model)
+    @if (Model.AuditRows.Count == 0 && !Model.SuppressAuditEmptyState)
+    {
+      <li class="alert alert-info" role="status">No audit entries recorded for this project yet.</li>
+    }
+  </ul>
 </div>

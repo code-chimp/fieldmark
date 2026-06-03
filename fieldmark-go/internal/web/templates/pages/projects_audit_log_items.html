@@ -1,0 +1,8 @@
+{{- range .AuditRows }}
+  {{ template "audit_row" . }}
+{{- end }}
+{{- if .AuditLoadMorePath }}
+<li id="audit-log-load-more">
+  <button type="button" class="btn btn-secondary" hx-get="{{ .AuditLoadMorePath }}" hx-target="closest li" hx-swap="outerHTML">Load more</button>
+</li>
+{{- end }}

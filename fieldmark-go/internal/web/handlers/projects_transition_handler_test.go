@@ -24,6 +24,10 @@ type projectTransitionNotFoundStoreStub struct{}
 
 type projectTransitionStoreStub struct{}
 
+type projectTransitionAuditReadStoreStub struct{}
+
+type projectTransitionAuditAppendStoreStub struct{}
+
 func (projectTransitionStoreStub) Load(context.Context, uuid.UUID) (*entities.Project, error) {
 	return &entities.Project{
 		ID:     uuid.MustParse("a1000000-0000-0000-0000-000000000001"),
@@ -54,6 +58,14 @@ func (projectTransitionNotFoundStoreStub) LoadWithRelations(context.Context, uui
 	return nil, nil, nil, nil, postgres.ErrProjectNotFound
 }
 
+func (projectTransitionAuditReadStoreStub) ListByProject(context.Context, uuid.UUID, postgres.AuditPage) (postgres.AuditPageResult, error) {
+	return postgres.AuditPageResult{}, nil
+}
+
+func (projectTransitionAuditAppendStoreStub) Append(context.Context, pgx.Tx, *entities.AuditEntry) error {
+	return nil
+}
+
 func makeProjectsTransitionApp(actor *app.Actor, store postgres.ProjectStore) *fiber.App {
 	auth.ResetForTests()
 	auth.RegisterAction("project.read", "ADMIN", "COMPLIANCE_OFFICER", "INSPECTOR", "SITE_SUPERVISOR", "EXECUTIVE")
@@ -68,6 +80,8 @@ func makeProjectsTransitionApp(actor *app.Actor, store postgres.ProjectStore) *f
 		Pool:      nil,
 		Projects:  store,
 		Reference: projectDetailReferenceStoreStub{},
+		Audit:     projectTransitionAuditAppendStoreStub{},
+		AuditRead: projectTransitionAuditReadStoreStub{},
 	}
 	a.Get("/projects/:id/place-on-hold", auth.RequireAuth(), h.GetProjectPlaceOnHold)
 	a.Post("/projects/:id/place-on-hold", auth.RequireAuth(), h.PostProjectPlaceOnHold)

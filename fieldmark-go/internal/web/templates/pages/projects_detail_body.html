@@ -7,7 +7,15 @@
 <section class="project-detail-grid">
   <div class="tabs">
     {{template "tab_strip" .Tabs}}
-    {{template "project_detail_summary_panel" .}}
+    {{- if eq .PanelTemplate "project_detail_inspections_panel" }}
+      {{template "project_detail_inspections_panel" .}}
+    {{- else if eq .PanelTemplate "project_detail_violations_panel" }}
+      {{template "project_detail_violations_panel" .}}
+    {{- else if eq .PanelTemplate "project_detail_audit_panel" }}
+      {{template "project_detail_audit_panel" .}}
+    {{- else }}
+      {{template "project_detail_summary_panel" .}}
+    {{- end }}
   </div>
   {{template "entity_rail" .Rail}}
 </section>

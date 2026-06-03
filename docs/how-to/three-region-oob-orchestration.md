@@ -64,7 +64,9 @@ The main `#project-detail` wrapper is not part of the response body and is never
 
 The compliance tile and audit row are the only OOB regions, so `hx-swap-oob` count is `2`.
 
-`#audit-log` is emitted even though Story 2.13 owns the live Audit tab target. Until that target exists in the DOM, HTMX drops the OOB fragment. This is intentional; Story 2.12 proves audit correctness at the data layer and response-shape level.
+As of Story 2.13, the Project Detail Audit tab renders the live `#audit-log` target. When the Audit tab is open, the OOB prepend now lands immediately at the top of the list; when the target is absent from the DOM, HTMX still drops the fragment as usual.
+
+The Audit tab empty state is implemented as a sibling `<li>` inside `#audit-log`. On server re-render paths the stacks suppress that empty-state row before returning the updated audit panel. On pure client-side OOB prepends, HTMX inserts the new AuditRow before the existing empty-state sibling rather than replacing it in-place; that sibling-precedes composition is the documented Story 2.13 contract.
 
 ---
 

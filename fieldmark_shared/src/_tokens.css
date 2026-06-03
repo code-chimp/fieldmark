@@ -81,7 +81,7 @@
 }
 
 .badge-audit-action {
-  color: var(--color-neutral);
+  color: var(--color-info);
 }
 
 .alert-unknown {

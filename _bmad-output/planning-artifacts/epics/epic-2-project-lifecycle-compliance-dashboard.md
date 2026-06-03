@@ -484,3 +484,34 @@ So that I can confirm what's loaded without running SQL (FR52).
 **Given** `make parity`
 **When** I run it
 **Then** the three reference routes exist on all three stacks and the diff is clean.
+
+---
+
+## Story 2.15: Harden Epic 2 — consolidated deferred-work pass
+
+_Added 2026-06-03. The Epic 2 equivalent of Story 1.14 — one disciplined pass over the ~50 deferred items accumulated during Epic 2 (chiefly the 2.11/2.12 review marathons) plus the findings from manual AC testing after Story 2.13. Authored as a shell; manual-test findings are added before dev starts. Lands before the Epic 2 retrospective. Full detail: [2-15-harden-epic-2.md](../../implementation-artifacts/2-15-harden-epic-2.md)._
+
+As the Project Lead closing out Epic 2,
+I want every known deferred item and manual-AC-test finding resolved in one consolidated, cross-stack-symmetric pass,
+So that Epic 3 begins on a clean baseline rather than dribbling Epic 2 debt across new stories.
+
+**Acceptance Criteria (summary — see story file for the itemized D-* checklist):**
+
+**Given** the deferred-work backlog for Epic 2 (Groups A–G in the story file: transaction/concurrency correctness, reason-handling consistency, cross-stack divergences, defensive guards, test hardening, dead-code/efficiency, parity robots/security symmetry)
+**When** the hardening pass completes
+**Then** every in-scope item is resolved with the fix mirrored across all three stacks unless explicitly stack-specific
+**And** each resolved `deferred-work.md` entry is annotated "Resolved by Story 2.15."
+
+**Given** the manual AC test pass run after Story 2.13
+**When** findings are enumerated (Section H of the story file)
+**Then** all are resolved under the same cross-stack discipline.
+
+**Given** the robots.txt / security.txt parity exemption (Group G)
+**When** the two routes are landed on .NET and the exemption filter is removed from `tools/parity/diff-routes.sh`
+**Then** `make parity` is green **without** the exemption — now verifying all three stacks serve both routes.
+
+**Given** all three stacks
+**When** I run `make test-net`, `make test-django`, `make test-go`, and `make parity`
+**Then** all gates are green.
+
+**Out of scope** (own story / Epic 7 / tech-writer / Epic 3): concurrent-deletion-after-commit 404 (own cross-stack story), all E2E/JS-disabled items (Epic 7), Go nil-pool harness (verify retro A3), docs-governance trio (Paige / retro A2), inspector deleted-user fallback (resolve with Story 3.4a's `inspector_name` decision). See the story file's "Explicitly OUT of scope" section.

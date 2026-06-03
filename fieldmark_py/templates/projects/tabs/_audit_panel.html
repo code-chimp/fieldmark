@@ -1,0 +1,8 @@
+<div id="project-detail-tab-content" role="tabpanel" aria-labelledby="tab-audit" tabindex="-1" autofocus>
+  <ul id="audit-log" role="list" aria-live="polite">
+    {% include "projects/_audit_log_items.html" with audit_rows=audit_rows audit_load_more_url=audit_load_more_url %}
+    {% if not audit_rows and not suppress_audit_empty_state %}
+    <li class="alert alert-info" role="status">No audit entries recorded for this project yet.</li>
+    {% endif %}
+  </ul>
+</div>

@@ -1,0 +1,61 @@
+<!--
+Project Audit Log canonical fixture.
+
+Notes:
+- UUIDs are normalized to 00000000-0000-0000-0000-000000000000 in tests.
+- This fixture covers the page-level audit panel and load-more fragment shape,
+  while AuditRow inner markup remains owned by fieldmark_shared/components/audit_row/canonical.html.
+-->
+
+<!-- variant: panel-with-row-and-load-more -->
+<div id="project-detail-tab-content" role="tabpanel" aria-labelledby="tab-audit" tabindex="-1" autofocus>
+  <ul id="audit-log" role="list" aria-live="polite">
+    <li class="audit-row" data-audit-action="ProjectPlacedOnHold">
+      <span class="audit-row__action"><span class="badge badge-audit-action">ProjectPlacedOnHold</span></span>
+      <span class="audit-row__actor">unnamed</span>
+      <span class="audit-row__initials">??</span>
+      <time class="audit-row__timestamp tnum" datetime="TIMESTAMP" title="TIMESTAMP">RELATIVE_TIME</time>
+      <details class="audit-row__disclosure">
+        <summary>Show change</summary>
+        <pre><code class="font-mono">{&quot;after&quot;:{&quot;status&quot;:&quot;OnHold&quot;},&quot;before&quot;:{&quot;status&quot;:&quot;Active&quot;},&quot;metadata&quot;:{&quot;reason&quot;:&quot;Weather delay&quot;}}</code></pre>
+      </details>
+    </li>
+    <li id="audit-log-load-more">
+      <button type="button" class="btn btn-secondary" hx-get="/projects/00000000-0000-0000-0000-000000000000/audit-log?before_occurred_at=TIMESTAMP_ENCODED&amp;before_id=00000000-0000-0000-0000-000000000000" hx-target="closest li" hx-swap="outerHTML">Load more</button>
+    </li>
+  </ul>
+</div>
+
+<!-- variant: panel-empty -->
+<div id="project-detail-tab-content" role="tabpanel" aria-labelledby="tab-audit" tabindex="-1" autofocus>
+  <ul id="audit-log" role="list" aria-live="polite">
+    <li class="alert alert-info" role="status">No audit entries recorded for this project yet.</li>
+  </ul>
+</div>
+
+<!-- variant: fragment-with-row-and-load-more -->
+<li class="audit-row" data-audit-action="ProjectPlacedOnHold">
+  <span class="audit-row__action"><span class="badge badge-audit-action">ProjectPlacedOnHold</span></span>
+  <span class="audit-row__actor">unnamed</span>
+  <span class="audit-row__initials">??</span>
+  <time class="audit-row__timestamp tnum" datetime="TIMESTAMP" title="TIMESTAMP">RELATIVE_TIME</time>
+  <details class="audit-row__disclosure">
+    <summary>Show change</summary>
+    <pre><code class="font-mono">{&quot;after&quot;:{&quot;status&quot;:&quot;OnHold&quot;},&quot;before&quot;:{&quot;status&quot;:&quot;Active&quot;},&quot;metadata&quot;:{&quot;reason&quot;:&quot;Weather delay&quot;}}</code></pre>
+  </details>
+</li>
+<li id="audit-log-load-more">
+  <button type="button" class="btn btn-secondary" hx-get="/projects/00000000-0000-0000-0000-000000000000/audit-log?before_occurred_at=TIMESTAMP_ENCODED&amp;before_id=00000000-0000-0000-0000-000000000000" hx-target="closest li" hx-swap="outerHTML">Load more</button>
+</li>
+
+<!-- variant: fragment-final-page -->
+<li class="audit-row" data-audit-action="ProjectPlacedOnHold">
+  <span class="audit-row__action"><span class="badge badge-audit-action">ProjectPlacedOnHold</span></span>
+  <span class="audit-row__actor">unnamed</span>
+  <span class="audit-row__initials">??</span>
+  <time class="audit-row__timestamp tnum" datetime="TIMESTAMP" title="TIMESTAMP">RELATIVE_TIME</time>
+  <details class="audit-row__disclosure">
+    <summary>Show change</summary>
+    <pre><code class="font-mono">{&quot;after&quot;:{&quot;status&quot;:&quot;OnHold&quot;},&quot;before&quot;:{&quot;status&quot;:&quot;Active&quot;},&quot;metadata&quot;:{&quot;reason&quot;:&quot;Weather delay&quot;}}</code></pre>
+  </details>
+</li>

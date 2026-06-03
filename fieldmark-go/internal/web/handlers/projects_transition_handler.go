@@ -39,6 +39,7 @@ func validateReason(reason string, required bool) string {
 }
 
 func (h *ProjectsDetailHandlers) renderTransitionForm(c fiber.Ctx, id uuid.UUID, actionPath, submitLabel, title string, required bool, reason, reasonErr string, status int) error {
+	currentTab := normalizeProjectTab(c.FormValue("current_tab", c.Query("current_tab", "")))
 	m := fiber.Map{
 		"ProjectID":   id.String(),
 		"ActionPath":  actionPath,
@@ -47,6 +48,7 @@ func (h *ProjectsDetailHandlers) renderTransitionForm(c fiber.Ctx, id uuid.UUID,
 		"Required":    required,
 		"Reason":      reason,
 		"ReasonError": reasonErr,
+		"CurrentTab":  currentTab,
 	}
 	if reasonErr != "" {
 		m["Alert"] = viewmodels.InlineAlertVM{
@@ -131,6 +133,7 @@ func (h *ProjectsDetailHandlers) postTransition(c fiber.Ctx, hold bool) error {
 		return c.SendStatus(fiber.StatusNotFound)
 	}
 	reason := c.FormValue("reason")
+	currentTab := normalizeProjectTab(c.FormValue("current_tab"))
 	if msg := validateReason(reason, required); msg != "" {
 		return h.renderTransitionForm(c, id, fmt.Sprintf("/projects/%s/%s", id, map[bool]string{true: "place-on-hold", false: "resume"}[hold]), label, title, required, reason, msg, fiber.StatusUnprocessableEntity)
 	}
@@ -167,7 +170,7 @@ func (h *ProjectsDetailHandlers) postTransition(c fiber.Ctx, hold bool) error {
 	}
 	if err != nil {
 		if errors.Is(err, entities.ErrInvalidProjectTransition) {
-			m, bErr := h.buildVMWithLoadedProjectData(c, id, project, scopes, inspectors)
+			m, bErr := h.buildVMWithLoadedProjectData(c, id, project, scopes, inspectors, currentTab)
 			if bErr != nil {
 				return bErr
 			}
@@ -218,7 +221,7 @@ func (h *ProjectsDetailHandlers) postTransition(c fiber.Ctx, hold bool) error {
 		return err
 	}
 
-	m, err := h.buildVM(c, id)
+	m, err := h.buildVMWithLoadedProjectData(c, id, project, scopes, inspectors, currentTab)
 	if err != nil {
 		if errors.Is(err, postgres.ErrProjectNotFound) {
 			return c.SendStatus(fiber.StatusNotFound)
@@ -228,12 +231,14 @@ func (h *ProjectsDetailHandlers) postTransition(c fiber.Ctx, hold bool) error {
 	beforeAfterJSONBytes, _ := json.Marshal(struct {
 		After  json.RawMessage `json:"after"`
 		Before json.RawMessage `json:"before"`
+		Metadata json.RawMessage `json:"metadata"`
 	}{
-		After:  afterStateBytes,
+		After: afterStateBytes,
 		Before: beforeStateBytes,
+		Metadata: metaBytes,
 	})
 	now := time.Now().UTC()
-	m["AuditRow"] = viewmodels.AuditRowVM{
+	currentAuditRow := viewmodels.AuditRowVM{
 		Action:          string(actionValue),
 		ActionClass:     "badge-audit-action",
 		ActorName:       actor.DisplayName,
@@ -242,6 +247,21 @@ func (h *ProjectsDetailHandlers) postTransition(c fiber.Ctx, hold bool) error {
 		Relative:        "just now",
 		BeforeAfterJSON: string(beforeAfterJSONBytes),
 		Expanded:        false,
+	}
+	if currentTab == "audit" {
+		auditRows, auditLoadMorePath, err := h.loadAuditPage(c, id, postgres.AuditPage{
+			BeforeOccurredAt: &auditEntry.OccurredAt,
+			BeforeID:         &auditEntry.ID,
+		})
+		if err != nil {
+			return err
+		}
+		m["AuditRows"] = append([]viewmodels.AuditRowVM{currentAuditRow}, auditRows...)
+		m["AuditLoadMorePath"] = auditLoadMorePath
+		m["SuppressAuditEmptyState"] = true
+	}
+	if currentTab != "audit" {
+		m["AuditRow"] = currentAuditRow
 	}
 	m["ComplianceTileOOB"] = components.NewComplianceTileArgs(&project.ComplianceScore, "Compliance", "compliance-tile")
 	c.Status(fiber.StatusOK)

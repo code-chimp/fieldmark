@@ -5,6 +5,9 @@
   @await Html.PartialAsync("Shared/Components/_ComplianceTile", new { Score = Model.ComplianceScore, Label = "Compliance", Id = "compliance-tile" })
 </section>
 
+@if (Model.AuditRow is not null)
+{
 <li hx-swap-oob="afterbegin:#audit-log">
   @await Html.PartialAsync("Shared/Components/_AuditRow", Model.AuditRow)
 </li>
+}
